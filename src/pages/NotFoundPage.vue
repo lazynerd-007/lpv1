@@ -33,7 +33,7 @@
           Back to Home
         </router-link>
         
-        <router-link to="/browse" class="btn btn-outline btn-lg">
+        <router-link to="/movies" class="btn btn-outline btn-lg">
           <Search class="w-5 h-5 mr-2" />
           Browse Movies
         </router-link>

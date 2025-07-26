@@ -4,9 +4,9 @@ import { useRoute } from 'vue-router'
 import { useSearchStore } from '@/stores/searchStore'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUIStore } from '@/stores/uiStore'
-import SearchHeader from '@/components/sections/SearchHeader.vue'
-import SearchFilters from '@/components/sections/SearchFilters.vue'
-import MovieGrid from '@/components/sections/MovieGrid.vue'
+import SearchHeader from '@/components/sections/search/SearchHeader.vue'
+import SearchFilters from '@/components/sections/search/SearchFilters.vue'
+import MovieGrid from '@/components/sections/browse/MovieGrid.vue'
 
 const route = useRoute()
 const searchStore = useSearchStore()

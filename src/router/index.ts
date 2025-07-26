@@ -38,12 +38,16 @@ const router = createRouter({
       }
     },
     {
-      path: '/browse',
-      name: 'browse',
+      path: '/movies',
+      name: 'movies',
       component: BrowseMoviesPage,
       meta: {
         title: 'Browse Movies - LemonNPie'
       }
+    },
+    {
+      path: '/browse',
+      redirect: '/movies'
     },
     {
       path: '/write-review/:movieId?',

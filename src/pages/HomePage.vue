@@ -2,11 +2,11 @@
 import { onMounted } from 'vue'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUIStore } from '@/stores/uiStore'
-import HeroSection from '@/components/sections/HeroSection.vue'
-import MovieCarousel from '@/components/sections/MovieCarousel.vue'
-import ReleasingSoonSection from '@/components/sections/ReleasingSoonSection.vue'
-import TrendingActorsSection from '@/components/sections/TrendingActorsSection.vue'
-import FreshLemonsSection from '@/components/sections/FreshLemonsSection.vue'
+import HeroSection from '@/components/sections/home/HeroSection.vue'
+import MovieCarousel from '@/components/sections/shared/MovieCarousel.vue'
+import ReleasingSoonSection from '@/components/sections/home/ReleasingSoonSection.vue'
+import TrendingActorsSection from '@/components/sections/home/TrendingActorsSection.vue'
+import FreshLemonsSection from '@/components/sections/home/FreshLemonsSection.vue'
 
 const movieStore = useMovieStore()
 const uiStore = useUIStore()

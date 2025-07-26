@@ -1,46 +1,70 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white">
+  <div class="min-h-screen bg-white">
     <!-- Header Section -->
-    <div class="bg-gradient-to-r from-yellow-500 to-orange-600 py-16">
-      <div class="container mx-auto px-4">
-        <h1 class="text-5xl font-bold text-white mb-4">Browse Nollywood Movies</h1>
-        <p class="text-xl text-yellow-100">Discover the best of Nigerian cinema</p>
-      </div>
-    </div>
-
-    <!-- Filters Section -->
     <div class="container mx-auto px-4 py-8">
-      <SearchFilters @filter-change="handleFilterChange" />
-
-      <!-- Results Summary -->
-      <div class="flex justify-between items-center mb-6">
-        <div class="text-lg font-semibold text-white">
-          Showing {{ filteredMovies.length }} of {{ movieStore.movies.length }} movies
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <span class="w-1 h-8 bg-orange-500 rounded"></span>
+          <h1 class="text-3xl font-bold text-gray-900">Browse Movies</h1>
         </div>
-        <div class="flex gap-2">
+        
+        <div class="flex items-center gap-4">
+          <!-- Sort Dropdown -->
+          <div class="relative">
+            <select 
+              v-model="sortBy" 
+              @change="handleSortChange"
+              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="popularity">Most popular first</option>
+              <option value="rating">Highest rated</option>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="title">A-Z</option>
+            </select>
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+          
+          <!-- Filter Button -->
           <button 
-            @click="viewMode = 'grid'" 
-            :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors',
-              viewMode === 'grid' 
-                ? 'bg-yellow-500 text-black' 
-                : 'bg-gray-700 text-white hover:bg-gray-600'
-            ]"
+            @click="showFilters = !showFilters"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
           >
-            <Grid class="w-4 h-4" />
+            <Filter class="w-4 h-4" />
+            Filter
           </button>
-          <button 
-            @click="viewMode = 'list'" 
-            :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors',
-              viewMode === 'list' 
-                ? 'bg-yellow-500 text-black' 
-                : 'bg-gray-700 text-white hover:bg-gray-600'
-            ]"
-          >
-            <List class="w-4 h-4" />
-          </button>
+          
+          <!-- View Toggle -->
+          <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+            <button 
+              @click="viewMode = 'grid'" 
+              :class="[
+                'px-3 py-2 transition-colors',
+                viewMode === 'grid' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <Grid class="w-4 h-4" />
+            </button>
+            <button 
+              @click="viewMode = 'list'" 
+              :class="[
+                'px-3 py-2 transition-colors border-l border-gray-300',
+                viewMode === 'list' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              ]"
+            >
+              <List class="w-4 h-4" />
+            </button>
+          </div>
         </div>
+      </div>
+      
+      <!-- Filters Section -->
+      <div v-if="showFilters" class="mb-8">
+        <SearchFilters @filter-change="handleFilterChange" />
       </div>
 
       <!-- Movies Grid/List -->
@@ -61,7 +85,7 @@
           <div 
             v-for="movie in paginatedMovies" 
             :key="movie.id" 
-            class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors duration-200"
+            class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200"
           >
             <div class="flex flex-col md:flex-row gap-6">
               <div class="flex-shrink-0">
@@ -73,30 +97,30 @@
               </div>
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-3">
-                  <h3 class="text-xl font-bold text-white">{{ movie.title }}</h3>
+                  <h3 class="text-xl font-bold text-gray-900">{{ movie.title }}</h3>
                   <div class="flex items-center gap-1">
-                    <span class="text-yellow-400 font-semibold">{{ movie.lemonPieRating.toFixed(1) }}</span>
-                    <span class="text-gray-400">/5</span>
+                    <span class="text-orange-500 font-semibold">{{ movie.lemonPieRating.toFixed(1) }}</span>
+                    <span class="text-gray-500">/5</span>
                   </div>
                 </div>
-                <p class="text-gray-400 mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
-                <p class="text-gray-300 mb-4 line-clamp-2">{{ movie.plotSummary }}</p>
+                <p class="text-gray-600 mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
+                <p class="text-gray-700 mb-4 line-clamp-2">{{ movie.plotSummary }}</p>
                 <div class="flex flex-wrap gap-2 mb-4">
                   <span 
                     v-for="actor in movie.cast.slice(0, 3)" 
                     :key="actor" 
-                    class="bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm"
+                    class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
                   >
                     {{ actor }}
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <div class="text-sm text-gray-400">
+                  <div class="text-sm text-gray-500">
                     {{ movie.runtime }} min • {{ movie.language }}
                   </div>
                   <router-link 
                     :to="`/movie/${movie.id}`" 
-                    class="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded-lg font-semibold transition-colors"
+                    class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     View Details
                   </router-link>
@@ -113,10 +137,10 @@
               @click="currentPage = Math.max(1, currentPage - 1)"
               :disabled="currentPage === 1"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-4 py-2 rounded-lg font-medium transition-colors border',
                 currentPage === 1
-                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                  : 'bg-gray-700 text-white hover:bg-gray-600'
+                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               ]"
             >
               <ChevronLeft class="w-4 h-4" />
@@ -127,10 +151,10 @@
               :key="page"
               @click="currentPage = page"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-4 py-2 rounded-lg font-medium transition-colors border',
                 currentPage === page
-                  ? 'bg-yellow-500 text-black'
-                  : 'bg-gray-700 text-white hover:bg-gray-600'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               ]"
             >
               {{ page }}
@@ -140,10 +164,10 @@
               @click="currentPage = Math.min(totalPages, currentPage + 1)"
               :disabled="currentPage === totalPages"
               :class="[
-                'px-4 py-2 rounded-lg font-medium transition-colors',
+                'px-4 py-2 rounded-lg font-medium transition-colors border',
                 currentPage === totalPages
-                  ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                  : 'bg-gray-700 text-white hover:bg-gray-600'
+                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               ]"
             >
               <ChevronRight class="w-4 h-4" />
@@ -153,13 +177,13 @@
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-16 bg-gray-800 rounded-lg">
+      <div v-else class="text-center py-16 bg-gray-50 rounded-lg border border-gray-200">
         <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-2xl font-bold text-white mb-2">No movies found</h3>
-        <p class="text-gray-400 mb-6">Try adjusting your filters or search terms</p>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">No movies found</h3>
+        <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
         <button 
           @click="clearFilters" 
-          class="bg-yellow-500 hover:bg-yellow-600 text-black px-6 py-3 rounded-lg font-semibold transition-colors"
+          class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
         >
           Clear All Filters
         </button>
@@ -170,13 +194,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { Filter, Search, RotateCcw, Grid, List, ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { Filter, Search, RotateCcw, Grid, List, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUIStore } from '@/stores/uiStore'
 import MovieCard from '@/components/ui/MovieCard.vue'
-import SearchFilters from '@/components/sections/SearchFilters.vue'
-import MovieGrid from '@/components/sections/MovieGrid.vue'
+import SearchFilters from '@/components/sections/search/SearchFilters.vue'
+import MovieGrid from '@/components/sections/browse/MovieGrid.vue'
 
 const movieStore = useMovieStore()
 const searchStore = useSearchStore()
@@ -186,6 +210,8 @@ const uiStore = useUIStore()
 const viewMode = ref('grid')
 const currentPage = ref(1)
 const itemsPerPage = 12
+const showFilters = ref(false)
+const sortBy = ref('popularity')
 
 // Computed properties
 const filteredMovies = computed(() => {
@@ -235,6 +261,12 @@ const handleFilterChange = () => {
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
+}
+
+const handleSortChange = () => {
+  // Sort functionality can be implemented here
+  // For now, just reset to first page
+  currentPage.value = 1
 }
 
 // Watch for filter changes to reset pagination

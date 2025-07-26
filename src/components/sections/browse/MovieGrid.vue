@@ -111,10 +111,10 @@ const getMovieTypeBadge = (movie: Movie) => {
         <div 
           v-for="i in itemsPerPage" 
           :key="i" 
-          class="card bg-base-100 shadow-lg animate-pulse"
+          class="bg-white rounded-lg shadow-md animate-pulse border border-gray-200"
         >
           <div class="bg-gray-300 h-64 rounded-t-lg"></div>
-          <div class="card-body">
+          <div class="p-4">
             <div class="bg-gray-300 h-4 rounded mb-2"></div>
             <div class="bg-gray-300 h-3 rounded w-3/4 mb-2"></div>
             <div class="bg-gray-300 h-3 rounded w-1/2"></div>
@@ -127,7 +127,7 @@ const getMovieTypeBadge = (movie: Movie) => {
         <div 
           v-for="movie in paginatedMovies" 
           :key="movie.id"
-          class="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-300 group cursor-pointer"
+          class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-200"
           @click="navigateToMovie(movie)"
         >
           <!-- Movie Poster -->
@@ -142,7 +142,7 @@ const getMovieTypeBadge = (movie: Movie) => {
             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center">
               <button 
                 @click.stop="playTrailer(movie)"
-                class="btn btn-circle btn-primary opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100"
+                class="w-12 h-12 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100"
               >
                 <Play class="w-6 h-6" />
               </button>
@@ -150,7 +150,7 @@ const getMovieTypeBadge = (movie: Movie) => {
             
             <!-- Movie Type Badge -->
             <div class="absolute top-2 left-2">
-              <div :class="['badge', getMovieTypeBadge(movie), 'gap-1']">
+              <div class="bg-orange-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
                 <span>{{ getMovieTypeIcon(movie) }}</span>
                 <span class="capitalize">{{ movie.genre[0] || 'Movie' }}</span>
               </div>
@@ -161,8 +161,8 @@ const getMovieTypeBadge = (movie: Movie) => {
               <button 
                 @click.stop="toggleWatchlist(movie)"
                 :class="[
-                  'btn btn-sm btn-circle',
-                  userStore.isInWatchlist(movie.id) ? 'btn-warning' : 'btn-ghost bg-black bg-opacity-50 text-white'
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
+                  userStore.isInWatchlist(movie.id) ? 'bg-orange-500 text-white' : 'bg-black bg-opacity-50 text-white hover:bg-opacity-70'
                 ]"
                 :title="userStore.isInWatchlist(movie.id) ? 'Remove from Watchlist' : 'Add to Watchlist'"
               >
@@ -172,8 +172,8 @@ const getMovieTypeBadge = (movie: Movie) => {
               <button 
                 @click.stop="toggleFavorite(movie)"
                 :class="[
-                  'btn btn-sm btn-circle',
-                  userStore.isInFavorites(movie.id) ? 'btn-error' : 'btn-ghost bg-black bg-opacity-50 text-white'
+                  'w-8 h-8 rounded-full flex items-center justify-center transition-colors',
+                  userStore.isInFavorites(movie.id) ? 'bg-red-500 text-white' : 'bg-black bg-opacity-50 text-white hover:bg-opacity-70'
                 ]"
                 :title="userStore.isInFavorites(movie.id) ? 'Remove from Favorites' : 'Add to Favorites'"
               >
@@ -183,16 +183,16 @@ const getMovieTypeBadge = (movie: Movie) => {
             
             <!-- Rating Badge -->
             <div class="absolute bottom-2 left-2">
-              <div class="badge badge-neutral gap-1">
-                <Star class="w-3 h-3 fill-yellow-400 text-yellow-400" />
+              <div class="bg-black bg-opacity-70 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <Star class="w-3 h-3 fill-orange-400 text-orange-400" />
                 <span>{{ movie.lemonPieRating.toFixed(1) }}</span>
               </div>
             </div>
           </figure>
           
           <!-- Movie Info -->
-          <div class="card-body p-4">
-            <h3 class="card-title text-sm font-bold line-clamp-2 group-hover:text-primary transition-colors">
+          <div class="p-4">
+            <h3 class="text-sm font-bold line-clamp-2 group-hover:text-orange-600 transition-colors text-gray-900">
               {{ movie.title }}
             </h3>
             
@@ -208,13 +208,13 @@ const getMovieTypeBadge = (movie: Movie) => {
               <span 
                 v-for="genre in movie.genre.slice(0, 2)" 
                 :key="genre"
-                class="badge badge-outline badge-xs"
+                class="border border-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs"
               >
                 {{ genre }}
               </span>
               <span 
                 v-if="movie.genre.length > 2"
-                class="badge badge-outline badge-xs"
+                class="border border-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs"
               >
                 +{{ movie.genre.length - 2 }}
               </span>
@@ -231,17 +231,22 @@ const getMovieTypeBadge = (movie: Movie) => {
       <!-- Empty State -->
       <div v-else class="text-center py-12">
         <div class="text-6xl mb-4">🎬</div>
-        <h3 class="text-xl font-bold mb-2">No movies found</h3>
+        <h3 class="text-xl font-bold mb-2 text-gray-900">No movies found</h3>
         <p class="text-gray-600 mb-4">Try adjusting your search criteria or filters</p>
       </div>
 
       <!-- Pagination -->
       <div v-if="showPagination && totalPages > 1 && !loading" class="flex justify-center mt-8">
-        <div class="join">
+        <div class="flex gap-2">
           <button 
             @click="onPageChange(currentPage - 1)"
             :disabled="currentPage === 1"
-            class="join-item btn btn-outline"
+            :class="[
+              'px-4 py-2 rounded-lg font-medium transition-colors border',
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ]"
           >
             Previous
           </button>
@@ -251,8 +256,10 @@ const getMovieTypeBadge = (movie: Movie) => {
             :key="page"
             @click="onPageChange(page)"
             :class="[
-              'join-item btn',
-              page === currentPage ? 'btn-primary' : 'btn-outline'
+              'px-4 py-2 rounded-lg font-medium transition-colors border',
+              page === currentPage
+                ? 'bg-orange-500 text-white border-orange-500'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
             ]"
           >
             {{ page }}
@@ -260,7 +267,8 @@ const getMovieTypeBadge = (movie: Movie) => {
           
           <button 
             v-if="totalPages > 5"
-            class="join-item btn btn-outline btn-disabled"
+            class="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+            disabled
           >
             ...
           </button>
@@ -268,7 +276,12 @@ const getMovieTypeBadge = (movie: Movie) => {
           <button 
             @click="onPageChange(currentPage + 1)"
             :disabled="currentPage === totalPages"
-            class="join-item btn btn-outline"
+            :class="[
+              'px-4 py-2 rounded-lg font-medium transition-colors border',
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ]"
           >
             Next
           </button>

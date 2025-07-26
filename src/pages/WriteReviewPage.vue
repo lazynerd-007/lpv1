@@ -39,9 +39,9 @@ import { useRouter } from 'vue-router'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
-import MovieSearch from '@/components/sections/MovieSearch.vue'
-import ReviewForm from '@/components/sections/ReviewForm.vue'
-import ReviewGuidelines from '@/components/sections/ReviewGuidelines.vue'
+import MovieSearch from '@/components/sections/search/MovieSearch.vue'
+import ReviewForm from '@/components/sections/movie/ReviewForm.vue'
+import ReviewGuidelines from '@/components/sections/movie/ReviewGuidelines.vue'
 import type { Movie } from '@/data/mockMovies'
 
 const router = useRouter()
