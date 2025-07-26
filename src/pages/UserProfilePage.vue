@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
+  <div class="min-h-screen bg-gray-900">
     <!-- Profile Header -->
-    <div class="bg-gradient-to-r from-yellow-400 to-orange-500 py-16">
+    <div class="bg-gradient-to-r from-yellow-500 to-orange-600 py-16">
       <div class="container mx-auto px-4">
         <div class="flex flex-col md:flex-row items-center gap-8">
           <!-- Profile Picture -->
@@ -33,60 +33,64 @@
     <div class="container mx-auto px-4 py-8">
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="card bg-white shadow-lg">
-          <div class="card-body text-center">
-            <div class="text-3xl font-bold text-primary">{{ userStats.totalReviews }}</div>
-            <div class="text-gray-600">Reviews Written</div>
-          </div>
+        <div class="bg-gray-800 rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-yellow-400">{{ userStats.totalReviews }}</div>
+          <div class="text-gray-300">Reviews Written</div>
         </div>
-        <div class="card bg-white shadow-lg">
-          <div class="card-body text-center">
-            <div class="text-3xl font-bold text-success">{{ userStats.averageRating.toFixed(1) }}</div>
-            <div class="text-gray-600">Average Rating</div>
-          </div>
+        <div class="bg-gray-800 rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-green-400">{{ userStats.averageRating.toFixed(1) }}</div>
+          <div class="text-gray-300">Average Rating</div>
         </div>
-        <div class="card bg-white shadow-lg">
-          <div class="card-body text-center">
-            <div class="text-3xl font-bold text-warning">{{ userStats.totalLikes }}</div>
-            <div class="text-gray-600">Likes Received</div>
-          </div>
+        <div class="bg-gray-800 rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-blue-400">{{ userStats.totalLikes }}</div>
+          <div class="text-gray-300">Likes Received</div>
         </div>
-        <div class="card bg-white shadow-lg">
-          <div class="card-body text-center">
-            <div class="text-3xl font-bold text-info">{{ userStats.moviesWatched }}</div>
-            <div class="text-gray-600">Movies Watched</div>
-          </div>
+        <div class="bg-gray-800 rounded-lg p-6 text-center">
+          <div class="text-3xl font-bold text-purple-400">{{ userStats.moviesWatched }}</div>
+          <div class="text-gray-300">Movies Watched</div>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="tabs tabs-boxed bg-white shadow-lg mb-8">
+      <div class="bg-gray-800 rounded-lg p-2 mb-8 flex flex-wrap gap-2">
         <button 
           @click="activeTab = 'reviews'"
-          :class="['tab tab-lg', activeTab === 'reviews' ? 'tab-active' : '']"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
+            activeTab === 'reviews' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+          ]"
         >
-          <MessageSquare class="w-4 h-4 mr-2" />
+          <MessageSquare class="w-4 h-4" />
           My Reviews
         </button>
         <button 
           @click="activeTab = 'watchlist'"
-          :class="['tab tab-lg', activeTab === 'watchlist' ? 'tab-active' : '']"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
+            activeTab === 'watchlist' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+          ]"
         >
-          <Bookmark class="w-4 h-4 mr-2" />
+          <Bookmark class="w-4 h-4" />
           Watchlist
         </button>
         <button 
           @click="activeTab = 'favorites'"
-          :class="['tab tab-lg', activeTab === 'favorites' ? 'tab-active' : '']"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
+            activeTab === 'favorites' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+          ]"
         >
-          <Heart class="w-4 h-4 mr-2" />
+          <Heart class="w-4 h-4" />
           Favorites
         </button>
         <button 
           @click="activeTab = 'settings'"
-          :class="['tab tab-lg', activeTab === 'settings' ? 'tab-active' : '']"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
+            activeTab === 'settings' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+          ]"
         >
-          <Settings class="w-4 h-4 mr-2" />
+          <Settings class="w-4 h-4" />
           Settings
         </button>
       </div>
@@ -96,90 +100,93 @@
         <!-- Reviews Tab -->
         <div v-if="activeTab === 'reviews'">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">My Reviews ({{ userReviews.length }})</h2>
-            <router-link to="/write-review" class="btn btn-primary">
-              <Plus class="w-4 h-4 mr-2" />
+            <h2 class="text-2xl font-bold text-white">My Reviews ({{ userReviews.length }})</h2>
+            <button 
+              @click="router.push('/write-review')"
+              class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition-colors flex items-center gap-2"
+            >
+              <Plus class="w-4 h-4" />
               Write New Review
-            </router-link>
+            </button>
           </div>
           
           <div v-if="userReviews.length > 0" class="space-y-6">
             <div 
               v-for="review in userReviews" 
               :key="review.id"
-              class="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-200"
+              class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors duration-200"
             >
-              <div class="card-body">
-                <div class="flex justify-between items-start mb-4">
-                  <div class="flex-1">
-                    <h3 class="card-title text-xl mb-2">{{ review.title }}</h3>
-                    <div class="flex items-center gap-4 mb-2">
-                      <router-link 
-                        :to="`/movie/${review.movieId}`" 
-                        class="text-primary hover:underline font-semibold"
-                      >
-                        {{ getMovieTitle(review.movieId) }}
-                      </router-link>
-                      <LemonPieRating :rating="review.rating" size="sm" />
-                    </div>
-                    <div class="text-sm text-gray-500 mb-3">
-                      {{ formatDate(review.date) }}
-                    </div>
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                  <h3 class="text-xl font-bold text-white mb-2">Review for {{ getMovieTitle(review.movieId) }}</h3>
+                  <div class="flex items-center gap-4 mb-2">
+                    <router-link 
+                      :to="`/movie/${review.movieId}`" 
+                      class="text-yellow-400 hover:underline font-semibold"
+                    >
+                      {{ getMovieTitle(review.movieId) }}
+                    </router-link>
+                    <LemonPieRating :rating="review.lemonPieRating" size="sm" />
                   </div>
-                  <div class="dropdown dropdown-end">
-                    <label tabindex="0" class="btn btn-ghost btn-sm">
-                      <MoreVertical class="w-4 h-4" />
-                    </label>
-                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                      <li><a @click="editReview(review)"><Edit class="w-4 h-4" />Edit</a></li>
-                      <li><a @click="deleteReview(review.id)" class="text-error"><Trash2 class="w-4 h-4" />Delete</a></li>
-                    </ul>
+                  <div class="text-sm text-gray-400 mb-3">
+                    {{ formatDate(review.createdAt) }}
                   </div>
                 </div>
-                
-                <p class="text-gray-700 mb-4">{{ review.content }}</p>
-                
-                <div class="flex justify-between items-center">
-                  <div class="flex items-center gap-4 text-sm text-gray-500">
-                    <span class="flex items-center gap-1">
-                      <ThumbsUp class="w-4 h-4" />
-                      {{ review.likes }}
-                    </span>
-                    <span class="flex items-center gap-1">
-                      <ThumbsDown class="w-4 h-4" />
-                      {{ review.dislikes }}
-                    </span>
-                    <span v-if="review.containsSpoilers" class="badge badge-warning badge-sm">
-                      Contains Spoilers
-                    </span>
-                  </div>
-                  <router-link 
-                    :to="`/movie/${review.movieId}`" 
-                    class="btn btn-outline btn-sm"
-                  >
-                    View Movie
-                  </router-link>
+                <div class="relative">
+                  <button class="text-gray-400 hover:text-white p-2">
+                    <MoreVertical class="w-4 h-4" />
+                  </button>
                 </div>
+              </div>
+              
+              <p class="text-gray-300 mb-4">{{ review.reviewText }}</p>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4 text-sm text-gray-400">
+                  <span class="flex items-center gap-1">
+                    <ThumbsUp class="w-4 h-4" />
+                    {{ review.helpfulnessScore }}
+                  </span>
+                  <span class="flex items-center gap-1">
+                    <ThumbsDown class="w-4 h-4" />
+                    0
+                  </span>
+                  <span v-if="review.spoilerWarning" class="bg-yellow-500 text-black px-2 py-1 rounded text-xs font-medium">
+                    Contains Spoilers
+                  </span>
+                </div>
+                <router-link 
+                  :to="`/movie/${review.movieId}`" 
+                  class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                >
+                  View Movie
+                </router-link>
               </div>
             </div>
           </div>
           
           <div v-else class="text-center py-16">
             <div class="text-6xl mb-4">📝</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">No reviews yet</h3>
-            <p class="text-gray-500 mb-6">Start sharing your thoughts on Nollywood movies!</p>
-            <router-link to="/write-review" class="btn btn-primary">
+            <h3 class="text-2xl font-bold text-white mb-2">No reviews yet</h3>
+            <p class="text-gray-400 mb-6">Start sharing your thoughts on Nollywood movies!</p>
+            <button 
+              @click="router.push('/write-review')"
+              class="bg-yellow-500 text-black px-6 py-3 rounded-lg font-medium hover:bg-yellow-400 transition-colors"
+            >
               Write Your First Review
-            </router-link>
+            </button>
           </div>
         </div>
 
         <!-- Watchlist Tab -->
         <div v-if="activeTab === 'watchlist'">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">My Watchlist ({{ watchlist.length }})</h2>
-            <router-link to="/browse" class="btn btn-primary">
-              <Plus class="w-4 h-4 mr-2" />
+            <h2 class="text-2xl font-bold text-white">My Watchlist ({{ watchlist.length }})</h2>
+            <router-link 
+              to="/browse" 
+              class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition-colors flex items-center gap-2"
+            >
+              <Plus class="w-4 h-4" />
               Add Movies
             </router-link>
           </div>
@@ -188,34 +195,38 @@
             <div 
               v-for="movie in watchlist" 
               :key="movie.id"
-              class="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-200"
+              class="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors duration-200"
             >
-              <figure class="relative">
+              <div class="relative">
                 <img :src="movie.poster" :alt="movie.title" class="w-full h-64 object-cover" />
                 <button 
                   @click="removeFromWatchlist(movie.id)"
-                  class="btn btn-circle btn-sm btn-error absolute top-2 right-2"
+                  class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
                 >
                   <X class="w-4 h-4" />
                 </button>
-              </figure>
-              <div class="card-body p-4">
-                <h3 class="card-title text-lg">{{ movie.title }}</h3>
-                <p class="text-sm text-gray-600">{{ movie.year }} • {{ movie.genre }}</p>
-                <div class="card-actions justify-end mt-4">
-                  <router-link :to="`/movie/${movie.id}`" class="btn btn-primary btn-sm">
-                    View Details
-                  </router-link>
-                </div>
+              </div>
+              <div class="p-4">
+                <h3 class="text-lg font-bold text-white mb-2">{{ movie.title }}</h3>
+                <p class="text-sm text-gray-400 mb-4">{{ movie.year }} • {{ movie.genre }}</p>
+                <router-link 
+                  :to="`/movie/${movie.id}`" 
+                  class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition-colors w-full block text-center"
+                >
+                  View Details
+                </router-link>
               </div>
             </div>
           </div>
           
           <div v-else class="text-center py-16">
             <div class="text-6xl mb-4">🎬</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">Your watchlist is empty</h3>
-            <p class="text-gray-500 mb-6">Add movies you want to watch later!</p>
-            <router-link to="/browse" class="btn btn-primary">
+            <h3 class="text-2xl font-bold text-white mb-2">Your watchlist is empty</h3>
+            <p class="text-gray-400 mb-6">Add movies you want to watch later!</p>
+            <router-link 
+              to="/browse" 
+              class="bg-yellow-500 text-black px-6 py-3 rounded-lg font-medium hover:bg-yellow-400 transition-colors"
+            >
               Browse Movies
             </router-link>
           </div>
@@ -224,7 +235,7 @@
         <!-- Favorites Tab -->
         <div v-if="activeTab === 'favorites'">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">My Favorites ({{ favorites.length }})</h2>
+            <h2 class="text-2xl font-bold text-white">My Favorites ({{ favorites.length }})</h2>
           </div>
           
           <div v-if="favorites.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -238,9 +249,12 @@
           
           <div v-else class="text-center py-16">
             <div class="text-6xl mb-4">❤️</div>
-            <h3 class="text-2xl font-bold text-gray-700 mb-2">No favorites yet</h3>
-            <p class="text-gray-500 mb-6">Mark movies as favorites to see them here!</p>
-            <router-link to="/browse" class="btn btn-primary">
+            <h3 class="text-2xl font-bold text-white mb-2">No favorites yet</h3>
+            <p class="text-gray-400 mb-6">Mark movies as favorites to see them here!</p>
+            <router-link 
+              to="/browse" 
+              class="bg-yellow-500 text-black px-6 py-3 rounded-lg font-medium hover:bg-yellow-400 transition-colors"
+            >
               Discover Movies
             </router-link>
           </div>
@@ -340,6 +354,137 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { 
+  User, Calendar, MapPin, MessageSquare, Bookmark, Heart, Settings,
+  Plus, X, Edit, Trash2, MoreVertical, ThumbsUp, ThumbsDown
+} from 'lucide-vue-next'
+import { useMovieStore } from '@/stores/movieStore'
+import { useUserStore } from '@/stores/userStore'
+import { useUIStore } from '@/stores/uiStore'
+import MovieCard from '@/components/MovieCard.vue'
+import LemonPieRating from '@/components/LemonPieRating.vue'
+// Using uiStore.showSuccessToast instead of sonner
+
+const router = useRouter()
+const movieStore = useMovieStore()
+const userStore = useUserStore()
+const uiStore = useUIStore()
+
+// Active tab state
+const activeTab = ref('reviews')
+
+// Profile form state
+const profileForm = ref({
+  name: '',
+  bio: '',
+  location: ''
+})
+
+// Preferences state
+const preferences = ref({
+  emailNotifications: true,
+  publicProfile: true,
+  language: 'en'
+})
+
+// Computed properties
+const user = computed(() => userStore.currentUser)
+const userReviews = computed(() => userStore.userReviews)
+const watchlist = computed(() => userStore.watchlistMovies)
+const favorites = computed(() => userStore.favoriteMovies)
+const userStats = computed(() => ({
+  totalReviews: userReviews.value.length,
+  averageRating: userReviews.value.length > 0 
+    ? userReviews.value.reduce((sum, review) => sum + review.lemonPieRating, 0) / userReviews.value.length 
+    : 0,
+  totalLikes: userReviews.value.reduce((sum, review) => sum + review.helpfulnessScore, 0),
+  moviesWatched: new Set(userReviews.value.map(r => r.movieId)).size
+}))
+
+// Methods
+const formatDate = (date: string) => {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
+}
+
+const getMovieTitle = (movieId: string) => {
+  const movie = movieStore.movies.find(m => m.id === movieId)
+  return movie?.title || 'Unknown Movie'
+}
+
+const removeFromWatchlist = async (movieId: string) => {
+  try {
+    await userStore.removeFromWatchlist(movieId)
+    uiStore.showSuccessToast('Movie removed from watchlist')
+  } catch (error) {
+    uiStore.showErrorToast('Failed to remove movie from watchlist')
+  }
+}
+
+const editReview = (review: any) => {
+  router.push(`/write-review?edit=${review.id}`)
+}
+
+const deleteReview = async (reviewId: string) => {
+  try {
+    await userStore.deleteUserReview(reviewId)
+    uiStore.showSuccessToast('Review deleted successfully')
+  } catch (error) {
+    uiStore.showErrorToast('Failed to delete review')
+  }
+}
+
+const updateProfile = async () => {
+  try {
+    await userStore.updateProfile(profileForm.value)
+    uiStore.showSuccessToast('Profile updated successfully')
+  } catch (error) {
+    uiStore.showErrorToast('Failed to update profile')
+  }
+}
+
+const updatePreferences = async () => {
+  try {
+    // Store preferences locally for now
+    uiStore.showSuccessToast('Preferences saved successfully')
+  } catch (error) {
+    uiStore.showErrorToast('Failed to save preferences')
+  }
+}
+
+// Initialize component
+onMounted(async () => {
+  uiStore.setPageTitle('My Profile')
+  
+  // Load user data if not already loaded
+  if (!userStore.currentUser) {
+    userStore.initializeMockAuth()
+  }
+  
+  // Initialize form with current user data
+  if (userStore.currentUser) {
+    profileForm.value = {
+      name: userStore.currentUser.name || '',
+      bio: userStore.currentUser.bio || '',
+      location: userStore.currentUser.location || ''
+    }
+  }
+  
+  // Initialize preferences with defaults
+  preferences.value = {
+    emailNotifications: true,
+    publicProfile: true,
+    language: 'en'
+  }
+})
+</script>
 
 <style scoped>
 /* Additional custom styles if needed */

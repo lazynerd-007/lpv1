@@ -1,13 +1,16 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import './style.css'
 import App from './App.vue'
 import router from './router'
 
-// 创建Vue应用实例
+// Create Vue app instance
 const app = createApp(App)
+const pinia = createPinia()
 
-// 使用路由
+// Use plugins
+app.use(pinia)
 app.use(router)
 
-// 挂载应用
+// Mount app
 app.mount('#app')

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { Facebook, Twitter, Instagram, Youtube, Mail, MapPin, Phone } from 'lucide-vue-next';
 
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
 // Footer sections data
 const footerSections = {
   discover: {
@@ -184,7 +188,7 @@ const currentYear = new Date().getFullYear();
     <!-- Floating Back to Top Button -->
     <button 
       class="fixed bottom-6 right-6 btn btn-circle btn-primary shadow-lg hover:shadow-xl transition-all duration-300 z-40"
-      @click="() => window.scrollTo({ top: 0, behavior: 'smooth' })"
+      @click="scrollToTop"
       aria-label="Back to top"
     >
       ↑
