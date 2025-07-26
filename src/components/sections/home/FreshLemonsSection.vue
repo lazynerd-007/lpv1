@@ -7,7 +7,7 @@ const movieStore = useMovieStore()
 const scrollContainer = ref<HTMLElement>()
 
 // Get a subset of movies for Fresh Lemons section
-const freshLemonMovies = movieStore.allMovies.slice(8, 12)
+const freshLemonMovies = movieStore.movies.slice(8, 12)
 
 const scrollLeft = () => {
   if (scrollContainer.value) {
@@ -90,4 +90,41 @@ const playTrailer = (movieId: string) => {
               </div>
               
               <!-- Rating Badge -->
-              <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 
+              <div class="absolute top-3 right-3 bg-yellow-500 text-white px-2 py-1 rounded-md text-sm font-semibold">
+                {{ movie.lemonPieRating.toFixed(1) }}
+              </div>
+            </div>
+            
+            <!-- Movie Info -->
+            <div class="p-4">
+              <h3 class="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">{{ movie.title }}</h3>
+              <p class="text-gray-600 text-sm mb-2">{{ movie.year }}</p>
+              <div class="flex items-center justify-between text-sm text-gray-500">
+                <span>{{ movie.reviewCount }} reviews</span>
+                <span class="text-yellow-600 font-medium">{{ movie.genre[0] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+</style>

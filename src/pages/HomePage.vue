@@ -6,6 +6,7 @@ import HeroSection from '@/components/sections/HeroSection.vue'
 import MovieCarousel from '@/components/sections/MovieCarousel.vue'
 import ReleasingSoonSection from '@/components/sections/ReleasingSoonSection.vue'
 import TrendingActorsSection from '@/components/sections/TrendingActorsSection.vue'
+import FreshLemonsSection from '@/components/sections/FreshLemonsSection.vue'
 
 const movieStore = useMovieStore()
 const uiStore = useUIStore()
@@ -46,6 +47,9 @@ onMounted(async () => {
       :max-items="8"
       background-color="bg-gray-50"
     />
+
+    <!-- Fresh Lemons Section -->
+    <FreshLemonsSection />
 
   </div>
 </template>
