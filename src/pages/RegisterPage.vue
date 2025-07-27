@@ -1,156 +1,116 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex items-center justify-center p-4">
-    <div class="card w-full max-w-md bg-base-100 shadow-xl">
-      <div class="card-body">
+  <div class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    <!-- MTDB Logo -->
+    <div class="absolute top-8 left-1/2 transform -translate-x-1/2">
+      <div class="flex items-center space-x-2">
+        <div class="w-8 h-8 bg-orange-500 rounded transform rotate-45"></div>
+        <span class="text-white text-2xl font-bold">MTDB</span>
+      </div>
+    </div>
+
+    <div class="w-full max-w-md">
+      <!-- Form Container -->
+      <div class="bg-gray-800 rounded-lg p-8 shadow-xl">
         <!-- Header -->
-        <div class="text-center mb-6">
-          <h1 class="text-3xl font-bold text-primary mb-2">Join Lemon & Pie</h1>
-          <p class="text-base-content/70">Create your account to start reviewing Nollywood movies</p>
+        <div class="mb-6">
+          <h1 class="text-white text-xl font-medium mb-2">Create a new account</h1>
         </div>
 
         <!-- Registration Form -->
         <form @submit.prevent="handleRegister" class="space-y-4">
-          <!-- Full Name -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Full Name</span>
-            </label>
-            <input
-              v-model="form.fullName"
-              type="text"
-              placeholder="Enter your full name"
-              class="input input-bordered w-full"
-              required
-            />
-          </div>
-
           <!-- Email -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Email</span>
+          <div>
+            <label class="block text-gray-300 text-sm font-medium mb-2">
+              Email
             </label>
             <input
               v-model="form.email"
               type="email"
-              placeholder="Enter your email"
-              class="input input-bordered w-full"
-              required
-            />
-          </div>
-
-          <!-- Username -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Username</span>
-            </label>
-            <input
-              v-model="form.username"
-              type="text"
-              placeholder="Choose a username"
-              class="input input-bordered w-full"
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="admin@admin.com"
               required
             />
           </div>
 
           <!-- Password -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Password</span>
-            </label>
-            <div class="relative">
-              <input
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Create a password"
-                class="input input-bordered w-full pr-12"
-                required
-              />
-              <button
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-base-content/50 hover:text-base-content"
-              >
-                <Eye v-if="!showPassword" class="w-5 h-5" />
-                <EyeOff v-else class="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <!-- Confirm Password -->
-          <div class="form-control">
-            <label class="label">
-              <span class="label-text font-medium">Confirm Password</span>
+          <div>
+            <label class="block text-gray-300 text-sm font-medium mb-2">
+              Password
             </label>
             <input
-              v-model="form.confirmPassword"
+              v-model="form.password"
               type="password"
-              placeholder="Confirm your password"
-              class="input input-bordered w-full"
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="••••••"
               required
             />
           </div>
 
-          <!-- Terms and Conditions -->
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <input
-                v-model="form.agreeToTerms"
-                type="checkbox"
-                class="checkbox checkbox-primary"
-                required
-              />
-              <span class="label-text">
-                I agree to the
-                <a href="#" class="link link-primary">Terms of Service</a>
-                and
-                <a href="#" class="link link-primary">Privacy Policy</a>
-              </span>
+          <!-- Confirm Password -->
+          <div>
+            <label class="block text-gray-300 text-sm font-medium mb-2">
+              Confirm password
             </label>
+            <input
+              v-model="form.confirmPassword"
+              type="password"
+              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              placeholder="••••••"
+              required
+            />
           </div>
 
           <!-- Submit Button -->
           <button
             type="submit"
-            class="btn btn-primary w-full"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mt-6"
             :disabled="isLoading"
           >
-            <span v-if="isLoading" class="loading loading-spinner loading-sm"></span>
-            {{ isLoading ? 'Creating Account...' : 'Create Account' }}
+            <span v-if="isLoading" class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+            {{ isLoading ? 'Creating Account...' : 'Create account' }}
           </button>
         </form>
 
         <!-- Divider -->
-        <div class="divider">or</div>
+        <div class="flex items-center my-6">
+          <div class="flex-1 border-t border-gray-600"></div>
+          <span class="px-4 text-gray-400 text-sm">Or sign up with</span>
+          <div class="flex-1 border-t border-gray-600"></div>
+        </div>
 
         <!-- Social Registration -->
-        <div class="space-y-3">
-          <button class="btn btn-outline w-full">
-            <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
+        <div class="flex justify-center space-x-4 mb-6">
+          <button type="button" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200">
+            <svg class="w-5 h-5 text-white" viewBox="0 0 24 24">
               <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            Continue with Google
           </button>
           
-          <button class="btn btn-outline w-full">
-            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+          <button type="button" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
             </svg>
-            Continue with Facebook
+          </button>
+
+          <button type="button" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-200">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
           </button>
         </div>
+      </div>
 
-        <!-- Login Link -->
-        <div class="text-center mt-6">
-          <p class="text-base-content/70">
-            Already have an account?
-            <router-link to="/login" class="link link-primary font-medium">
-              Sign in here
-            </router-link>
-          </p>
-        </div>
+      <!-- Login Link -->
+      <div class="text-center mt-6">
+        <p class="text-gray-400 text-sm">
+          Already have an account?
+          <router-link to="/login" class="text-orange-500 hover:text-orange-400 font-medium">
+            Sign in.
+          </router-link>
+        </p>
       </div>
     </div>
   </div>
