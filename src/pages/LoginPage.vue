@@ -35,9 +35,9 @@
               <label class="block text-gray-300 text-sm font-medium">
                 Password
               </label>
-              <a href="#" class="text-orange-500 text-sm hover:text-orange-400 transition-colors">
+              <router-link to="/forgot-password" class="text-orange-500 text-sm hover:text-orange-400 transition-colors">
                 Forgot your password?
-              </a>
+              </router-link>
             </div>
             <input 
               v-model="password" 

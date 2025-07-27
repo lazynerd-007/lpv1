@@ -119,30 +119,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 
 const form = ref({
-  fullName: '',
   email: '',
-  username: '',
   password: '',
-  confirmPassword: '',
-  agreeToTerms: false
+  confirmPassword: ''
 })
 
-const showPassword = ref(false)
 const isLoading = ref(false)
 
 const handleRegister = async () => {
   if (form.value.password !== form.value.confirmPassword) {
     alert('Passwords do not match!')
-    return
-  }
-
-  if (!form.value.agreeToTerms) {
-    alert('Please agree to the terms and conditions')
     return
   }
 

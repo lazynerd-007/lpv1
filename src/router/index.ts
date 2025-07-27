@@ -9,6 +9,7 @@ import WriteReviewPage from '@/pages/WriteReviewPage.vue'
 import UserProfilePage from '@/pages/UserProfilePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage.vue'
 import AboutPage from '@/pages/AboutPage.vue'
 import PersonDetailsPage from '@/pages/PersonDetailsPage.vue'
 
@@ -111,6 +112,15 @@ const router = createRouter({
       component: RegisterPage,
       meta: {
         title: 'Register - LemonNPie',
+        hideForAuth: true
+      }
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: ForgotPasswordPage,
+      meta: {
+        title: 'Forgot Password - LemonNPie',
         hideForAuth: true
       }
     },
