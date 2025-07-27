@@ -11,10 +11,9 @@
         <div class="flex items-center gap-4">
           <!-- Sort Dropdown -->
           <div class="flex items-center gap-2">
-            <Filter class="w-4 h-4 text-gray-600" />
             <select 
               v-model="sortBy" 
-              class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="popularity">Most popular first</option>
               <option value="name">Name A-Z</option>
