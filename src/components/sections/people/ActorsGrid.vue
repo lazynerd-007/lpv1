@@ -1,10 +1,10 @@
 <template>
   <div>
     <!-- Grid View -->
-    <div v-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-8">
+    <div v-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-8">
       <!-- Loading Skeletons -->
       <div v-if="loading" v-for="i in 12" :key="`skeleton-${i}`" class="flex flex-col items-center">
-        <div class="w-32 h-32 bg-gray-200 rounded-full animate-pulse mb-4"></div>
+        <div class="w-40 h-40 bg-gray-200 rounded-full animate-pulse mb-4"></div>
         <div class="h-5 bg-gray-200 rounded animate-pulse w-24 mb-2"></div>
         <div class="h-4 bg-gray-200 rounded animate-pulse w-10"></div>
       </div>
@@ -20,7 +20,7 @@
           <img 
             :src="actor.image" 
             :alt="actor.name"
-            class="w-32 h-32 rounded-full object-cover border-2 border-gray-200 group-hover:border-orange-500 transition-colors"
+            class="w-40 h-40 rounded-full object-cover border-2 border-gray-200 group-hover:border-orange-500 transition-colors"
             loading="lazy"
           />
           <div class="absolute inset-0 rounded-full bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all"></div>
