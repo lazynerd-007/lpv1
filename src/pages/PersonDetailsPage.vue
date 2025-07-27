@@ -103,7 +103,7 @@
                   <h3 class="text-white font-medium text-sm mb-1 line-clamp-2">{{ movie.title }}</h3>
                   <div class="flex items-center gap-2 text-xs text-gray-400">
                     <Star class="w-3 h-3 text-yellow-500" />
-                    <span>{{ movie.lemonPieRating }}/10</span>
+                    <span>{{ movie.lemonPieRating.toFixed(1) }}/10</span>
                   </div>
                 </div>
               </div>
@@ -141,12 +141,26 @@ const knownForMovies = computed(() => {
   return actor.value.knownFor.slice(0, 4).map((title, index) => ({
     id: `${actor.value!.id}-movie-${index}`,
     title,
-    poster: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(`${title} movie poster cinematic`)}%20movie%20poster&image_size=portrait_4_3`,
-    lemonPieRating: (Math.random() * 3 + 7).toFixed(1),
+    releaseDate: `${2020 + index}-01-01`,
     year: 2020 + index,
+    runtime: 120,
     genre: ['Drama', 'Action'],
+    language: ['English'],
     director: 'Various',
-    cast: [actor.value!.name]
+    producer: 'Various',
+    cast: [actor.value!.name],
+    plotSummary: `A compelling story featuring ${actor.value!.name}.`,
+    posterUrl: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(`${title} movie poster cinematic`)}%20movie%20poster&image_size=portrait_4_3`,
+    poster: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(`${title} movie poster cinematic`)}%20movie%20poster&image_size=portrait_4_3`,
+    productionCompany: 'Various Productions',
+    filmingLocations: ['Lagos'],
+    productionState: 'Lagos',
+    streamingPlatforms: ['Netflix'],
+    awards: [],
+    lemonPieRating: parseFloat((Math.random() * 3 + 7).toFixed(1)),
+    userRating: parseFloat((Math.random() * 3 + 7).toFixed(1)),
+    criticRating: parseFloat((Math.random() * 3 + 7).toFixed(1)),
+    reviewCount: Math.floor(Math.random() * 1000) + 100
   } as Movie))
 })
 
