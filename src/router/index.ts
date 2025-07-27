@@ -4,11 +4,13 @@ import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
 import SearchPage from '@/pages/SearchPage.vue'
 import BrowseMoviesPage from '@/pages/BrowseMoviesPage.vue'
 import BrowseSeriesPage from '@/pages/BrowseSeriesPage.vue'
+import PeoplePage from '@/pages/PeoplePage.vue'
 import WriteReviewPage from '@/pages/WriteReviewPage.vue'
 import UserProfilePage from '@/pages/UserProfilePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
 import RegisterPage from '@/pages/RegisterPage.vue'
 import AboutPage from '@/pages/AboutPage.vue'
+import PersonDetailsPage from '@/pages/PersonDetailsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -52,6 +54,23 @@ const router = createRouter({
       component: BrowseSeriesPage,
       meta: {
         title: 'Browse Series - LemonNPie'
+      }
+    },
+    {
+      path: '/people',
+      name: 'people',
+      component: PeoplePage,
+      meta: {
+        title: 'Trending Actors - LemonNPie'
+      }
+    },
+    {
+      path: '/person/:id',
+      name: 'person-details',
+      component: PersonDetailsPage,
+      props: true,
+      meta: {
+        title: 'Person Details - LemonNPie'
       }
     },
     {
