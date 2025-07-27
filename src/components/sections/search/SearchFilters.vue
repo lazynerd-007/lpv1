@@ -76,109 +76,138 @@ const clearAllFilters = () => {
             </button>
           </div>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <!-- Visual Filter Cards -->
+          <div class="space-y-6">
             <!-- Genre Filter -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Genre</span>
-              </label>
-              <select 
-                :value="searchStore.filters.genre"
-                @change="updateFilter('genre', ($event.target as HTMLSelectElement).value)"
-                class="select select-bordered select-sm"
-              >
-                <option value="">All Genres</option>
-                <option 
+            <div>
+              <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <img src="https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=colorful%20movie%20genre%20icons%20collection%20cinema%20film%20categories&image_size=square" alt="Genres" class="w-6 h-6 rounded" />
+                Genres
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <button 
                   v-for="genre in searchStore.filterOptions.genres" 
-                  :key="genre" 
-                  :value="genre"
+                  :key="genre"
+                  @click="updateFilter('genre', searchStore.filters.genre === genre ? '' : genre)"
+                  :class="[
+                    'p-3 rounded-lg border-2 transition-all duration-200 text-center hover:scale-105',
+                    searchStore.filters.genre === genre 
+                      ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                      : 'border-gray-200 bg-white hover:border-orange-300'
+                  ]"
                 >
-                  {{ genre }}
-                </option>
-              </select>
+                  <div class="w-8 h-8 mx-auto mb-2 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white text-xs font-bold">
+                    {{ genre.charAt(0) }}
+                  </div>
+                  <span class="text-xs font-medium">{{ genre }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Year Filter -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Release Year</span>
-              </label>
-              <select 
-                :value="searchStore.filters.year"
-                @change="updateFilter('year', ($event.target as HTMLSelectElement).value)"
-                class="select select-bordered select-sm"
-              >
-                <option value="">All Years</option>
-                <option 
+            <div>
+              <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <img src="https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=vintage%20calendar%20years%20timeline%20retro%20design&image_size=square" alt="Years" class="w-6 h-6 rounded" />
+                Release Year
+              </h4>
+              <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                <button 
                   v-for="year in searchStore.filterOptions.years" 
-                  :key="year" 
-                  :value="year"
+                  :key="year"
+                  @click="updateFilter('year', searchStore.filters.year === year ? '' : year)"
+                  :class="[
+                    'p-2 rounded-lg border-2 transition-all duration-200 text-center hover:scale-105',
+                    searchStore.filters.year === year 
+                      ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                      : 'border-gray-200 bg-white hover:border-orange-300'
+                  ]"
                 >
-                  {{ year }}
-                </option>
-              </select>
+                  <span class="text-sm font-bold">{{ year }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Rating Filter -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Rating</span>
-              </label>
-              <select 
-                :value="searchStore.filters.rating"
-                @change="updateFilter('rating', ($event.target as HTMLSelectElement).value)"
-                class="select select-bordered select-sm"
-              >
-                <option 
+            <div>
+              <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <img src="https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=golden%20star%20rating%20system%20movie%20reviews&image_size=square" alt="Ratings" class="w-6 h-6 rounded" />
+                Rating
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button 
                   v-for="rating in searchStore.filterOptions.ratings" 
-                  :key="rating.value" 
-                  :value="rating.value"
+                  :key="rating.value"
+                  @click="updateFilter('rating', searchStore.filters.rating === rating.value ? '' : rating.value)"
+                  :class="[
+                    'p-3 rounded-lg border-2 transition-all duration-200 text-center hover:scale-105',
+                    searchStore.filters.rating === rating.value 
+                      ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                      : 'border-gray-200 bg-white hover:border-orange-300'
+                  ]"
                 >
-                  {{ rating.label }}
-                </option>
-              </select>
+                  <div class="flex justify-center mb-2">
+                    <div class="flex gap-1">
+                      <span v-for="star in 5" :key="star" :class="[
+                        'text-lg',
+                        star <= parseFloat(rating.value) ? 'text-yellow-400' : 'text-gray-300'
+                      ]">★</span>
+                    </div>
+                  </div>
+                  <span class="text-xs font-medium">{{ rating.label }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Language Filter -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Language</span>
-              </label>
-              <select 
-                :value="searchStore.filters.language"
-                @change="updateFilter('language', ($event.target as HTMLSelectElement).value)"
-                class="select select-bordered select-sm"
-              >
-                <option value="">All Languages</option>
-                <option 
+            <div>
+              <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <img src="https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=world%20languages%20flags%20international%20communication&image_size=square" alt="Languages" class="w-6 h-6 rounded" />
+                Language
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <button 
                   v-for="language in searchStore.filterOptions.languages" 
-                  :key="language" 
-                  :value="language"
+                  :key="language"
+                  @click="updateFilter('language', searchStore.filters.language === language ? '' : language)"
+                  :class="[
+                    'p-3 rounded-lg border-2 transition-all duration-200 text-center hover:scale-105',
+                    searchStore.filters.language === language 
+                      ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                      : 'border-gray-200 bg-white hover:border-orange-300'
+                  ]"
                 >
-                  {{ language }}
-                </option>
-              </select>
+                  <div class="w-8 h-8 mx-auto mb-2 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                    {{ language.substring(0, 2).toUpperCase() }}
+                  </div>
+                  <span class="text-xs font-medium">{{ language }}</span>
+                </button>
+              </div>
             </div>
 
             <!-- Production State Filter -->
-            <div class="form-control">
-              <label class="label">
-                <span class="label-text font-semibold">Production State</span>
-              </label>
-              <select 
-                :value="searchStore.filters.productionState"
-                @change="updateFilter('productionState', ($event.target as HTMLSelectElement).value)"
-                class="select select-bordered select-sm"
-              >
-                <option value="">All States</option>
-                <option 
+            <div>
+              <h4 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                <img src="https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=nigeria%20map%20states%20regions%20nollywood%20film%20production&image_size=square" alt="States" class="w-6 h-6 rounded" />
+                Production State
+              </h4>
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                <button 
                   v-for="state in searchStore.filterOptions.states" 
-                  :key="state" 
-                  :value="state"
+                  :key="state"
+                  @click="updateFilter('productionState', searchStore.filters.productionState === state ? '' : state)"
+                  :class="[
+                    'p-3 rounded-lg border-2 transition-all duration-200 text-center hover:scale-105',
+                    searchStore.filters.productionState === state 
+                      ? 'border-orange-500 bg-orange-50 text-orange-700' 
+                      : 'border-gray-200 bg-white hover:border-orange-300'
+                  ]"
                 >
-                  {{ state }}
-                </option>
-              </select>
+                  <div class="w-8 h-8 mx-auto mb-2 rounded-full bg-gradient-to-br from-green-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold">
+                    {{ state.substring(0, 2).toUpperCase() }}
+                  </div>
+                  <span class="text-xs font-medium">{{ state }}</span>
+                </button>
+              </div>
             </div>
           </div>
 

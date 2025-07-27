@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-3">
           <span class="w-1 h-8 bg-orange-500 rounded"></span>
-          <h1 class="text-3xl font-bold text-gray-900">Browse Movies</h1>
+          <h1 class="text-3xl font-bold text-gray-900">Browse Series</h1>
         </div>
         
         <div class="flex items-center gap-4">
@@ -21,11 +21,10 @@
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
               <option value="title">A-Z</option>
+              <option value="seasons">Most seasons</option>
             </select>
             <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
-          
-
           
           <!-- View Toggle -->
           <div class="flex border border-gray-300 rounded-lg overflow-hidden">
@@ -60,12 +59,12 @@
         <SearchFilters @filter-change="handleFilterChange" />
       </div>
 
-      <!-- Movies Grid/List -->
-      <div v-if="filteredMovies.length > 0">
+      <!-- Series Grid/List -->
+      <div v-if="filteredSeries.length > 0">
         <!-- Grid View -->
         <div v-if="viewMode === 'grid'">
-          <MovieGrid 
-            :movies="displayedMovies"
+          <SeriesGrid 
+            :series="displayedSeries"
             :loading="isLoading"
             :current-page="1"
             :show-pagination="false"
@@ -75,31 +74,36 @@
         <!-- List View -->
         <div v-else class="space-y-4">
           <div 
-            v-for="movie in displayedMovies" 
-            :key="movie.id" 
+            v-for="show in displayedSeries" 
+            :key="show.id" 
             class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
           >
             <div class="flex flex-col md:flex-row gap-6">
               <div class="flex-shrink-0">
                 <img 
-                  :src="movie.poster" 
-                  :alt="movie.title" 
+                  :src="show.posterUrl" 
+                  :alt="show.title" 
                   class="w-24 h-36 object-cover rounded-lg"
                 />
               </div>
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-3">
-                  <h3 class="text-xl font-bold text-gray-900">{{ movie.title }}</h3>
+                  <h3 class="text-xl font-bold text-gray-900">{{ show.title }}</h3>
                   <div class="flex items-center gap-1">
-                    <span class="text-orange-500 font-semibold">{{ movie.lemonPieRating.toFixed(1) }}</span>
-                    <span class="text-gray-500">/5</span>
+                    <span class="text-orange-500 font-semibold">{{ show.lemonPieRating.toFixed(1) }}</span>
+                    <span class="text-gray-500">/10</span>
                   </div>
                 </div>
-                <p class="text-gray-600 mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
-                <p class="text-gray-700 mb-4 line-clamp-2">{{ movie.plotSummary }}</p>
+                <p class="text-gray-600 mb-3">
+                  {{ show.releaseDate }} • {{ show.genre.join(', ') }} • 
+                  <span :class="getStatusColor(show.status)" class="px-2 py-1 rounded text-xs font-semibold capitalize">
+                    {{ show.status }}
+                  </span>
+                </p>
+                <p class="text-gray-700 mb-4 line-clamp-2">{{ show.plotSummary }}</p>
                 <div class="flex flex-wrap gap-2 mb-4">
                   <span 
-                    v-for="actor in movie.cast.slice(0, 3)" 
+                    v-for="actor in show.cast.slice(0, 3)" 
                     :key="actor" 
                     class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
                   >
@@ -108,10 +112,12 @@
                 </div>
                 <div class="flex justify-between items-center">
                   <div class="text-sm text-gray-500">
-                    {{ movie.runtime }} min • {{ movie.language }}
+                    {{ show.seasons }} Season{{ show.seasons !== 1 ? 's' : '' }} • 
+                    {{ show.episodes }} Episodes • 
+                    {{ show.language.join(', ') }}
                   </div>
                   <router-link 
-                    :to="`/movie/${movie.id}`" 
+                    :to="`/series/${show.id}`" 
                     class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
                   >
                     View Details
@@ -126,20 +132,20 @@
         <div v-if="isLoading" class="flex justify-center mt-8">
           <div class="flex items-center gap-2 text-gray-600">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
-            <span>Loading more movies...</span>
+            <span>Loading more series...</span>
           </div>
         </div>
         
         <!-- End of Results Indicator -->
-        <div v-else-if="!canLoadMore && displayedMovies.length > 0" class="text-center mt-8 py-4">
-          <p class="text-gray-500">You've reached the end of the movie list</p>
+        <div v-else-if="!canLoadMore && displayedSeries.length > 0" class="text-center mt-8 py-4">
+          <p class="text-gray-500">You've reached the end of the series list</p>
         </div>
       </div>
 
       <!-- No Results -->
       <div v-else class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
         <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">No movies found</h3>
+        <h3 class="text-2xl font-bold text-gray-900 mb-2">No series found</h3>
         <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
         <button 
           @click="clearFilters" 
@@ -153,16 +159,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, onUnmounted, nextTick } from 'vue'
-import { Filter, Search, RotateCcw, Grid, List, ChevronDown } from 'lucide-vue-next'
-import { useMovieStore } from '@/stores/movieStore'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
+import { Grid, List, ChevronDown } from 'lucide-vue-next'
+import { useSeriesStore } from '@/stores/seriesStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUIStore } from '@/stores/uiStore'
-import MovieCard from '@/components/ui/MovieCard.vue'
 import SearchFilters from '@/components/sections/search/SearchFilters.vue'
-import MovieGrid from '@/components/sections/browse/MovieGrid.vue'
+import SeriesGrid from '@/components/sections/browse/SeriesGrid.vue'
 
-const movieStore = useMovieStore()
+const seriesStore = useSeriesStore()
 const searchStore = useSearchStore()
 const uiStore = useUIStore()
 
@@ -171,13 +176,13 @@ const viewMode = ref('grid')
 const itemsPerPage = 12
 const showFilters = ref(false)
 const sortBy = ref('popularity')
-const displayedMoviesCount = ref(itemsPerPage)
+const displayedSeriesCount = ref(itemsPerPage)
 const isLoading = ref(false)
-const hasMoreMovies = ref(true)
+const hasMoreSeries = ref(true)
 
 // Computed properties
-const filteredMovies = computed(() => {
-  return movieStore.filterMovies({
+const filteredSeries = computed(() => {
+  return seriesStore.filterSeries({
     genre: searchStore.filters.genre,
     year: searchStore.filters.year,
     rating: searchStore.filters.rating,
@@ -186,49 +191,49 @@ const filteredMovies = computed(() => {
   })
 })
 
-const displayedMovies = computed(() => {
-  return filteredMovies.value.slice(0, displayedMoviesCount.value)
+const displayedSeries = computed(() => {
+  return filteredSeries.value.slice(0, displayedSeriesCount.value)
 })
 
 const canLoadMore = computed(() => {
-  return displayedMoviesCount.value < filteredMovies.value.length
+  return displayedSeriesCount.value < filteredSeries.value.length
 })
 
 // Methods
 const clearFilters = () => {
   searchStore.clearFilters()
-  displayedMoviesCount.value = itemsPerPage
-  hasMoreMovies.value = true
+  displayedSeriesCount.value = itemsPerPage
+  hasMoreSeries.value = true
 }
 
 const handleSearch = (query: string) => {
   searchStore.performSearch(query)
-  displayedMoviesCount.value = itemsPerPage
-  hasMoreMovies.value = true
+  displayedSeriesCount.value = itemsPerPage
+  hasMoreSeries.value = true
 }
 
 const handleFilterChange = () => {
-  displayedMoviesCount.value = itemsPerPage
-  hasMoreMovies.value = true
+  displayedSeriesCount.value = itemsPerPage
+  hasMoreSeries.value = true
 }
 
 const handleSortChange = () => {
   // Sort functionality can be implemented here
   // For now, just reset displayed count
-  displayedMoviesCount.value = itemsPerPage
-  hasMoreMovies.value = true
+  displayedSeriesCount.value = itemsPerPage
+  hasMoreSeries.value = true
 }
 
-const loadMoreMovies = () => {
+const loadMoreSeries = () => {
   if (isLoading.value || !canLoadMore.value) return
   
   isLoading.value = true
   
   // Simulate loading delay
   setTimeout(() => {
-    displayedMoviesCount.value += itemsPerPage
+    displayedSeriesCount.value += itemsPerPage
     isLoading.value = false
-    hasMoreMovies.value = canLoadMore.value
+    hasMoreSeries.value = canLoadMore.value
   }, 500)
 }
 
@@ -239,7 +244,20 @@ const handleScroll = () => {
   
   // Load more when user is 200px from bottom
   if (scrollTop + windowHeight >= documentHeight - 200) {
-    loadMoreMovies()
+    loadMoreSeries()
+  }
+}
+
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'ongoing':
+      return 'bg-green-100 text-green-800'
+    case 'completed':
+      return 'bg-blue-100 text-blue-800'
+    case 'cancelled':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
   }
 }
 
@@ -247,20 +265,20 @@ const handleScroll = () => {
 watch(
   () => [searchStore.searchState.query, searchStore.filters],
   () => {
-    displayedMoviesCount.value = itemsPerPage
-    hasMoreMovies.value = true
+    displayedSeriesCount.value = itemsPerPage
+    hasMoreSeries.value = true
   },
   { deep: true }
 )
 
 // Set page title and setup scroll listener
 onMounted(async () => {
-  uiStore.setPageTitle('Browse Movies - Nollywood Movies')
+  uiStore.setPageTitle('Browse Series - Nollywood TV Shows')
   
   // Add scroll event listener for infinite scroll
   window.addEventListener('scroll', handleScroll)
   
-  // Movies are already loaded from mockMovies
+  // Series are already loaded from mockTVShows
 })
 
 // Cleanup scroll listener

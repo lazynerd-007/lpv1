@@ -63,9 +63,9 @@ const currentYear = new Date().getFullYear();
   <footer class="bg-deep-navy text-cream-white">
     <!-- Main Footer Content -->
     <div class="container mx-auto px-4 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+      <div class="flex justify-center">
         <!-- Brand Section -->
-        <div class="lg:col-span-1">
+        <div class="max-w-md text-center">
           <div class="mb-6">
             <h3 class="text-2xl font-bold mb-2">
               <span class="text-lemon-yellow">🍋</span>
@@ -80,36 +80,17 @@ const currentYear = new Date().getFullYear();
           
           <!-- Contact Info -->
           <div class="space-y-2 text-sm">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-center gap-2">
               <MapPin class="w-4 h-4 text-nollywood-gold" />
               <span>Lagos, Nigeria</span>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center justify-center gap-2">
               <Mail class="w-4 h-4 text-nollywood-gold" />
               <a href="mailto:hello@lemonnpie.com" class="hover:text-nollywood-gold transition-colors">
                 hello@lemonnpie.com
               </a>
             </div>
           </div>
-        </div>
-        
-        <!-- Footer Links Sections -->
-        <div 
-          v-for="(section, key) in footerSections" 
-          :key="key"
-          class="lg:col-span-1"
-        >
-          <h4 class="font-semibold text-nollywood-gold mb-4">{{ section.title }}</h4>
-          <ul class="space-y-2">
-            <li v-for="link in section.links" :key="link.name">
-              <router-link 
-                :to="link.href"
-                class="text-cream-white/80 hover:text-nollywood-gold transition-colors text-sm"
-              >
-                {{ link.name }}
-              </router-link>
-            </li>
-          </ul>
         </div>
       </div>
       

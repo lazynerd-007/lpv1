@@ -6,8 +6,8 @@ import { useMovieStore } from '@/stores/movieStore'
 const movieStore = useMovieStore()
 const scrollContainer = ref<HTMLElement>()
 
-// Get a subset of movies for Fresh Lemons section
-const freshLemonMovies = movieStore.movies.slice(8, 12)
+// Get lemon movies (low rated movies) for Fresh Lemons section
+const freshLemonMovies = movieStore.lemonMovies
 
 const scrollLeft = () => {
   if (scrollContainer.value) {
@@ -73,7 +73,7 @@ const playTrailer = (movieId: string) => {
             <!-- Movie Poster -->
             <div class="relative aspect-[3/4] overflow-hidden">
               <img 
-                :src="movie.poster" 
+                :src="movie.posterUrl" 
                 :alt="movie.title"
                 class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 loading="lazy"
@@ -98,7 +98,7 @@ const playTrailer = (movieId: string) => {
             <!-- Movie Info -->
             <div class="p-4">
               <h3 class="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">{{ movie.title }}</h3>
-              <p class="text-gray-600 text-sm mb-2">{{ movie.year }}</p>
+              <p class="text-gray-600 text-sm mb-2">{{ movie.releaseDate.split('-')[0] }}</p>
               <div class="flex items-center justify-between text-sm text-gray-500">
                 <span>{{ movie.reviewCount }} reviews</span>
                 <span class="text-yellow-600 font-medium">{{ movie.genre[0] }}</span>

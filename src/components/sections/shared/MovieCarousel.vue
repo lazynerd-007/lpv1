@@ -11,12 +11,16 @@ interface Props {
   maxItems?: number
   showPlayButton?: boolean
   backgroundColor?: string
+  textColor?: string
+  subtitleColor?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   maxItems: 6,
   showPlayButton: true,
-  backgroundColor: 'bg-white'
+  backgroundColor: 'bg-white',
+  textColor: 'text-gray-900',
+  subtitleColor: 'text-gray-600'
 })
 
 const uiStore = useUIStore()
@@ -52,8 +56,8 @@ const navigateToMovie = (movieId: string) => {
         <div class="flex items-center gap-3">
           <div class="w-1 h-8 bg-orange-500 rounded"></div>
           <div>
-            <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
-            <p v-if="subtitle" class="text-gray-600">{{ subtitle }}</p>
+            <h2 :class="['text-2xl font-bold', textColor]">{{ title }}</h2>
+            <p v-if="subtitle" :class="[subtitleColor]">{{ subtitle }}</p>
           </div>
         </div>
         
@@ -118,7 +122,7 @@ const navigateToMovie = (movieId: string) => {
           </div>
           
           <!-- Movie Title -->
-          <h3 class="font-semibold text-gray-900 text-sm leading-tight group-hover:text-orange-500 transition-colors">
+          <h3 :class="['font-semibold text-sm leading-tight group-hover:text-orange-500 transition-colors', textColor]">
             {{ movie.title }}
           </h3>
           

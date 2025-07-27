@@ -3,6 +3,7 @@ import HomePage from '@/pages/HomePage.vue'
 import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
 import SearchPage from '@/pages/SearchPage.vue'
 import BrowseMoviesPage from '@/pages/BrowseMoviesPage.vue'
+import BrowseSeriesPage from '@/pages/BrowseSeriesPage.vue'
 import WriteReviewPage from '@/pages/WriteReviewPage.vue'
 import UserProfilePage from '@/pages/UserProfilePage.vue'
 import LoginPage from '@/pages/LoginPage.vue'
@@ -43,6 +44,14 @@ const router = createRouter({
       component: BrowseMoviesPage,
       meta: {
         title: 'Browse Movies - LemonNPie'
+      }
+    },
+    {
+      path: '/series',
+      name: 'series',
+      component: BrowseSeriesPage,
+      meta: {
+        title: 'Browse Series - LemonNPie'
       }
     },
     {

@@ -91,7 +91,7 @@ const handleLogout = () => {
               v-model="searchQuery"
               type="text" 
               placeholder="Search for movies, TV shows and people..."
-              class="w-full bg-gray-800 text-white placeholder-gray-400 pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-all"
+              class="w-80 bg-gray-800 text-white placeholder-gray-400 pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-all"
               @keyup.enter="handleSearch"
             />
           </div>

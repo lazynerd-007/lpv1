@@ -107,7 +107,7 @@ const getMovieTypeBadge = (movie: Movie) => {
   <section class="py-8">
     <div class="container mx-auto px-4">
       <!-- Loading State -->
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         <div 
           v-for="i in itemsPerPage" 
           :key="i" 
@@ -123,7 +123,7 @@ const getMovieTypeBadge = (movie: Movie) => {
       </div>
 
       <!-- Movies Grid -->
-      <div v-else-if="paginatedMovies.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div v-else-if="paginatedMovies.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
         <div 
           v-for="movie in paginatedMovies" 
           :key="movie.id"
@@ -198,32 +198,11 @@ const getMovieTypeBadge = (movie: Movie) => {
             
             <div class="flex items-center justify-between text-xs text-gray-600 mt-2">
               <span>{{ movie.year }}</span>
-              <span class="flex items-center gap-1">
-                <Eye class="w-3 h-3" />
-                {{ movie.reviewCount || 0 }} reviews
-              </span>
             </div>
             
-            <div class="flex flex-wrap gap-1 mt-2">
-              <span 
-                v-for="genre in movie.genre.slice(0, 2)" 
-                :key="genre"
-                class="border border-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs"
-              >
-                {{ genre }}
-              </span>
-              <span 
-                v-if="movie.genre.length > 2"
-                class="border border-gray-300 text-gray-600 px-2 py-1 rounded-full text-xs"
-              >
-                +{{ movie.genre.length - 2 }}
-              </span>
-            </div>
+
             
-            <!-- Production State -->
-            <div v-if="movie.productionState" class="mt-2">
-              <span class="text-xs text-gray-500">{{ movie.productionState }}</span>
-            </div>
+
           </div>
         </div>
       </div>

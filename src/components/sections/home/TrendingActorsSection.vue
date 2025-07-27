@@ -102,12 +102,12 @@ const scrollRight = () => {
         <div 
           v-for="actor in actors" 
           :key="actor.id"
-          class="flex-shrink-0 text-center cursor-pointer group"
+          class="flex-shrink-0 text-center cursor-pointer group w-44"
           style="scroll-snap-align: start;"
         >
           <!-- Actor Profile Image -->
           <div class="relative mb-3">
-            <div class="w-32 h-32 rounded-full overflow-hidden bg-gray-200 mx-auto group-hover:scale-105 transition-transform duration-300">
+            <div class="w-40 h-40 rounded-full overflow-hidden bg-gray-200 mx-auto group-hover:scale-105 transition-transform duration-300">
               <img 
                 :src="actor.profileImage" 
                 :alt="actor.name"
@@ -119,11 +119,11 @@ const scrollRight = () => {
           
           <!-- Actor Info -->
           <div class="space-y-1">
-            <h3 class="font-semibold text-gray-900 text-sm group-hover:text-orange-500 transition-colors duration-200">
+            <h3 class="font-semibold text-gray-900 text-base group-hover:text-orange-500 transition-colors duration-200">
               {{ actor.name }}
             </h3>
             <p class="text-gray-500 text-sm">
-              {{ actor.age }}
+              Age {{ actor.age }}
             </p>
           </div>
         </div>

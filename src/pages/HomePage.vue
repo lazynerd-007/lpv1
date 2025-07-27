@@ -30,7 +30,9 @@ onMounted(async () => {
       subtitle="Latest Nollywood releases in cinemas"
       :movies="movieStore.trendingMovies"
       :max-items="8"
-      background-color="bg-base-100"
+      background-color="bg-gray-900"
+      text-color="text-white"
+      subtitle-color="text-gray-300"
     />
 
     <!-- Releasing Soon Section -->
@@ -39,11 +41,11 @@ onMounted(async () => {
     <!-- Trending Actors Section -->
     <TrendingActorsSection />
 
-    <!-- Trending TV Shows Section -->
+    <!-- Trending Movies Section -->
     <MovieCarousel 
-      title="Trending TV Shows"
-      subtitle="Popular Nollywood series and shows"
-      :movies="movieStore.trendingMovies.slice(0, 8)"
+      title="Trending Movies"
+      subtitle="Most popular Nollywood films right now"
+      :movies="movieStore.movies.slice(0, 8)"
       :max-items="8"
       background-color="bg-gray-50"
     />
