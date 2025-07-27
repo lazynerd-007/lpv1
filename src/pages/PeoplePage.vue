@@ -24,12 +24,14 @@
           </div>
           
           <!-- View Toggle -->
-          <div class="flex items-center gap-2">
+          <div class="flex border border-gray-300 rounded-lg overflow-hidden">
             <button 
               @click="viewMode = 'grid'"
               :class="[
-                'p-2 rounded-lg transition-colors',
-                viewMode === 'grid' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+                'px-3 py-2 transition-colors',
+                viewMode === 'grid' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
               ]"
             >
               <Grid class="w-4 h-4" />
@@ -37,8 +39,10 @@
             <button 
               @click="viewMode = 'list'"
               :class="[
-                'p-2 rounded-lg transition-colors',
-                viewMode === 'list' ? 'bg-orange-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-100'
+                'px-3 py-2 transition-colors border-l border-gray-300',
+                viewMode === 'list' 
+                  ? 'bg-gray-900 text-white' 
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
               ]"
             >
               <List class="w-4 h-4" />
@@ -70,8 +74,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { Filter, Grid, List } from 'lucide-vue-next'
-import ActorsGrid from '@/components/sections/people/ActorsGrid.vue'
-import { useActorsStore } from '@/stores/actorsStore'
+import ActorsGrid from '../components/sections/people/ActorsGrid.vue'
+import { useActorsStore } from '../stores/actorsStore'
 
 const actorsStore = useActorsStore()
 const sortBy = ref('popularity')

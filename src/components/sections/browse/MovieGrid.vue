@@ -104,26 +104,25 @@ const getMovieTypeBadge = (movie: Movie) => {
 </script>
 
 <template>
-  <section class="py-8">
-    <div class="container mx-auto px-4">
-      <!-- Loading State -->
-      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-        <div 
-          v-for="i in itemsPerPage" 
-          :key="i" 
-          class="bg-white rounded-lg shadow-md animate-pulse border border-gray-200"
-        >
-          <div class="bg-gray-300 h-64 rounded-t-lg"></div>
-          <div class="p-4">
-            <div class="bg-gray-300 h-4 rounded mb-2"></div>
-            <div class="bg-gray-300 h-3 rounded w-3/4 mb-2"></div>
-            <div class="bg-gray-300 h-3 rounded w-1/2"></div>
-          </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+    <!-- Loading State -->
+    <template v-if="loading">
+      <div 
+        v-for="i in itemsPerPage" 
+        :key="i" 
+        class="bg-white rounded-lg shadow-md animate-pulse border border-gray-200"
+      >
+        <div class="bg-gray-300 h-64 rounded-t-lg"></div>
+        <div class="p-4">
+          <div class="bg-gray-300 h-4 rounded mb-2"></div>
+          <div class="bg-gray-300 h-3 rounded w-3/4 mb-2"></div>
+          <div class="bg-gray-300 h-3 rounded w-1/2"></div>
         </div>
       </div>
+    </template>
 
-      <!-- Movies Grid -->
-      <div v-else-if="paginatedMovies.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+    <!-- Movies Grid -->
+    <template v-else-if="paginatedMovies.length > 0">
         <div 
           v-for="movie in paginatedMovies" 
           :key="movie.id"
@@ -205,77 +204,76 @@ const getMovieTypeBadge = (movie: Movie) => {
 
           </div>
         </div>
-      </div>
+    </template>
 
-      <!-- Empty State -->
-      <div v-else class="text-center py-12">
-        <div class="text-6xl mb-4">🎬</div>
-        <h3 class="text-xl font-bold mb-2 text-gray-900">No movies found</h3>
-        <p class="text-gray-600 mb-4">Try adjusting your search criteria or filters</p>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="showPagination && totalPages > 1 && !loading" class="flex justify-center mt-8">
-        <div class="flex gap-2">
-          <button 
-            @click="onPageChange(currentPage - 1)"
-            :disabled="currentPage === 1"
-            :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors border',
-              currentPage === 1
-                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            ]"
-          >
-            Previous
-          </button>
-          
-          <button 
-            v-for="page in Math.min(totalPages, 5)" 
-            :key="page"
-            @click="onPageChange(page)"
-            :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors border',
-              page === currentPage
-                ? 'bg-orange-500 text-white border-orange-500'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            ]"
-          >
-            {{ page }}
-          </button>
-          
-          <button 
-            v-if="totalPages > 5"
-            class="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
-            disabled
-          >
-            ...
-          </button>
-          
-          <button 
-            @click="onPageChange(currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            :class="[
-              'px-4 py-2 rounded-lg font-medium transition-colors border',
-              currentPage === totalPages
-                ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-                : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-            ]"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-      
-      <!-- Results Summary -->
-      <div v-if="!loading" class="text-center mt-4 text-sm text-gray-600">
-        Showing {{ paginatedMovies.length }} of {{ movies.length }} movies
-        <span v-if="showPagination && totalPages > 1">
-          (Page {{ currentPage }} of {{ totalPages }})
-        </span>
-      </div>
+    <!-- Empty State -->
+    <div v-else class="col-span-full text-center py-12">
+      <div class="text-6xl mb-4">🎬</div>
+      <h3 class="text-xl font-bold mb-2 text-gray-900">No movies found</h3>
+      <p class="text-gray-600 mb-4">Try adjusting your search criteria or filters</p>
     </div>
-  </section>
+  </div>
+
+  <!-- Pagination -->
+  <div v-if="showPagination && totalPages > 1 && !loading" class="flex justify-center mt-8">
+    <div class="flex gap-2">
+      <button 
+        @click="onPageChange(currentPage - 1)"
+        :disabled="currentPage === 1"
+        :class="[
+          'px-4 py-2 rounded-lg font-medium transition-colors border',
+          currentPage === 1
+            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        ]"
+      >
+        Previous
+      </button>
+      
+      <button 
+        v-for="page in Math.min(totalPages, 5)" 
+        :key="page"
+        @click="onPageChange(page)"
+        :class="[
+          'px-4 py-2 rounded-lg font-medium transition-colors border',
+          page === currentPage
+            ? 'bg-orange-500 text-white border-orange-500'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        ]"
+      >
+        {{ page }}
+      </button>
+      
+      <button 
+        v-if="totalPages > 5"
+        class="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+        disabled
+      >
+        ...
+      </button>
+      
+      <button 
+        @click="onPageChange(currentPage + 1)"
+        :disabled="currentPage === totalPages"
+        :class="[
+          'px-4 py-2 rounded-lg font-medium transition-colors border',
+          currentPage === totalPages
+            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+        ]"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+  
+  <!-- Results Summary -->
+  <div v-if="!loading" class="text-center mt-4 text-sm text-gray-600">
+    Showing {{ paginatedMovies.length }} of {{ movies.length }} movies
+    <span v-if="showPagination && totalPages > 1">
+      (Page {{ currentPage }} of {{ totalPages }})
+    </span>
+  </div>
 </template>
 
 <style scoped>

@@ -82,7 +82,7 @@
             <div class="flex flex-col md:flex-row gap-6">
               <div class="flex-shrink-0">
                 <img 
-                  :src="movie.poster" 
+                  :src="movie.posterUrl" 
                   :alt="movie.title" 
                   class="w-24 h-36 object-cover rounded-lg"
                 />
@@ -92,7 +92,7 @@
                   <h3 class="text-xl font-bold text-gray-900">{{ movie.title }}</h3>
                   <div class="flex items-center gap-1">
                     <span class="text-orange-500 font-semibold">{{ movie.lemonPieRating.toFixed(1) }}</span>
-                    <span class="text-gray-500">/5</span>
+                    <span class="text-gray-500">/10</span>
                   </div>
                 </div>
                 <p class="text-gray-600 mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
@@ -154,11 +154,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, onUnmounted, nextTick } from 'vue'
-import { Filter, Search, RotateCcw, Grid, List, ChevronDown } from 'lucide-vue-next'
+import { Grid, List, ChevronDown } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useSearchStore } from '@/stores/searchStore'
 import { useUIStore } from '@/stores/uiStore'
-import MovieCard from '@/components/ui/MovieCard.vue'
+
 import SearchFilters from '@/components/sections/search/SearchFilters.vue'
 import MovieGrid from '@/components/sections/browse/MovieGrid.vue'
 
