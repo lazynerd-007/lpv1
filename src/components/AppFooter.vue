@@ -63,36 +63,7 @@ const currentYear = new Date().getFullYear();
   <footer class="bg-deep-navy text-cream-white">
     <!-- Main Footer Content -->
     <div class="container mx-auto px-4 py-12">
-      <div class="flex justify-center">
-        <!-- Brand Section -->
-        <div class="max-w-md text-center">
-          <div class="mb-6">
-            <h3 class="text-2xl font-bold mb-2">
-              <span class="text-lemon-yellow">🍋</span>
-              LemonNPie
-              <span class="text-nollywood-gold">🥧</span>
-            </h3>
-            <p class="text-cream-white/80 text-sm leading-relaxed">
-              Celebrating the best and exposing the worst of Nollywood cinema. 
-              Your trusted guide to Nigerian film excellence.
-            </p>
-          </div>
-          
-          <!-- Contact Info -->
-          <div class="space-y-2 text-sm">
-            <div class="flex items-center justify-center gap-2">
-              <MapPin class="w-4 h-4 text-nollywood-gold" />
-              <span>Lagos, Nigeria</span>
-            </div>
-            <div class="flex items-center justify-center gap-2">
-              <Mail class="w-4 h-4 text-nollywood-gold" />
-              <a href="mailto:hello@lemonnpie.com" class="hover:text-nollywood-gold transition-colors">
-                hello@lemonnpie.com
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+
       
       <!-- Newsletter Signup -->
       <div class="mt-12 pt-8 border-t border-cream-white/20">
