@@ -21,7 +21,7 @@ const uiStore = useUIStore()
 const movieId = computed(() => props.id || route.params.id as string)
 const movie = computed(() => movieStore.movies.find(m => m.id === movieId.value))
 const reviews = computed(() => movieStore.reviews.filter(r => r.movieId === movieId.value))
-const activeTab = ref('images')
+const activeTab = ref('reviews')
 
 const averageRating = computed(() => {
   if (!reviews.value.length) return movie.value?.lemonPieRating || 0
@@ -265,6 +265,26 @@ onMounted(async () => {
             <!-- Plot Summary -->
             <p class="text-gray-300 leading-relaxed mb-6">{{ movie.plotSummary }}</p>
             
+            <!-- Director and Writers -->
+            <div class="space-y-2 text-sm mb-8">
+              <div class="flex">
+                <span class="text-gray-400 w-20">Director</span>
+                <span class="text-blue-400 hover:text-blue-300 cursor-pointer">{{ movie.director }}</span>
+              </div>
+              <div class="flex">
+                <span class="text-gray-400 w-20">Writers</span>
+                <span class="text-blue-400 hover:text-blue-300 cursor-pointer">{{ movie.director }}</span>
+              </div>
+              <div class="flex">
+                <span class="text-gray-400 w-20">Stars</span>
+                <div class="flex flex-wrap gap-1">
+                  <span v-for="(actor, index) in movie.cast.slice(0, 3)" :key="actor" class="text-blue-400 hover:text-blue-300 cursor-pointer">
+                    {{ actor }}<span v-if="index < movie.cast.slice(0, 3).length - 1">, </span>
+                  </span>
+                </div>
+              </div>
+            </div>
+            
             <!-- Hero Image Gallery -->
             <div class="mb-8">
               <h3 class="text-xl font-semibold mb-4">Movie Stills</h3>
@@ -304,23 +324,11 @@ onMounted(async () => {
               </div>
             </div>
             
-            <!-- Director and Writers -->
-            <div class="space-y-2 text-sm mb-8">
-              <div class="flex">
-                <span class="text-gray-400 w-20">Director</span>
-                <span class="text-blue-400 hover:text-blue-300 cursor-pointer">{{ movie.director }}</span>
-              </div>
-              <div class="flex">
-                <span class="text-gray-400 w-20">Writers</span>
-                <span class="text-blue-400 hover:text-blue-300 cursor-pointer">{{ movie.director }}</span>
-              </div>
-              <div class="flex">
-                <span class="text-gray-400 w-20">Stars</span>
-                <div class="flex flex-wrap gap-1">
-                  <span v-for="(actor, index) in movie.cast.slice(0, 3)" :key="actor" class="text-blue-400 hover:text-blue-300 cursor-pointer">
-                    {{ actor }}<span v-if="index < movie.cast.slice(0, 3).length - 1">, </span>
-                  </span>
-                </div>
+            <!-- Additional Images Section -->
+            <div class="mb-8">
+              <h3 class="text-xl font-semibold mb-4">Gallery</h3>
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <img v-for="i in 8" :key="i" :src="`https://via.placeholder.com/200x300`" :alt="`Gallery Image ${i}`" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity" />
               </div>
             </div>
           </div>
@@ -328,15 +336,6 @@ onMounted(async () => {
           <!-- Content Tabs -->
           <div>
             <div class="flex border-b border-gray-700 mb-6">
-              <button 
-                @click="activeTab = 'images'"
-                :class="[
-                  'px-4 py-2 font-medium transition-colors border-b-2 text-sm',
-                  activeTab === 'images'
-                    ? 'border-orange-500 text-orange-500'
-                    : 'border-transparent text-gray-400 hover:text-white'
-                ]"
-              >Images</button>
               <button 
                 @click="activeTab = 'reviews'"
                 :class="[
@@ -348,12 +347,61 @@ onMounted(async () => {
               >
                 Reviews ({{ reviews.length }})
               </button>
+              <button 
+                @click="activeTab = 'critics'"
+                :class="[
+                  'px-4 py-2 font-medium transition-colors border-b-2 text-sm',
+                  activeTab === 'critics'
+                    ? 'border-orange-500 text-orange-500'
+                    : 'border-transparent text-gray-400 hover:text-white'
+                ]"
+              >
+                Critics
+              </button>
             </div>
             
-            <!-- Images Tab -->
-            <div v-if="activeTab === 'images'" class="space-y-4">
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <img v-for="i in 8" :key="i" :src="`https://via.placeholder.com/200x300`" :alt="`Image ${i}`" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity" />
+            <!-- Critics Tab -->
+            <div v-if="activeTab === 'critics'" class="space-y-6">
+              <div class="bg-gray-800 rounded-lg p-6">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                    <User class="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="font-semibold">The Guardian</span>
+                      <span class="text-gray-400 text-sm">2 days ago</span>
+                    </div>
+                    <div class="flex items-center gap-1 mb-3">
+                      <Star v-for="i in 4" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star class="w-4 h-4 text-gray-400" />
+                      <span class="text-sm text-gray-400 ml-2">8 / 10</span>
+                    </div>
+                    <h4 class="font-semibold mb-2">A Masterpiece of Nigerian Cinema</h4>
+                    <p class="text-gray-300 leading-relaxed">This film represents a significant leap forward for Nollywood, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-gray-800 rounded-lg p-6">
+                <div class="flex items-start gap-4">
+                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
+                    <User class="w-6 h-6 text-gray-400" />
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                      <span class="font-semibold">Variety</span>
+                      <span class="text-gray-400 text-sm">1 week ago</span>
+                    </div>
+                    <div class="flex items-center gap-1 mb-3">
+                      <Star v-for="i in 4" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star class="w-4 h-4 text-gray-400" />
+                      <span class="text-sm text-gray-400 ml-2">7.5 / 10</span>
+                    </div>
+                    <h4 class="font-semibold mb-2">Impressive Technical Achievement</h4>
+                    <p class="text-gray-300 leading-relaxed">While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.</p>
+                  </div>
+                </div>
               </div>
             </div>
             
