@@ -34,6 +34,13 @@ const upcomingMovies = ref([
     releaseDate: '8/6/2025 • PG',
     poster: 'https://images.unsplash.com/photo-1594736797933-d0401ba2fe65?w=400&h=600&fit=crop&crop=center',
     trailerUrl: '#'
+  },
+  {
+    id: 'upcoming-5',
+    title: 'The Last Dance',
+    releaseDate: '9/15/2025 • PG-13',
+    poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=400&h=600&fit=crop&crop=center',
+    trailerUrl: '#'
   }
 ])
 

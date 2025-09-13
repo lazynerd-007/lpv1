@@ -9,6 +9,19 @@
         </div>
         
         <div class="flex items-center gap-4">
+          <!-- Genre Filter Dropdown -->
+          <div class="relative">
+            <select 
+              v-model="selectedGenre" 
+              @change="handleGenreChange"
+              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="">All Genres</option>
+              <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+            </select>
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+          
           <!-- Sort Dropdown -->
           <div class="relative">
             <select 
@@ -24,8 +37,6 @@
             </select>
             <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
-          
-
           
           <!-- View Toggle -->
           <div class="flex border border-gray-300 rounded-lg overflow-hidden">
@@ -171,14 +182,27 @@ const viewMode = ref('grid')
 const itemsPerPage = 12
 const showFilters = ref(false)
 const sortBy = ref('popularity')
+const selectedGenre = ref('')
 const displayedMoviesCount = ref(itemsPerPage)
 const isLoading = ref(false)
 const hasMoreMovies = ref(true)
 
+// Get all unique genres from movies
+const genres = computed(() => {
+  const uniqueGenres = new Set<string>()
+  movieStore.movies.forEach(movie => {
+    movie.genre.forEach(g => uniqueGenres.add(g))
+  })
+  return Array.from(uniqueGenres).sort()
+})
+
 // Computed properties
 const filteredMovies = computed(() => {
+  // Use the selectedGenre value if it's set, otherwise use the searchStore filter
+  const genreFilter = selectedGenre.value || searchStore.filters.genre
+  
   return movieStore.filterMovies({
-    genre: searchStore.filters.genre,
+    genre: genreFilter,
     year: searchStore.filters.year,
     rating: searchStore.filters.rating,
     language: searchStore.filters.language,
@@ -197,6 +221,7 @@ const canLoadMore = computed(() => {
 // Methods
 const clearFilters = () => {
   searchStore.clearFilters()
+  selectedGenre.value = ''
   displayedMoviesCount.value = itemsPerPage
   hasMoreMovies.value = true
 }
@@ -208,6 +233,13 @@ const handleSearch = (query: string) => {
 }
 
 const handleFilterChange = () => {
+  displayedMoviesCount.value = itemsPerPage
+  hasMoreMovies.value = true
+}
+
+const handleGenreChange = () => {
+  // Update the search store with the selected genre
+  searchStore.filters.genre = selectedGenre.value
   displayedMoviesCount.value = itemsPerPage
   hasMoreMovies.value = true
 }
@@ -247,6 +279,10 @@ const handleScroll = () => {
 watch(
   () => [searchStore.searchState.query, searchStore.filters],
   () => {
+    // Sync selectedGenre with searchStore.filters.genre
+    if (searchStore.filters.genre !== selectedGenre.value) {
+      selectedGenre.value = searchStore.filters.genre || ''
+    }
     displayedMoviesCount.value = itemsPerPage
     hasMoreMovies.value = true
   },

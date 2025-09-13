@@ -3,9 +3,7 @@
     <div class="w-full max-w-md">
       <!-- Logo -->
       <div class="text-center mb-8">
-        <div class="flex items-center justify-center gap-2 text-2xl font-bold mb-2">
-          <span class="text-white">MTDB</span>
-        </div>
+        <LemonPieLogo size="lg" />
       </div>
 
       <!-- Login Form -->
@@ -64,7 +62,7 @@
           <!-- Submit Button -->
           <button 
             type="submit" 
-            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:outline-none"
             :disabled="isLoading"
           >
             <span v-if="isLoading" class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
@@ -125,6 +123,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import LemonPieLogo from '@/components/LemonPieLogo.vue'
 
 const router = useRouter()
 

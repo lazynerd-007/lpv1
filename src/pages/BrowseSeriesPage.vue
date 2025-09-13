@@ -9,6 +9,19 @@
         </div>
         
         <div class="flex items-center gap-4">
+          <!-- Genre Filter Dropdown -->
+          <div class="relative">
+            <select 
+              v-model="selectedGenre" 
+              @change="handleGenreChange"
+              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            >
+              <option value="">All Genres</option>
+              <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
+            </select>
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+          
           <!-- Sort Dropdown -->
           <div class="relative">
             <select 
@@ -176,14 +189,27 @@ const viewMode = ref('grid')
 const itemsPerPage = 12
 const showFilters = ref(false)
 const sortBy = ref('popularity')
+const selectedGenre = ref('')
 const displayedSeriesCount = ref(itemsPerPage)
 const isLoading = ref(false)
 const hasMoreSeries = ref(true)
 
+// Extract unique genres from all series
+const genres = computed(() => {
+  const genreSet = new Set<string>()
+  seriesStore.series.forEach(show => {
+    show.genre.forEach(g => genreSet.add(g))
+  })
+  return Array.from(genreSet).sort()
+})
+
 // Computed properties
 const filteredSeries = computed(() => {
+  // Determine which genre filter to use
+  const genreFilter = selectedGenre.value || searchStore.filters.genre
+  
   return seriesStore.filterSeries({
-    genre: searchStore.filters.genre,
+    genre: genreFilter,
     year: searchStore.filters.year,
     rating: searchStore.filters.rating,
     language: searchStore.filters.language,
@@ -202,6 +228,7 @@ const canLoadMore = computed(() => {
 // Methods
 const clearFilters = () => {
   searchStore.clearFilters()
+  selectedGenre.value = ''
   displayedSeriesCount.value = itemsPerPage
   hasMoreSeries.value = true
 }
@@ -213,6 +240,12 @@ const handleSearch = (query: string) => {
 }
 
 const handleFilterChange = () => {
+  displayedSeriesCount.value = itemsPerPage
+  hasMoreSeries.value = true
+}
+
+const handleGenreChange = () => {
+  searchStore.updateFilter('genre', selectedGenre.value)
   displayedSeriesCount.value = itemsPerPage
   hasMoreSeries.value = true
 }
@@ -264,9 +297,14 @@ const getStatusColor = (status: string) => {
 // Watch for filter changes to reset displayed count
 watch(
   () => [searchStore.searchState.query, searchStore.filters],
-  () => {
+  (newValue) => {
     displayedSeriesCount.value = itemsPerPage
     hasMoreSeries.value = true
+    
+    // Sync selectedGenre with searchStore.filters.genre
+    if (selectedGenre.value !== searchStore.filters.genre) {
+      selectedGenre.value = searchStore.filters.genre || ''
+    }
   },
   { deep: true }
 )

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { Search, Menu, X, User, Heart, Star, Film } from 'lucide-vue-next';
 
 const router = useRouter();
-const route = useRoute();
 
 // State
 const isMenuOpen = ref(false);
@@ -34,10 +33,7 @@ const user = ref({
   isVerifiedCritic: false
 });
 
-// Computed
-const isCurrentRoute = (path: string) => {
-  return route.path === path;
-};
+// No longer need isCurrentRoute function since we removed active route styling
 
 // Methods
 const toggleMenu = () => {
@@ -82,34 +78,31 @@ const handleLogout = () => {
           <span class="text-orange-400">🥧</span>
         </router-link>
         
-        <!-- Search Bar (Desktop) -->
-        <div class="hidden md:flex flex-1 max-w-2xl mx-8">
-          <div class="relative w-full">
+        <div class="hidden md:flex flex-1 items-center">
+          <!-- Search Bar (Desktop) -->
+          <div class="relative">
             <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input 
               v-model="searchQuery"
               type="text" 
               placeholder="Search for movies, TV shows and people..."
-              class="w-80 bg-gray-800 text-white placeholder-gray-400 pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-all"
+              class="w-[23.04rem] bg-gray-800 text-white placeholder-gray-400 pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:border-orange-400 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-all"
               @keyup.enter="handleSearch"
             />
           </div>
+          
+          <!-- Desktop Navigation -->
+          <nav class="hidden lg:flex items-center gap-6 ml-4">
+            <router-link 
+              v-for="item in navItems" 
+              :key="item.name"
+              :to="item.path"
+              class="text-gray-300 hover:text-white transition-colors font-medium"
+            >
+              {{ item.name }}
+            </router-link>
+          </nav>
         </div>
-        
-        <!-- Desktop Navigation -->
-        <nav class="hidden lg:flex items-center gap-6">
-          <router-link 
-            v-for="item in navItems" 
-            :key="item.name"
-            :to="item.path"
-            :class="[
-              'text-gray-300 hover:text-white transition-colors font-medium',
-              isCurrentRoute(item.path) ? 'text-orange-400' : ''
-            ]"
-          >
-            {{ item.name }}
-          </router-link>
-        </nav>
         
         <!-- User Actions -->
         <div class="flex items-center gap-4">
@@ -136,10 +129,12 @@ const handleLogout = () => {
               Register
             </button>
           </div>
-          
-          <!-- Mobile Menu Button -->
+        </div>
+        
+        <!-- Mobile Menu Button -->
+        <div class="lg:hidden ml-4 pl-4 border-l border-gray-700">
           <button 
-            class="lg:hidden text-gray-300 hover:text-white transition-colors"
+            class="text-gray-300 hover:text-white transition-colors"
             @click="toggleMenu"
           >
             <Menu v-if="!isMenuOpen" class="w-6 h-6" />
@@ -175,10 +170,7 @@ const handleLogout = () => {
             v-for="item in navItems" 
             :key="item.name"
             :to="item.path"
-            :class="[
-              'block px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors',
-              isCurrentRoute(item.path) ? 'text-orange-400 bg-gray-800' : ''
-            ]"
+            class="block px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-800 transition-colors"
             @click="isMenuOpen = false"
           >
             {{ item.name }}

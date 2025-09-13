@@ -1,11 +1,18 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, computed } from 'vue';
+import { useRoute } from 'vue-router';
 import AppHeader from '@/components/AppHeader.vue';
 import AppFooter from '@/components/AppFooter.vue';
 import { useTheme } from '@/composables/useTheme';
 
 // Initialize theme
 const { initTheme } = useTheme();
+const route = useRoute();
+
+// Computed property to check if current page is login, register, or forgot-password
+const isAuthPage = computed(() => {
+  return route.path === '/login' || route.path === '/register' || route.path === '/forgot-password';
+});
 
 onMounted(() => {
   initTheme();
@@ -15,16 +22,16 @@ onMounted(() => {
 
 <template>
   <div id="app" class="min-h-screen flex flex-col">
-    <!-- Header -->
-    <AppHeader />
+    <!-- Header (hidden on login, register, and forgot-password pages) -->
+    <AppHeader v-if="!isAuthPage" />
     
     <!-- Main Content -->
     <main class="flex-1">
       <router-view />
     </main>
     
-    <!-- Footer -->
-    <AppFooter />
+    <!-- Footer (hidden on login and register pages) -->
+    <AppFooter v-if="!isAuthPage" />
   </div>
 </template>
 

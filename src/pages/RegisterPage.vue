@@ -1,11 +1,8 @@
 <template>
   <div class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-    <!-- MTDB Logo -->
-    <div class="absolute top-8 left-1/2 transform -translate-x-1/2">
-      <div class="flex items-center space-x-2">
-        <div class="w-8 h-8 bg-orange-500 rounded transform rotate-45"></div>
-        <span class="text-white text-2xl font-bold">MTDB</span>
-      </div>
+    <!-- LemonNPie Logo -->
+    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
+      <LemonPieLogo size="lg" />
     </div>
 
     <div class="w-full max-w-md">
@@ -63,7 +60,7 @@
           <!-- Submit Button -->
           <button
             type="submit"
-            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mt-6"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200 mt-6 focus:outline-none"
             :disabled="isLoading"
           >
             <span v-if="isLoading" class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
@@ -119,6 +116,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import LemonPieLogo from '@/components/LemonPieLogo.vue'
 
 const router = useRouter()
 
