@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus, ChevronDown } from 'lucide-vue-next'
+import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus, ChevronDown, Check } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
+import { useActorsStore } from '@/stores/actorsStore'
 import ReviewCard from '@/components/ui/ReviewCard.vue'
 
 interface Props {
@@ -99,6 +100,28 @@ const isInWatchlist = computed(() => {
   return userStore.isInWatchlist(movieId.value)
 })
 
+// Cast data with images
+const castWithImages = computed(() => {
+  if (!movie.value?.cast) return []
+  
+  // Map cast names to objects with images and roles
+  return movie.value.cast.map((castMember, index) => {
+    // Split the cast member name if it contains a role
+    const parts = castMember.split(' as ')
+    const name = parts[0]
+    const role = parts.length > 1 ? parts[1] : movie.value?.title ? `Character in ${movie.value.title}` : 'Character'
+    
+    // Generate image URL based on actor name
+    const imageUrl = `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(name + ' actor portrait')}&image_size=square_1_1`
+    
+    return {
+      name,
+      role,
+      imageUrl
+    }
+  })
+})
+
 const isInFavorites = computed(() => {
   return userStore.isInFavorites(movieId.value)
 })
@@ -158,6 +181,27 @@ const shareMovie = async () => {
   } else {
     // Fallback to copying to clipboard
     navigator.clipboard.writeText(window.location.href)
+  }
+}
+
+const navigateToActor = (actorName: string) => {
+  // Find actor by name in the actors store
+  const actorStore = useActorsStore()
+  const actor = actorStore.actors.find(a => a.name === actorName)
+  
+  if (actor) {
+    router.push({ name: 'person-details', params: { id: actor.id } })
+  } else {
+    // If actor not found, navigate to people page with search query
+    router.push({ name: 'people', query: { search: actorName } })
+  }
+}
+
+const viewAllCast = () => {
+  if (movie.value) {
+    // Navigate to a dedicated cast page or open a modal with all cast members
+    // For now, we'll navigate to the people page with the movie title as search query
+    router.push({ name: 'people', query: { movie: movie.value.title } })
   }
 }
 
@@ -239,20 +283,28 @@ onMounted(async () => {
         <!-- Left Column - Movie Poster -->
         <div class="lg:col-span-1">
           <div class="sticky top-8">
+            <!-- Movie Poster (Prominently Displayed) -->
+          <div class="relative overflow-hidden rounded-lg shadow-2xl border-2 border-orange-500/20 hover:border-orange-500/40 transition-colors duration-300">
             <img
               :src="movie.poster"
               :alt="movie.title"
-              class="w-full rounded-lg shadow-2xl"
+              class="w-full object-cover rounded-lg transform hover:scale-105 transition-transform duration-300"
             />
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent h-24"></div>
+            <div class="absolute top-0 right-0 m-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded shadow-lg">
+              {{ movie.lemonPieRating.toFixed(1) }}/10
+            </div>
+          </div>
             
             <!-- Action Buttons -->
             <div class="mt-6 space-y-3">
               <button
-                @click="playTrailer"
+                @click="toggleWatchlist"
                 class="w-full bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold flex items-center justify-center gap-2 transition-colors"
               >
-                <Play class="w-5 h-5" />
-                Add to watchlist
+                <Plus v-if="!isInWatchlist" class="w-5 h-5" />
+                <Check v-else class="w-5 h-5" />
+                {{ isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist' }}
               </button>
               <button
                 @click="shareMovie"
@@ -535,6 +587,39 @@ onMounted(async () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+          
+          <!-- Cast Section -->
+          <div class="mt-12">
+            <h3 class="text-xl font-semibold mb-6 flex items-center">
+              <span class="mr-2">Cast</span>
+              <span class="text-sm text-gray-400 font-normal">{{ movie?.cast?.length || 0 }} actors</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div 
+                v-for="(actor, index) in castWithImages.slice(0, 10)" 
+                :key="index" 
+                class="flex items-center gap-4 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800 transition-colors border-l-4 border-orange-500/70 cursor-pointer"
+                @click="navigateToActor(actor.name)"
+              >
+                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 flex-shrink-0 shadow-lg group">
+                  <img :src="actor.imageUrl" :alt="actor.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                </div>
+                <div class="flex-1">
+                  <h4 class="font-semibold text-lg">{{ actor.name }}</h4>
+                  <p class="text-gray-400 text-sm">{{ actor.role }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 flex justify-center">
+              <button 
+                @click="viewAllCast" 
+                class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+              >
+                <User class="w-5 h-5" />
+                <span>View All Cast & Crew</span>
+              </button>
             </div>
           </div>
         </div>
