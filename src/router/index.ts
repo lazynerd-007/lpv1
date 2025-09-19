@@ -15,6 +15,7 @@ import PersonDetailsPage from '@/pages/PersonDetailsPage.vue'
 import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage.vue'
 import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
 import ContactUsPage from '@/pages/ContactUsPage.vue'
+import MovieCastAndCrewPage from '@/pages/MovieCastAndCrewPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -75,6 +76,15 @@ const router = createRouter({
       props: true,
       meta: {
         title: 'Person Details - LemonNPie'
+      }
+    },
+    {
+      path: '/movie/:id/cast-crew',
+      name: 'movie-cast-crew',
+      component: MovieCastAndCrewPage,
+      props: true,
+      meta: {
+        title: 'Cast & Crew - LemonNPie'
       }
     },
     {

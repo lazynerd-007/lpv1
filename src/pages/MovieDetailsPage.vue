@@ -199,9 +199,8 @@ const navigateToActor = (actorName: string) => {
 
 const viewAllCast = () => {
   if (movie.value) {
-    // Navigate to a dedicated cast page or open a modal with all cast members
-    // For now, we'll navigate to the people page with the movie title as search query
-    router.push({ name: 'people', query: { movie: movie.value.title } })
+    // Navigate to the dedicated cast and crew page for this movie
+    router.push({ name: 'movie-cast-crew', params: { id: movieId.value } })
   }
 }
 
@@ -618,7 +617,7 @@ onMounted(async () => {
                 class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
               >
                 <User class="w-5 h-5" />
-                <span>View All Cast & Crew</span>
+                <span>View Complete Cast & Crew</span>
               </button>
             </div>
           </div>
