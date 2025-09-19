@@ -1,0 +1,16 @@
+/* Override default focus styles */
+:focus {
+  outline: none !important;
+}
+
+/* Add custom focus styles for keyboard navigation */
+:focus-visible {
+  outline: 2px solid #3ABFF8 !important; /* Use the info color from the theme */
+  outline-offset: 2px;
+}
+
+/* Remove yellow outline from buttons and links */
+button:focus, a:focus, input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}

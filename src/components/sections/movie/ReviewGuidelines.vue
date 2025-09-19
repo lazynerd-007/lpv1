@@ -1,5 +1,5 @@
 <template>
-  <div class="card bg-gradient-to-r from-gray-800 to-gray-700 shadow-lg mt-8">
+  <div class="card bg-gray-800 shadow-lg mt-8">
     <div class="card-body">
       <h3 class="card-title text-xl mb-4 text-yellow-400">
         <Info class="w-5 h-5" />

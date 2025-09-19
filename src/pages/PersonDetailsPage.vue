@@ -85,7 +85,7 @@
           </div>
           
           <!-- Known For Section -->
-          <div>
+          <div class="mb-8">
             <h2 class="text-xl font-bold text-white mb-6">Known for</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div 
@@ -109,6 +109,9 @@
               </div>
             </div>
           </div>
+          
+          <!-- Credits Section -->
+          <Credits :credits="actorCredits" />
         </div>
       </div>
     </div>
@@ -122,6 +125,7 @@ import { Share2, Star } from 'lucide-vue-next'
 import { useActorsStore } from '@/stores/actorsStore'
 import { useMovieStore } from '@/stores/movieStore'
 import type { Movie } from '@/data/mockMovies'
+import Credits from '@/components/Credits.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -162,6 +166,39 @@ const knownForMovies = computed(() => {
     criticRating: parseFloat((Math.random() * 3 + 7).toFixed(1)),
     reviewCount: Math.floor(Math.random() * 1000) + 100
   } as Movie))
+})
+
+// Generate actor credits based on their known works and additional mock data
+const actorCredits = computed(() => {
+  if (!actor.value) return []
+  
+  // Acting credits from known works
+  const baseCredits = actor.value.knownFor?.map((title, index) => ({
+    title,
+    role: index % 2 === 0 ? 'Lead Actor' : 'Supporting Role',
+    year: 2023 - index,
+    type: 'acting'
+  })) || []
+  
+  // Additional acting credits based on actor's movie count
+  const additionalActingCount = Math.min(Math.floor(actor.value.movieCount / 15), 3)
+  const additionalActingCredits = Array.from({ length: additionalActingCount }, (_, i) => ({
+    title: `${['The', 'A', ''][i % 3]} ${['Great', 'Amazing', 'Incredible', 'Mysterious', 'Secret'][i % 5]} ${['Adventure', 'Journey', 'Story', 'Mission', 'Case'][i % 5]}`,
+    role: ['Actor', 'Supporting Actor', 'Guest Star', 'Voice Actor', 'Cameo'][i % 5],
+    year: 2018 - i * 2,
+    type: 'acting'
+  }))
+  
+  // Production credits
+  const productionCreditsCount = Math.min(Math.floor(actor.value.movieCount / 20), 4)
+  const productionCredits = Array.from({ length: productionCreditsCount }, (_, i) => ({
+    title: `${['The', 'A', ''][(i + 1) % 3]} ${['Hidden', 'Lost', 'Forgotten', 'Untold', 'Secret'][(i + 2) % 5]} ${['Truth', 'Legacy', 'Chronicles', 'Mystery', 'Story'][(i + 3) % 5]}`,
+    role: ['Producer', 'Executive Producer', 'Director', 'Writer', 'Creator'][(i + 1) % 5],
+    year: 2020 - i * 3,
+    type: 'production'
+  }))
+  
+  return [...baseCredits, ...additionalActingCredits, ...productionCredits]
 })
 
 const getGender = (name: string): string => {

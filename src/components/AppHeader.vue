@@ -114,8 +114,8 @@ const handleLogout = () => {
             </button>
           </div>
           
-          <!-- Login/Register Buttons -->
-          <div v-else class="flex items-center gap-3">
+          <!-- Login/Register Buttons (Desktop only) -->
+          <div v-else class="hidden md:flex items-center gap-3">
             <button 
               class="text-gray-300 hover:text-white transition-colors font-medium"
               @click="handleLogin"

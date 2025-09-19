@@ -100,11 +100,11 @@ onMounted(() => {
 <style scoped>
 /* Custom range styling */
 .range::-webkit-slider-thumb {
-  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  background: #f59e0b;
 }
 
 .range::-moz-range-thumb {
-  background: linear-gradient(45deg, #fbbf24, #f59e0b);
+  background: #f59e0b;
   border: none;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50">
+  <div class="min-h-screen bg-yellow-50">
     <!-- Hero Section -->
-    <div class="hero min-h-96 bg-gradient-to-r from-yellow-400 to-orange-500">
+    <div class="hero min-h-96 bg-yellow-500">
       <div class="hero-content text-center">
         <div class="max-w-md">
           <h1 class="mb-5 text-5xl font-bold text-white">About LemonNPie</h1>
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Rating System Explanation -->
-      <div class="card bg-gradient-to-r from-yellow-100 to-orange-100 shadow-xl mt-12">
+      <div class="card bg-yellow-100 shadow-xl mt-12">
         <div class="card-body">
           <h2 class="card-title text-3xl mb-6 text-center text-orange-700">
             Understanding Our Lemon 🍋 & Pie 🥧 Rating System

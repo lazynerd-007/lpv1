@@ -42,8 +42,8 @@ const footerSections = {
     links: [
       { name: 'About Us', href: '/about' },
       { name: 'Contact', href: '/contact' },
-      { name: 'Privacy Policy', href: '/privacy' },
-      { name: 'Terms of Service', href: '/terms' },
+      { name: 'Privacy Policy', href: '/privacy-policy' },
+      { name: 'Terms of Service', href: '/terms-of-service' },
       { name: 'Advertise', href: '/advertise' }
     ]
   }
@@ -63,9 +63,22 @@ const currentYear = new Date().getFullYear();
   <footer class="bg-deep-navy text-cream-white">
     <!-- Main Footer Content -->
     <div class="container mx-auto px-4 py-12">
-
+      <!-- Footer Sections -->      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div v-for="(section, key) in footerSections" :key="key" class="footer-section">
+          <h4 class="font-semibold text-nollywood-gold mb-4">{{ section.title }}</h4>
+          <ul class="space-y-2">
+            <li v-for="link in section.links" :key="link.name">
+              <a :href="link.href" class="text-cream-white/80 hover:text-nollywood-gold transition-colors duration-200 text-sm">
+                {{ link.name }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
       
       <!-- Newsletter Signup -->
+      <div class="border-t border-cream-white/20 mt-10 pt-10"></div>
       <div class="mt-12 pt-8 border-t border-cream-white/20">
         <div class="max-w-md mx-auto text-center">
           <h4 class="font-semibold text-nollywood-gold mb-2">Stay Updated</h4>

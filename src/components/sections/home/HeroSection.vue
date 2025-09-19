@@ -24,12 +24,12 @@ const playTrailer = () => {
 
 <template>
   <section v-if="featuredMovie" class="relative h-[80vh] overflow-hidden">
-    <!-- Background Image with Gradient Overlay -->
+    <!-- Background Image with Solid Color Overlay -->
     <div 
       class="absolute inset-0 bg-cover bg-center bg-no-repeat"
       :style="{ backgroundImage: `url(${featuredMovie.posterUrl})` }"
     >
-      <div class="absolute inset-0 bg-gradient-to-r from-purple-900/90 via-pink-800/70 to-orange-600/60"></div>
+      <div class="absolute inset-0 bg-purple-900/80"></div>
     </div>
     
     <!-- Content -->

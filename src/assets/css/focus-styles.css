@@ -1,0 +1,15 @@
+/* Custom focus styles to remove yellow outline */
+:focus {
+  outline: none;
+}
+
+/* Add a subtle focus style that doesn't use yellow */
+:focus-visible {
+  outline: 2px solid #3B82F6; /* Blue outline instead of yellow */
+  outline-offset: 2px;
+}
+
+/* Remove focus styles for mouse users but keep them for keyboard navigation */
+:focus:not(:focus-visible) {
+  outline: none;
+}
