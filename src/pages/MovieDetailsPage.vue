@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus } from 'lucide-vue-next'
+import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus, ChevronDown } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -22,6 +22,62 @@ const movieId = computed(() => props.id || route.params.id as string)
 const movie = computed(() => movieStore.movies.find(m => m.id === movieId.value))
 const reviews = computed(() => movieStore.reviews.filter(r => r.movieId === movieId.value))
 const activeTab = ref('reviews')
+const showAllReviews = ref(false)
+const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
+const hasMoreReviews = computed(() => reviews.value.length > 5)
+
+// Sample critics data
+const critics = [
+  {
+    source: 'The Guardian',
+    date: '2 days ago',
+    rating: 8,
+    title: 'A Masterpiece of Nigerian Cinema',
+    content: 'This film represents a significant leap forward for Nollywood, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.'
+  },
+  {
+    source: 'Variety',
+    date: '1 week ago',
+    rating: 7.5,
+    title: 'Impressive Technical Achievement',
+    content: 'While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.'
+  },
+  {
+    source: 'Film Comment',
+    date: '3 days ago',
+    rating: 8.5,
+    title: 'Bold Vision and Execution',
+    content: 'The director demonstrates remarkable control over the material, balancing cultural specificity with universal themes. The result is a film that feels both authentic and accessible to international audiences.'
+  },
+  {
+    source: 'The New York Times',
+    date: '5 days ago',
+    rating: 7,
+    title: 'Promising But Uneven',
+    content: 'There are moments of brilliance throughout, though the pacing issues in the second act prevent it from achieving greatness. Nevertheless, it represents an important voice in contemporary African cinema.'
+  },
+  {
+    source: 'IndieWire',
+    date: '1 week ago',
+    rating: 9,
+    title: 'A Revelation in Storytelling',
+    content: 'Few films this year have managed to balance entertainment value with cultural significance so effectively. The director has crafted a work that feels both timely and timeless.'
+  },
+  {
+    source: 'The Hollywood Reporter',
+    date: '2 weeks ago',
+    rating: 8,
+    title: 'Visually Stunning Drama',
+    content: 'The cinematography alone makes this worth watching, but the performances and screenplay elevate it to something truly special. A standout achievement for Nigerian cinema.'
+  },
+  {
+    source: 'RogerEbert.com',
+    date: '4 days ago',
+    rating: 7.5,
+    title: 'Thoughtful and Engaging',
+    content: 'While not without flaws, this film offers a refreshing perspective and demonstrates the growing technical sophistication of Nollywood productions. The cultural specificity adds richness to the universal themes explored.'
+  }
+]
 
 const averageRating = computed(() => {
   if (!reviews.value.length) return movie.value?.lemonPieRating || 0
@@ -152,7 +208,7 @@ onMounted(async () => {
     <div class="relative w-full h-[500px] mb-8">
       <div class="relative group cursor-pointer bg-gray-800 w-full h-full overflow-hidden">
         <img 
-          src="/src/assets/vue.svg" 
+          :src="`https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(movie.title + ' movie cinematic scene')}&image_size=landscape_16_9`" 
           :alt="`${movie.title} trailer`" 
           class="w-full h-full object-cover"
         />
@@ -288,38 +344,40 @@ onMounted(async () => {
             <!-- Hero Image Gallery -->
             <div class="mb-8">
               <h3 class="text-xl font-semibold mb-4">Movie Stills</h3>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="relative group cursor-pointer overflow-hidden rounded-lg">
-                  <img 
-                    :src="movie.poster" 
-                    :alt="`${movie.title} still 1`" 
-                    class="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                </div>
-                <div class="relative group cursor-pointer overflow-hidden rounded-lg">
-                  <img 
-                    :src="movie.poster" 
-                    :alt="`${movie.title} still 2`" 
-                    class="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                </div>
-                <div class="relative group cursor-pointer overflow-hidden rounded-lg">
-                  <img 
-                    :src="movie.poster" 
-                    :alt="`${movie.title} still 3`" 
-                    class="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
-                </div>
-                <div class="relative group cursor-pointer overflow-hidden rounded-lg">
-                  <img 
-                    :src="movie.poster" 
-                    :alt="`${movie.title} still 4`" 
-                    class="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+              <div class="relative">
+                <div class="flex overflow-x-auto pb-4 space-x-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                  <div class="relative group cursor-pointer overflow-hidden rounded-lg flex-shrink-0">
+                    <img 
+                      :src="movie.poster" 
+                      :alt="`${movie.title} still 1`" 
+                      class="h-32 w-auto min-w-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+                  </div>
+                  <div class="relative group cursor-pointer overflow-hidden rounded-lg flex-shrink-0">
+                    <img 
+                      :src="movie.posterUrl" 
+                      :alt="`${movie.title} still 2`" 
+                      class="h-32 w-auto min-w-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+                  </div>
+                  <div class="relative group cursor-pointer overflow-hidden rounded-lg flex-shrink-0">
+                    <img 
+                      :src="`https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(movie.title + ' movie scene')}&image_size=landscape_16_9`" 
+                      :alt="`${movie.title} still 3`" 
+                      class="h-32 w-auto min-w-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+                  </div>
+                  <div class="relative group cursor-pointer overflow-hidden rounded-lg flex-shrink-0">
+                    <img 
+                      :src="`https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(movie.title + ' movie character')}&image_size=portrait_4_3`" 
+                      :alt="`${movie.title} still 4`" 
+                      class="h-32 w-auto min-w-[180px] object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-opacity duration-300"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -327,8 +385,16 @@ onMounted(async () => {
             <!-- Additional Images Section -->
             <div class="mb-8">
               <h3 class="text-xl font-semibold mb-4">Gallery</h3>
-              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                <img v-for="i in 8" :key="i" :src="`https://via.placeholder.com/200x300`" :alt="`Gallery Image ${i}`" class="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity" />
+              <div class="relative">
+                <div class="flex overflow-x-auto pb-4 space-x-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                  <img 
+                    v-for="i in 8" 
+                    :key="i" 
+                    :src="`https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(movie.title + (i % 2 === 0 ? ' movie scene ' : ' character ') + i)}&image_size=${i % 2 === 0 ? 'landscape_16_9' : 'portrait_4_3'}`" 
+                    :alt="`${movie.title} Gallery Image ${i}`" 
+                    class="h-40 w-auto min-w-[200px] object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0" 
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -362,46 +428,35 @@ onMounted(async () => {
             
             <!-- Critics Tab -->
             <div v-if="activeTab === 'critics'" class="space-y-6">
-              <div class="bg-gray-800 rounded-lg p-6">
+              <div v-for="(critic, index) in (showAllReviews ? critics : critics.slice(0, 5))" :key="index" class="bg-gray-800 rounded-lg p-6">
                 <div class="flex items-start gap-4">
                   <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                     <User class="w-6 h-6 text-gray-400" />
                   </div>
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
-                      <span class="font-semibold">The Guardian</span>
-                      <span class="text-gray-400 text-sm">2 days ago</span>
+                      <span class="font-semibold">{{ critic.source }}</span>
+                      <span class="text-gray-400 text-sm">{{ critic.date }}</span>
                     </div>
                     <div class="flex items-center gap-1 mb-3">
-                      <Star v-for="i in 4" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <Star class="w-4 h-4 text-gray-400" />
-                      <span class="text-sm text-gray-400 ml-2">8 / 10</span>
+                      <Star v-for="i in Math.floor(critic.rating)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star v-for="i in (5 - Math.floor(critic.rating))" :key="i + Math.floor(critic.rating)" class="w-4 h-4 text-gray-400" />
+                      <span class="text-sm text-gray-400 ml-2">{{ critic.rating }} / 10</span>
                     </div>
-                    <h4 class="font-semibold mb-2">A Masterpiece of Nigerian Cinema</h4>
-                    <p class="text-gray-300 leading-relaxed">This film represents a significant leap forward for Nollywood, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.</p>
+                    <h4 class="font-semibold mb-2">{{ critic.title }}</h4>
+                    <p class="text-gray-300 leading-relaxed">{{ critic.content }}</p>
                   </div>
                 </div>
               </div>
               
-              <div class="bg-gray-800 rounded-lg p-6">
-                <div class="flex items-start gap-4">
-                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                    <User class="w-6 h-6 text-gray-400" />
-                  </div>
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-2">
-                      <span class="font-semibold">Variety</span>
-                      <span class="text-gray-400 text-sm">1 week ago</span>
-                    </div>
-                    <div class="flex items-center gap-1 mb-3">
-                      <Star v-for="i in 4" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <Star class="w-4 h-4 text-gray-400" />
-                      <span class="text-sm text-gray-400 ml-2">7.5 / 10</span>
-                    </div>
-                    <h4 class="font-semibold mb-2">Impressive Technical Achievement</h4>
-                    <p class="text-gray-300 leading-relaxed">While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.</p>
-                  </div>
-                </div>
+              <div v-if="critics.length > 5" class="flex justify-center mt-6">
+                <button 
+                  @click="showAllReviews = !showAllReviews" 
+                  class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
+                >
+                  <span>{{ showAllReviews ? 'Show Less' : `Show More (${critics.length - 5})` }}</span>
+                  <ChevronDown :class="{'transform rotate-180': showAllReviews}" class="w-4 h-4 transition-transform" />
+                </button>
               </div>
             </div>
             
@@ -463,12 +518,22 @@ onMounted(async () => {
               
               <div v-else class="space-y-4">
                 <ReviewCard 
-                  v-for="review in reviews" 
+                  v-for="review in reviewsToShow" 
                   :key="review.id" 
                   :review="review"
                   :show-movie-title="false"
                   @action="handleReviewAction"
                 />
+                
+                <div v-if="hasMoreReviews" class="flex justify-center mt-6">
+                  <button 
+                    @click="showAllReviews = !showAllReviews" 
+                    class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
+                  >
+                    <span>{{ showAllReviews ? 'Show Less' : `Show More (${reviews.length - 5})` }}</span>
+                    <ChevronDown :class="{'transform rotate-180': showAllReviews}" class="w-4 h-4 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -493,5 +558,27 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-/* Additional custom styles if needed */
+/* Custom scrollbar styles */
+.scrollbar-thin::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: #1f2937; /* gray-800 */
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #4b5563; /* gray-600 */
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: #6b7280; /* gray-500 */
+}
+
+/* Hide scrollbar for Firefox */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #4b5563 #1f2937;
+}
 </style>
