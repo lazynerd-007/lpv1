@@ -177,7 +177,7 @@ const actorCredits = computed(() => {
     title,
     role: index % 2 === 0 ? 'Lead Actor' : 'Supporting Role',
     year: 2023 - index,
-    type: 'acting'
+    type: 'acting' as const
   })) || []
   
   // Additional acting credits based on actor's movie count
@@ -186,7 +186,7 @@ const actorCredits = computed(() => {
     title: `${['The', 'A', ''][i % 3]} ${['Great', 'Amazing', 'Incredible', 'Mysterious', 'Secret'][i % 5]} ${['Adventure', 'Journey', 'Story', 'Mission', 'Case'][i % 5]}`,
     role: ['Actor', 'Supporting Actor', 'Guest Star', 'Voice Actor', 'Cameo'][i % 5],
     year: 2018 - i * 2,
-    type: 'acting'
+    type: 'acting' as const
   }))
   
   // Production credits
@@ -195,7 +195,7 @@ const actorCredits = computed(() => {
     title: `${['The', 'A', ''][(i + 1) % 3]} ${['Hidden', 'Lost', 'Forgotten', 'Untold', 'Secret'][(i + 2) % 5]} ${['Truth', 'Legacy', 'Chronicles', 'Mystery', 'Story'][(i + 3) % 5]}`,
     role: ['Producer', 'Executive Producer', 'Director', 'Writer', 'Creator'][(i + 1) % 5],
     year: 2020 - i * 3,
-    type: 'production'
+    type: 'production' as const
   }))
   
   return [...baseCredits, ...additionalActingCredits, ...productionCredits]

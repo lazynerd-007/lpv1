@@ -155,7 +155,7 @@ const handleSubmit = async () => {
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition-colors" 
                 :class="errors.name ? 'border-red-500' : 'border-gray-300'" 
                 aria-required="true"
-                aria-invalid="errors.name ? true : false"
+                :aria-invalid="errors.name ? true : false"
                 aria-describedby="name-error"
               >
               <p v-if="errors.name" id="name-error" class="mt-1 text-red-500 text-sm">{{ errors.name }}</p>
@@ -171,7 +171,7 @@ const handleSubmit = async () => {
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition-colors" 
                 :class="errors.email ? 'border-red-500' : 'border-gray-300'" 
                 aria-required="true"
-                aria-invalid="errors.email ? true : false"
+                :aria-invalid="errors.email ? true : false"
                 aria-describedby="email-error"
               >
               <p v-if="errors.email" id="email-error" class="mt-1 text-red-500 text-sm">{{ errors.email }}</p>
@@ -211,7 +211,7 @@ const handleSubmit = async () => {
                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 outline-none transition-colors" 
                 :class="errors.message ? 'border-red-500' : 'border-gray-300'" 
                 aria-required="true"
-                aria-invalid="errors.message ? true : false"
+                :aria-invalid="errors.message ? true : false"
                 aria-describedby="message-error"
               ></textarea>
               <p v-if="errors.message" id="message-error" class="mt-1 text-red-500 text-sm">{{ errors.message }}</p>
@@ -223,7 +223,7 @@ const handleSubmit = async () => {
                 type="submit" 
                 class="bg-orange-500 hover:bg-orange-600 text-white font-medium py-2 px-6 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="isSubmitting"
-                aria-busy="isSubmitting"
+                :aria-busy="isSubmitting"
               >
                 <span v-if="isSubmitting">Sending...</span>
                 <span v-else>Send Message</span>
@@ -313,7 +313,7 @@ const handleSubmit = async () => {
                 width="100%" 
                 height="100%" 
                 style="border:0;" 
-                allowfullscreen="" 
+                :allowfullscreen="true" 
                 loading="lazy"
                 title="Google Maps location of LemonNPie"
               ></iframe>

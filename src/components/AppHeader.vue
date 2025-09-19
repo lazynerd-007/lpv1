@@ -14,7 +14,8 @@ const isSearchFocused = ref(false);
 const navItems = [
   { name: 'Movies', path: '/movies' },
   { name: 'Series', path: '/series' },
-  { name: 'People', path: '/people' }
+  { name: 'People', path: '/people' },
+  { name: 'Contact Us', path: '/contact' }
 ];
 
 // User menu items (for when user is logged in)

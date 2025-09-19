@@ -14,6 +14,7 @@ import AboutPage from '@/pages/AboutPage.vue'
 import PersonDetailsPage from '@/pages/PersonDetailsPage.vue'
 import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage.vue'
 import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
+import ContactUsPage from '@/pages/ContactUsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -142,12 +143,19 @@ const router = createRouter({
         title: 'Privacy Policy - LemonNPie'
       }
     },
-    {
-      path: '/terms-of-service',
+    {      path: '/terms-of-service',
       name: 'terms-of-service',
       component: TermsOfServicePage,
       meta: {
         title: 'Terms of Service - LemonNPie'
+      }
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactUsPage,
+      meta: {
+        title: 'Contact Us - LemonNPie'
       }
     },
     {
