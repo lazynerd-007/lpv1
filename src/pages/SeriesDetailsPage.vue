@@ -427,32 +427,10 @@ onMounted(async () => {
             <!-- Seasons Section -->
             <div class="mb-8">
               <h3 class="text-xl font-semibold mb-4">Seasons</h3>
-              <div class="bg-gray-800 rounded-lg p-6">
-                <div class="flex items-center justify-between mb-4">
-                  <div>
-                    <h4 class="text-lg font-semibold">Season 1</h4>
-                    <p class="text-gray-400 text-sm">{{ series.episodes }} episodes • {{ series.releaseDate }}</p>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <Star class="w-4 h-4 text-yellow-400 fill-current" />
-                    <span class="text-sm font-medium">{{ series.userRating.toFixed(1) }}</span>
-                  </div>
-                </div>
-                <p class="text-gray-300 text-sm mb-4">{{ series.plotSummary.slice(0, 150) }}...</p>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div v-for="i in Math.min(4, series.episodes)" :key="i" class="relative group cursor-pointer">
-                    <div class="aspect-video bg-gray-700 rounded overflow-hidden">
-                      <img 
-                        :src="`https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(series.title + ' episode ' + i + ' scene')}&image_size=landscape_16_9`" 
-                        :alt="`Episode ${i}`"
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                      />
-                      <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition-opacity flex items-center justify-center">
-                        <Play class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </div>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-1">Episode {{ i }}</p>
-                  </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div v-for="seasonNumber in series.seasons" :key="seasonNumber" class="bg-gray-800 rounded-lg p-4 flex flex-col items-center justify-center aspect-square">
+                  <h4 class="text-lg font-semibold">Season {{ seasonNumber }}</h4>
+                  <p class="text-sm text-gray-400 mt-1">Details coming soon</p>
                 </div>
               </div>
             </div>

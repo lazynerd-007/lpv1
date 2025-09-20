@@ -17,6 +17,7 @@ import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage.vue'
 import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
 import ContactUsPage from '@/pages/ContactUsPage.vue'
 import MovieCastAndCrewPage from '@/pages/MovieCastAndCrewPage.vue'
+import SeriesCastAndCrewPage from '@/pages/SeriesCastAndCrewPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -89,6 +90,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/series/:id/cast-crew',
+      name: 'series-cast-crew',
+      component: SeriesCastAndCrewPage,
+      props: true,
+      meta: {
+        title: 'Series Cast & Crew - LemonNPie'
+      }
+     },
+     {
       path: '/browse',
       redirect: '/movies'
     },
