@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useUserStore } from '@/stores/userStore'
 import HomePage from '@/pages/HomePage.vue'
 import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
 import SeriesDetailsPage from '@/pages/SeriesDetailsPage.vue'
@@ -18,6 +19,7 @@ import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
 import ContactUsPage from '@/pages/ContactUsPage.vue'
 import MovieCastAndCrewPage from '@/pages/MovieCastAndCrewPage.vue'
 import SeriesCastAndCrewPage from '@/pages/SeriesCastAndCrewPage.vue'
+import WatchlistPage from '@/pages/WatchlistPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -122,6 +124,15 @@ const router = createRouter({
       }
     },
     {
+      path: '/watchlist',
+      name: 'watchlist',
+      component: WatchlistPage,
+      meta: {
+        title: 'My Watchlist - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
       path: '/login',
       name: 'login',
       component: LoginPage,
@@ -219,7 +230,8 @@ router.beforeEach((to, from, next) => {
   }
   
   // Check authentication requirements
-  const isAuthenticated = false; // TODO: Replace with actual auth check
+  const userStore = useUserStore();
+  const isAuthenticated = userStore.isAuthenticated;
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });

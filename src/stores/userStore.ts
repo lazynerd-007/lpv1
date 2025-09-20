@@ -1,6 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { mockReviews, getMovieById, type Review } from '@/data/mockMovies'
+import { 
+  mockUsers, 
+  loginAttempts, 
+  AuthError, 
+  type AuthResponse, 
+  type MockUser,
+  type AuthAttempt,
+  RATE_LIMIT_CONFIG 
+} from '@/data/mockAuth'
 
 interface User {
   id: string
@@ -10,6 +19,7 @@ interface User {
   location?: string
   joinDate: string
   avatar?: string
+  role: 'user' | 'admin' | 'moderator'
 }
 
 interface UserStats {
@@ -37,7 +47,8 @@ export const useUserStore = defineStore('user', () => {
     bio: 'Passionate Nollywood enthusiast and film critic',
     location: 'Lagos, Nigeria',
     joinDate: '2023-01-15',
-    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square'
+    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square',
+    role: 'admin'
   }
 
   // Getters
@@ -75,27 +86,197 @@ export const useUserStore = defineStore('user', () => {
   })
 
   // Actions
-  const login = async (email: string, password: string) => {
-    isLoading.value = true
-    error.value = null
-
+  const login = async (email: string, password: string): Promise<AuthResponse> => {
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500))
       
-      // Mock successful login
-      currentUser.value = mockUser
+      // Input validation
+      if (!email || !password) {
+        return {
+          success: false,
+          error: {
+            type: AuthError.VALIDATION_ERROR,
+            message: 'Email and password are required',
+            details: { missingFields: !email ? ['email'] : ['password'] }
+          }
+        }
+      }
+      
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      if (!emailRegex.test(email)) {
+        return {
+          success: false,
+          error: {
+            type: AuthError.VALIDATION_ERROR,
+            message: 'Please enter a valid email address',
+            details: { field: 'email' }
+          }
+        }
+      }
+      
+      // Check rate limiting
+      const now = Date.now()
+      const recentAttempts = loginAttempts.filter(
+        attempt => attempt.email === email && 
+        now - attempt.timestamp < RATE_LIMIT_CONFIG.ATTEMPT_WINDOW
+      )
+      
+      if (recentAttempts.length >= RATE_LIMIT_CONFIG.MAX_ATTEMPTS) {
+        return {
+          success: false,
+          error: {
+            type: AuthError.TOO_MANY_ATTEMPTS,
+            message: `Too many login attempts. Please try again in ${Math.ceil(RATE_LIMIT_CONFIG.ATTEMPT_WINDOW / 60000)} minutes.`,
+            details: { 
+              attempts: recentAttempts.length,
+              resetTime: new Date(recentAttempts[0].timestamp + RATE_LIMIT_CONFIG.ATTEMPT_WINDOW)
+            }
+          }
+        }
+      }
+      
+      // Find user in mock database
+      const user = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase())
+      
+      // Record login attempt
+      const attempt: AuthAttempt = {
+        email,
+        timestamp: now,
+        success: false,
+        ip: '127.0.0.1' // Mock IP
+      }
+      
+      if (!user) {
+        loginAttempts.push(attempt)
+        return {
+          success: false,
+          error: {
+            type: AuthError.INVALID_CREDENTIALS,
+            message: 'Invalid email or password',
+            details: { field: 'email' }
+          }
+        }
+      }
+      
+      // Check if account is locked
+      if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
+        loginAttempts.push(attempt)
+        const unlockTime = new Date(user.lockedUntil)
+        return {
+          success: false,
+          error: {
+            type: AuthError.ACCOUNT_LOCKED,
+            message: `Account is temporarily locked. Try again after ${unlockTime.toLocaleTimeString()}.`,
+            details: { 
+              unlockTime,
+              reason: 'Multiple failed login attempts'
+            }
+          }
+        }
+      }
+      
+      // Check if account is active
+      if (!user.isActive) {
+        loginAttempts.push(attempt)
+        return {
+          success: false,
+          error: {
+            type: AuthError.ACCOUNT_INACTIVE,
+            message: 'Your account has been deactivated. Please contact support.',
+            details: { 
+              contactEmail: 'support@lemonpie.com',
+              userId: user.id
+            }
+          }
+        }
+      }
+      
+      // Verify password (in real app, this would be hashed comparison)
+      if (user.password !== password) {
+        loginAttempts.push(attempt)
+        
+        // Increment failed attempts
+        user.loginAttempts += 1
+        
+        // Lock account after max attempts
+        if (user.loginAttempts >= RATE_LIMIT_CONFIG.MAX_ATTEMPTS) {
+          user.lockedUntil = new Date(now + RATE_LIMIT_CONFIG.LOCKOUT_DURATION).toISOString()
+          return {
+            success: false,
+            error: {
+              type: AuthError.ACCOUNT_LOCKED,
+              message: `Account locked due to multiple failed attempts. Try again in ${RATE_LIMIT_CONFIG.LOCKOUT_DURATION / 60000} minutes.`,
+              details: { 
+                attempts: user.loginAttempts,
+                lockoutDuration: RATE_LIMIT_CONFIG.LOCKOUT_DURATION
+              }
+            }
+          }
+        }
+        
+        return {
+          success: false,
+          error: {
+            type: AuthError.INVALID_CREDENTIALS,
+            message: 'Invalid email or password',
+            details: { 
+              field: 'password',
+              attemptsRemaining: RATE_LIMIT_CONFIG.MAX_ATTEMPTS - user.loginAttempts
+            }
+          }
+        }
+      }
+      
+      // Successful login
+      attempt.success = true
+      loginAttempts.push(attempt)
+      
+      // Reset failed attempts
+      user.loginAttempts = 0
+      user.lockedUntil = undefined
+      user.lastLogin = new Date().toISOString()
+      
+      // Set authentication state
       isAuthenticated.value = true
+      currentUser.value = {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio || '',
+        location: user.location || '',
+        joinDate: user.joinDate,
+        avatar: user.avatar,
+        role: user.role
+      }
+      
+      // Generate mock JWT token
+      const token = `mock_jwt_${user.id}_${Date.now()}`
+      
+      // Store token securely (in real app, use httpOnly cookies)
+      localStorage.setItem('auth_token', token)
+      localStorage.setItem('user_data', JSON.stringify(currentUser.value))
       
       // Load user data
       await loadUserData()
       
-      return { success: true }
-    } catch (err) {
-      error.value = 'Login failed. Please check your credentials.'
-      return { success: false, error: error.value }
-    } finally {
-      isLoading.value = false
+      return {
+        success: true,
+        user: user,
+        token
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error)
+      return {
+        success: false,
+        error: {
+          type: AuthError.SERVER_ERROR,
+          message: 'An unexpected error occurred. Please try again.',
+          details: { error: error instanceof Error ? error.message : 'Unknown error' }
+        }
+      }
     }
   }
 
@@ -122,7 +303,8 @@ export const useUserStore = defineStore('user', () => {
         id: Date.now().toString(),
         name: userData.name,
         email: userData.email,
-        joinDate: new Date().toISOString().split('T')[0]
+        joinDate: new Date().toISOString().split('T')[0],
+        role: 'user'
       }
       
       currentUser.value = newUser
@@ -138,12 +320,64 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = () => {
+    // Clear authentication state
     currentUser.value = null
     isAuthenticated.value = false
+    
+    // Clear stored tokens and data
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('user_data')
+    
+    // Clear user-specific data
     watchlist.value = []
     favorites.value = []
     userReviews.value = []
     error.value = null
+    
+    console.log('User logged out successfully')
+  }
+
+  // Check if user is authenticated on app initialization
+  const checkAuthStatus = async (): Promise<boolean> => {
+    try {
+      const token = localStorage.getItem('auth_token')
+      const userData = localStorage.getItem('user_data')
+      
+      if (!token || !userData) {
+        return false
+      }
+      
+      // In a real app, you would validate the token with the server
+      // For mock purposes, we'll check if it's a valid format and not expired
+      const tokenParts = token.split('_')
+      if (tokenParts.length !== 3 || tokenParts[0] !== 'mock' || tokenParts[1] !== 'jwt') {
+        logout() // Invalid token format
+        return false
+      }
+      
+      const tokenTimestamp = parseInt(tokenParts[2])
+      const tokenAge = Date.now() - tokenTimestamp
+      const TOKEN_EXPIRY = 24 * 60 * 60 * 1000 // 24 hours
+      
+      if (tokenAge > TOKEN_EXPIRY) {
+        logout() // Token expired
+        return false
+      }
+      
+      // Restore user data
+      const user = JSON.parse(userData)
+      currentUser.value = user
+      isAuthenticated.value = true
+      
+      // Load user data
+      await loadUserData()
+      
+      return true
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      logout()
+      return false
+    }
   }
 
   const loadUserData = async () => {
@@ -278,6 +512,7 @@ export const useUserStore = defineStore('user', () => {
     login,
     register,
     logout,
+    checkAuthStatus,
     loadUserData,
     updateProfile,
     addToWatchlist,

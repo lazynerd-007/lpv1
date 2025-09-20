@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, Menu, X, User, Heart, Star, Film } from 'lucide-vue-next';
+import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings, Shield } from 'lucide-vue-next';
+import { useUserStore } from '@/stores/userStore';
+import NotificationDropdown from '@/components/ui/NotificationDropdown.vue';
 
 const router = useRouter();
+const userStore = useUserStore();
 
 // State
 const isMenuOpen = ref(false);
 const searchQuery = ref('');
 const isSearchFocused = ref(false);
+const isUserDropdownOpen = ref(false);
 
 // Navigation items
 const navItems = [
@@ -19,19 +23,33 @@ const navItems = [
 ];
 
 // User menu items (for when user is logged in)
-const userMenuItems = [
-  { name: 'My Profile', path: '/profile' },
-  { name: 'My Reviews', path: '/my-reviews' },
-  { name: 'Watchlist', path: '/watchlist' },
-  { name: 'Settings', path: '/settings' }
+const baseUserMenuItems = [
+  { name: 'Watchlist', path: '/watchlist', icon: Heart },
+  { name: 'Profile', path: '/profile', icon: User },
+  { name: 'Settings', path: '/settings', icon: Settings }
 ];
 
-// Mock user state (in real app, this would come from auth store)
-const isLoggedIn = ref(false);
-const user = ref({
-  name: 'Adunni Lagos',
-  avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20woman%20profile%20picture%20professional%20headshot&image_size=square',
-  isVerifiedCritic: false
+const adminMenuItems = [
+  { name: 'Admin Area', path: '/admin', icon: Shield }
+];
+
+// Computed properties for user data
+const isLoggedIn = computed(() => userStore.isAuthenticated);
+const currentUser = computed(() => userStore.currentUser);
+const isAdmin = computed(() => currentUser.value?.role === 'admin');
+const userLastName = computed(() => {
+  if (!currentUser.value?.name) return '';
+  const nameParts = currentUser.value.name.split(' ');
+  return nameParts[nameParts.length - 1];
+});
+
+// Dynamic user menu items based on user role
+const userMenuItems = computed(() => {
+  const items = [...baseUserMenuItems];
+  if (isAdmin.value) {
+    items.unshift(...adminMenuItems); // Add admin items at the beginning
+  }
+  return items;
 });
 
 // No longer need isCurrentRoute function since we removed active route styling
@@ -39,6 +57,14 @@ const user = ref({
 // Methods
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
+};
+
+const toggleUserDropdown = () => {
+  isUserDropdownOpen.value = !isUserDropdownOpen.value;
+};
+
+const closeUserDropdown = () => {
+  isUserDropdownOpen.value = false;
 };
 
 const handleSearch = () => {
@@ -52,17 +78,35 @@ const handleSearch = () => {
 const navigateTo = (path: string) => {
   router.push(path);
   isMenuOpen.value = false;
+  closeUserDropdown();
 };
 
 const handleLogin = () => {
-  // In real app, this would open login modal or navigate to login page
   router.push('/login');
 };
 
 const handleLogout = () => {
-  // In real app, this would clear auth state
-  isLoggedIn.value = false;
+  userStore.logout();
+  closeUserDropdown();
+  router.push('/');
 };
+
+// Click outside handler
+const handleClickOutside = (event: Event) => {
+  const target = event.target as Element;
+  if (!target.closest('.user-dropdown')) {
+    closeUserDropdown();
+  }
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
@@ -107,12 +151,70 @@ const handleLogout = () => {
         
         <!-- User Actions -->
         <div class="flex items-center gap-4">
-          <!-- User Menu -->
-          <div v-if="isLoggedIn" class="relative">
-            <button class="flex items-center gap-2 hover:text-orange-400 transition-colors">
-              <img :src="user.avatar" :alt="user.name" class="w-8 h-8 rounded-full" />
-              <span class="hidden sm:block">{{ user.name }}</span>
-            </button>
+          <!-- Authenticated User Section -->
+          <div v-if="isLoggedIn" class="flex items-center gap-3">
+            <!-- Notification Dropdown -->
+            <NotificationDropdown />
+            
+            <!-- User Profile Dropdown -->
+             <div class="relative user-dropdown">
+              <button 
+                @click="toggleUserDropdown"
+                @keydown.escape="closeUserDropdown"
+                class="flex items-center gap-2 p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                aria-haspopup="true"
+                :aria-expanded="isUserDropdownOpen"
+                aria-label="User menu"
+              >
+                <img 
+                  :src="currentUser?.avatar || 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=default%20user%20avatar&image_size=square'" 
+                  :alt="currentUser?.name || 'User'"
+                  class="w-8 h-8 rounded-full border-2 border-gray-600" 
+                />
+                <span class="hidden sm:block text-white font-medium">{{ userLastName }}</span>
+                <ChevronDown 
+                  :class="{ 'transform rotate-180': isUserDropdownOpen }"
+                  class="w-4 h-4 text-gray-400 transition-transform"
+                />
+              </button>
+              
+              <!-- Dropdown Menu -->
+              <div 
+                v-if="isUserDropdownOpen"
+                @click.stop
+                class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-xl border border-gray-700 py-2 z-50"
+                role="menu"
+                aria-orientation="vertical"
+              >
+                <div class="px-4 py-2 border-b border-gray-700">
+                  <p class="text-sm font-medium text-white">{{ currentUser?.name }}</p>
+                  <p class="text-xs text-gray-400">{{ currentUser?.email }}</p>
+                </div>
+                
+                <div class="py-1">
+                  <button
+                    v-for="item in userMenuItems"
+                    :key="item.name"
+                    @click="navigateTo(item.path)"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <component :is="item.icon" class="w-4 h-4" />
+                    {{ item.name }}
+                  </button>
+                </div>
+                
+                <div class="border-t border-gray-700 py-1">
+                  <button
+                    @click="handleLogout"
+                    class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-gray-700 transition-colors"
+                    role="menuitem"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
           
           <!-- Login/Register Buttons (Desktop only) -->
@@ -179,19 +281,60 @@ const handleLogout = () => {
         </nav>
         
         <!-- Mobile User Actions -->
-        <div v-if="!isLoggedIn" class="space-y-3">
-          <button 
-            class="w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
-            @click="handleLogin"
-          >
-            Login
-          </button>
-          <button 
-            class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-medium transition-colors"
-            @click="navigateTo('/register')"
-          >
-            Register
-          </button>
+        <div class="border-t border-gray-700 pt-4">
+          <!-- Authenticated User (Mobile) -->
+          <div v-if="isLoggedIn" class="space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-700">
+              <div class="flex items-center gap-3">
+                <img 
+                  :src="currentUser?.avatar || 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=default%20user%20avatar&image_size=square'" 
+                  :alt="currentUser?.name || 'User'"
+                  class="w-10 h-10 rounded-full border-2 border-gray-600" 
+                />
+                <div>
+                  <p class="text-white font-medium">{{ currentUser?.name }}</p>
+                  <p class="text-xs text-gray-400">{{ currentUser?.email }}</p>
+                </div>
+              </div>
+              <!-- Mobile Notification Dropdown -->
+              <NotificationDropdown />
+            </div>
+            
+            <div class="space-y-2">
+              <button
+                v-for="item in userMenuItems"
+                :key="item.name"
+                @click="navigateTo(item.path)"
+                class="w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-3"
+              >
+                <component :is="item.icon" class="w-4 h-4" />
+                {{ item.name }}
+              </button>
+              
+              <button
+                @click="handleLogout"
+                class="w-full text-left px-4 py-3 text-red-400 hover:text-red-300 hover:bg-gray-800 rounded-lg transition-colors"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+          
+          <!-- Guest User (Mobile) -->
+          <div v-else class="space-y-3">
+            <button 
+              class="w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+              @click="handleLogin"
+            >
+              Login
+            </button>
+            <button 
+              class="w-full bg-orange-500 hover:bg-orange-600 text-white px-4 py-3 rounded-lg font-medium transition-colors"
+              @click="navigateTo('/register')"
+            >
+              Register
+            </button>
+          </div>
         </div>
       </div>
     </div>

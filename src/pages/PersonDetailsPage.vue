@@ -119,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Share2, Star } from 'lucide-vue-next'
 import { useActorsStore } from '@/stores/actorsStore'
@@ -234,7 +234,16 @@ const navigateToMovie = (movieId: string) => {
   console.log('Navigate to movie:', movieId)
 }
 
+// Watch for route changes to handle navigation between different person pages
+watch(actorId, () => {
+  // Scroll to top when navigating to a different person
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}, { immediate: false })
+
 onMounted(async () => {
+  // Scroll to top of page immediately
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  
   // Ensure actors are loaded
   if (actorsStore.actors.length === 0) {
     actorsStore.loadInitialActors()

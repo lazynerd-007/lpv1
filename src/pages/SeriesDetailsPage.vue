@@ -623,7 +623,7 @@ onMounted(async () => {
           <div class="mt-12">
             <h3 class="text-xl font-semibold mb-6 flex items-center">
               <span class="mr-2">Cast</span>
-              <span class="text-sm text-gray-400 font-normal">{{ series?.cast?.length || 0 }} actors</span>
+              <span class="text-sm text-gray-400 font-normal">Cast & Crew</span>
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div 
