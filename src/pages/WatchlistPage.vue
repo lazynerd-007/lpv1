@@ -365,10 +365,11 @@ const filteredAndSortedMovies = computed(() => {
   if (selectedFilter.value !== 'all') {
     switch (selectedFilter.value) {
       case 'movies':
-        filtered = filtered.filter(movie => movie.type === 'movie')
+        // All items in watchlist are movies, so no filtering needed
         break
       case 'series':
-        filtered = filtered.filter(movie => movie.type === 'series')
+        // No series in current Movie interface, filter to empty array
+        filtered = []
         break
       case 'recent':
         // Show items added in the last 30 days (mock implementation)
