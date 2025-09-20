@@ -240,6 +240,10 @@ export const useActorsStore = defineStore('actors', () => {
     )
   }
 
+  const addActor = (actor: Actor) => {
+    actors.value.push(actor)
+  }
+
   return {
     actors,
     currentPage,
@@ -247,6 +251,7 @@ export const useActorsStore = defineStore('actors', () => {
     loadInitialActors,
     loadMoreActors,
     getActorById,
-    searchActors
+    searchActors,
+    addActor
   }
 })

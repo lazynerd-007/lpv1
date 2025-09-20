@@ -5,7 +5,7 @@ import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircl
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
-import { useActorsStore } from '@/stores/actorsStore'
+import { useActorsStore, type Actor } from '@/stores/actorsStore'
 import ReviewCard from '@/components/ui/ReviewCard.vue'
 
 interface Props {
@@ -192,8 +192,22 @@ const navigateToActor = (actorName: string) => {
   if (actor) {
     router.push({ name: 'person-details', params: { id: actor.id } })
   } else {
-    // If actor not found, navigate to people page with search query
-    router.push({ name: 'people', query: { search: actorName } })
+    // If actor not found, create a new actor entry with a unique ID
+    const newActorId = `temp-${Date.now()}`
+    const newActor: Actor = {
+      id: newActorId,
+      name: actorName,
+      age: 0, // Default values
+      image: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20headshot%20of%20${encodeURIComponent(actorName)}&image_size=square`,
+      popularity: 0,
+      movieCount: 1
+    }
+    
+    // Add the new actor to the store
+    actorStore.addActor(newActor)
+    
+    // Navigate to the new actor's details page
+    router.push({ name: 'person-details', params: { id: newActorId } })
   }
 }
 
