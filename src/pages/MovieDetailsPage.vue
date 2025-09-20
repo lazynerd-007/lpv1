@@ -24,8 +24,11 @@ const movie = computed(() => movieStore.movies.find(m => m.id === movieId.value)
 const reviews = computed(() => movieStore.reviews.filter(r => r.movieId === movieId.value))
 const activeTab = ref('reviews')
 const showAllReviews = ref(false)
+const showAllCritics = ref(false)
 const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
 const hasMoreReviews = computed(() => reviews.value.length > 5)
+const criticsToShow = computed(() => showAllCritics.value ? critics : critics.slice(0, 5))
+const hasMoreCritics = computed(() => critics.length > 5)
 
 // Get similar movies based on genre matching
 const similarMovies = computed(() => {
@@ -532,7 +535,7 @@ onMounted(async () => {
             
             <!-- Critics Tab -->
             <div v-if="activeTab === 'critics'" class="space-y-6">
-              <div v-for="(critic, index) in (showAllReviews ? critics : critics.slice(0, 5))" :key="index" class="bg-gray-800 rounded-lg p-6">
+              <div v-for="(critic, index) in criticsToShow" :key="index" class="bg-gray-800 rounded-lg p-6">
                 <div class="flex items-start gap-4">
                   <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
                     <User class="w-6 h-6 text-gray-400" />
@@ -553,13 +556,13 @@ onMounted(async () => {
                 </div>
               </div>
               
-              <div v-if="critics.length > 5" class="flex justify-center mt-6">
+              <div v-if="hasMoreCritics" class="flex justify-center mt-6">
                 <button 
-                  @click="showAllReviews = !showAllReviews" 
+                  @click="showAllCritics = !showAllCritics" 
                   class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
                 >
-                  <span>{{ showAllReviews ? 'Show Less' : `Show More (${critics.length - 5})` }}</span>
-                  <ChevronDown :class="{'transform rotate-180': showAllReviews}" class="w-4 h-4 transition-transform" />
+                  <span>{{ showAllCritics ? 'Show Less' : `Show More (${critics.length - 5})` }}</span>
+                  <ChevronDown :class="{'transform rotate-180': showAllCritics}" class="w-4 h-4 transition-transform" />
                 </button>
               </div>
             </div>

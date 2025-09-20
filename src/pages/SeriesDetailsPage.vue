@@ -27,8 +27,15 @@ const showAllReviews = ref(false)
 const showAllCritics = ref(false)
 const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
 const hasMoreReviews = computed(() => reviews.value.length > 5)
-const criticsToShow = computed(() => showAllCritics.value ? critics : critics.slice(0, 5))
-const hasMoreCritics = computed(() => critics.length > 5)
+const criticsToShow = computed(() => {
+  const criticsArray = critics.value
+  if (!criticsArray || !Array.isArray(criticsArray)) return []
+  return showAllCritics.value ? criticsArray : criticsArray.slice(0, 5)
+})
+const hasMoreCritics = computed(() => {
+  const criticsArray = critics.value
+  return criticsArray && Array.isArray(criticsArray) && criticsArray.length > 5
+})
 
 // Get similar series based on genre matching
 const similarSeries = computed(() => {
@@ -70,43 +77,46 @@ const scrollRight = () => {
 }
 
 // Sample critics data
-const critics = [
-  {
-    source: 'The Guardian',
-    date: '2 days ago',
-    rating: 8,
-    title: 'A Masterpiece of Nigerian Television',
-    content: 'This series represents a significant leap forward for Nollywood television, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.'
-  },
-  {
-    source: 'Variety',
-    date: '1 week ago',
-    rating: 7.5,
-    title: 'Impressive Technical Achievement',
-    content: 'While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.'
-  },
-  {
-    source: 'Film Comment',
-    date: '3 days ago',
-    rating: 8.5,
-    title: 'Bold Vision and Execution',
-    content: 'The creators demonstrate remarkable control over the material, balancing cultural specificity with universal themes. The result is a series that feels both authentic and accessible to international audiences.'
-  },
-  {
-    source: 'The New York Times',
-    date: '5 days ago',
-    rating: 7,
-    title: 'Promising But Uneven',
-    content: 'There are moments of brilliance throughout, though the pacing issues in some episodes prevent it from achieving greatness. Nevertheless, it represents an important voice in contemporary African television.'
-  },
-  {
-    source: 'IndieWire',
-    date: '1 week ago',
-    rating: 8.2,
-    title: 'Culturally Rich and Engaging',
-    content: 'A series that successfully bridges local storytelling traditions with modern television sensibilities. The cast delivers compelling performances that bring depth to every character.'
-  }
-]
+const critics = computed(() => {
+  // The TVShow interface doesn't have a critics property, so we'll always use our sample data
+  return [
+    {
+      source: 'The Guardian',
+      date: '2 days ago',
+      rating: 8,
+      title: 'A Masterpiece of Nigerian Television',
+      content: 'This series represents a significant leap forward for Nollywood television, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.'
+    },
+    {
+      source: 'Variety',
+      date: '1 week ago',
+      rating: 7.5,
+      title: 'Impressive Technical Achievement',
+      content: 'While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.'
+    },
+    {
+      source: 'Film Comment',
+      date: '3 days ago',
+      rating: 8.5,
+      title: 'Bold Vision and Execution',
+      content: 'The creators demonstrate remarkable control over the material, balancing cultural specificity with universal themes. The result is a series that feels both authentic and accessible to international audiences.'
+    },
+    {
+      source: 'The New York Times',
+      date: '5 days ago',
+      rating: 7,
+      title: 'Promising But Uneven',
+      content: 'There are moments of brilliance throughout, though the pacing issues in some episodes prevent it from achieving greatness. Nevertheless, it represents an important voice in contemporary African television.'
+    },
+    {
+      source: 'IndieWire',
+      date: '1 week ago',
+      rating: 8.2,
+      title: 'Culturally Rich and Engaging',
+      content: 'A series that successfully bridges local storytelling traditions with modern television sensibilities. The cast delivers compelling performances that bring depth to every character.'
+    }
+  ];
+});
 
 // Computed property for average rating
 const averageRating = computed(() => {
@@ -555,7 +565,7 @@ onMounted(async () => {
             </div>
             
             <!-- Reviews Tab -->
-            <div v-else class="space-y-6">
+            <div v-if="activeTab === 'reviews'" class="space-y-6">
               <!-- Sample User Review -->
               <div class="bg-gray-800 rounded-lg p-6">
                 <div class="flex items-start gap-4">
