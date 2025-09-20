@@ -27,6 +27,45 @@ const showAllReviews = ref(false)
 const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
 const hasMoreReviews = computed(() => reviews.value.length > 5)
 
+// Get similar movies based on genre matching
+const similarMovies = computed(() => {
+  if (!movie.value) return []
+  
+  return movieStore.movies
+    .filter(m => 
+      m.id !== movieId.value && // Not the current movie
+      m.genre.some(g => movie.value?.genre.includes(g)) // Has at least one matching genre
+    )
+    .sort((a, b) => {
+      // Count matching genres for better sorting
+      const aMatches = a.genre.filter(g => movie.value?.genre.includes(g)).length
+      const bMatches = b.genre.filter(g => movie.value?.genre.includes(g)).length
+      return bMatches - aMatches
+    })
+    .slice(0, 10) // Limit to 10 similar movies
+})
+
+// Reference to the similar movies scroll container
+const similarMoviesContainer = ref<HTMLElement | null>(null)
+
+// Function to navigate to a movie details page
+const navigateToMovie = (movieId: string) => {
+  router.push({ name: 'movie-details', params: { id: movieId } })
+}
+
+// Functions to scroll the similar movies container left and right
+const scrollLeft = () => {
+  if (similarMoviesContainer.value) {
+    similarMoviesContainer.value.scrollBy({ left: -300, behavior: 'smooth' })
+  }
+}
+
+const scrollRight = () => {
+  if (similarMoviesContainer.value) {
+    similarMoviesContainer.value.scrollBy({ left: 300, behavior: 'smooth' })
+  }
+}
+
 // Sample critics data
 const critics = [
   {
@@ -633,6 +672,67 @@ onMounted(async () => {
                 <User class="w-5 h-5" />
                 <span>View Complete Cast & Crew</span>
               </button>
+            </div>
+          </div>
+          
+          <!-- Movies Like This Section -->
+          <div class="mt-12">
+            <h3 class="text-xl font-semibold mb-6 flex items-center justify-between">
+              <span class="mr-2">More like this</span>
+              <div class="flex items-center gap-2">
+                <button 
+                  @click="scrollLeft"
+                  class="bg-black/50 rounded-full p-1 hover:bg-black/70 transition-colors"
+                  aria-label="Previous movies"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                <button 
+                  @click="scrollRight"
+                  class="bg-black/50 rounded-full p-1 hover:bg-black/70 transition-colors"
+                  aria-label="Next movies"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            </h3>
+            
+            <div class="relative">
+              <!-- Movie Cards Horizontal Scroll -->
+              <div ref="similarMoviesContainer" class="flex overflow-x-auto pb-4 gap-4 hide-scrollbar">
+                <div 
+                  v-for="(movie, index) in similarMovies" 
+                  :key="movie.id"
+                  class="flex-shrink-0 w-56 relative group cursor-pointer"
+                  @click="navigateToMovie(movie.id)"
+                >
+                  <div class="relative overflow-hidden rounded-lg">
+                    <!-- Movie Poster -->
+                    <img 
+                      :src="movie.posterUrl" 
+                      :alt="movie.title" 
+                      class="w-full h-80 object-cover rounded-lg transition-transform duration-300 group-hover:scale-105"
+                    />
+                    
+                    <!-- Play Button Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button class="bg-orange-600 hover:bg-orange-700 text-white rounded-full p-3 transition-colors">
+                        <Play class="w-6 h-6" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Rating -->
+                  <div class="flex items-center mt-2 text-orange-500">
+                    <Star class="w-4 h-4 fill-current" />
+                    <span class="ml-1 text-sm font-medium">{{ movie.lemonPieRating.toFixed(1) }} / 10</span>
+                  </div>
+                  
+                  <!-- Title -->
+                  <h4 class="font-medium text-white mt-1 line-clamp-2">{{ movie.title }}</h4>
+                </div>
+              </div>
             </div>
           </div>
         </div>
