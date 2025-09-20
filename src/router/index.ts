@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/pages/HomePage.vue'
 import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
+import SeriesDetailsPage from '@/pages/SeriesDetailsPage.vue'
 import SearchPage from '@/pages/SearchPage.vue'
 import BrowseMoviesPage from '@/pages/BrowseMoviesPage.vue'
 import BrowseSeriesPage from '@/pages/BrowseSeriesPage.vue'
@@ -166,6 +167,15 @@ const router = createRouter({
       component: ContactUsPage,
       meta: {
         title: 'Contact Us - LemonNPie'
+      }
+    },
+    {
+      path: '/series/:id',
+      name: 'series-details',
+      component: SeriesDetailsPage,
+      props: true,
+      meta: {
+        title: 'Series Details - LemonNPie'
       }
     },
     {
