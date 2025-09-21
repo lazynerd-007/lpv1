@@ -32,7 +32,7 @@ export const useMovieStore = defineStore('movie', () => {
   
   const topRatedMovies = computed(() => {
     return [...movies.value]
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) => b.lemonPieRating - a.lemonPieRating)
       .slice(0, 8)
   })
   

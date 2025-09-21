@@ -638,7 +638,7 @@ const assignRole = async () => {
     await new Promise(resolve => setTimeout(resolve, 1000))
     
     // Use the assignRole method from userStore
-    const success = userStore.assignRole(roleManagement.userId, roleManagement.selectedRole)
+    const success = userStore.assignRole(roleManagement.userId, roleManagement.selectedRole as 'user' | 'admin' | 'moderator' | 'critic')
     
     if (success) {
       notificationStore.addNotification({
