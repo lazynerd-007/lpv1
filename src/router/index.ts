@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/userStore'
 import HomePage from '@/pages/HomePage.vue'
 import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
 import SeriesDetailsPage from '@/pages/SeriesDetailsPage.vue'
@@ -19,8 +18,6 @@ import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
 import ContactUsPage from '@/pages/ContactUsPage.vue'
 import MovieCastAndCrewPage from '@/pages/MovieCastAndCrewPage.vue'
 import SeriesCastAndCrewPage from '@/pages/SeriesCastAndCrewPage.vue'
-import WatchlistPage from '@/pages/WatchlistPage.vue'
-import SettingsPage from '@/pages/SettingsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -125,34 +122,6 @@ const router = createRouter({
       }
     },
     {
-      path: '/watchlist',
-      name: 'watchlist',
-      component: WatchlistPage,
-      meta: {
-        title: 'My Watchlist - LemonNPie',
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/settings',
-      name: 'settings',
-      component: SettingsPage,
-      meta: {
-        title: 'Settings - LemonNPie',
-        requiresAuth: true
-      }
-    },
-    {
-      path: '/critique/submit',
-      name: 'critique-submit',
-      component: () => import('@/pages/CritiqueSubmissionPage.vue'),
-      meta: {
-        title: 'Submit Critique - LemonNPie',
-        requiresAuth: true,
-        requiresRole: 'critic'
-      }
-    },
-    {
       path: '/login',
       name: 'login',
       component: LoginPage,
@@ -250,24 +219,12 @@ router.beforeEach((to, from, next) => {
   }
   
   // Check authentication requirements
-  const userStore = useUserStore();
-  const isAuthenticated = userStore.isAuthenticated;
+  const isAuthenticated = false; // TODO: Replace with actual auth check
   
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });
   } else if (to.meta.hideForAuth && isAuthenticated) {
     next({ name: 'home' });
-  } else if (to.meta.requiresRole && isAuthenticated) {
-    // Check role-based access
-    const requiredRole = to.meta.requiresRole as string;
-    const userRole = userStore.currentUser?.role;
-    
-    if (!userStore.hasRole(requiredRole)) {
-      // Redirect to home with error message
-      next({ name: 'home', query: { error: 'insufficient_permissions' } });
-    } else {
-      next();
-    }
   } else {
     next();
   }

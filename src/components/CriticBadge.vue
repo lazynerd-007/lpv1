@@ -90,7 +90,8 @@ withDefaults(defineProps<Props>(), {
   height: 18px;
 }
 
-/* Dark mode support */n@media (prefers-color-scheme: dark) {
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
   .critic-badge {
     background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
     color: #1a1a1a;

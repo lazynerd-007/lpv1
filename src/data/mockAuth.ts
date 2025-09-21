@@ -14,7 +14,7 @@ export interface MockUser {
   lastLogin?: string
   loginAttempts: number
   lockedUntil?: string
-  role: 'user' | 'admin' | 'moderator' | 'critic'
+  role: 'user' | 'admin' | 'moderator'
 }
 
 export interface AuthAttempt {
@@ -89,32 +89,6 @@ export const mockUsers: MockUser[] = [
     isActive: false,
     loginAttempts: 0,
     role: 'user'
-  },
-  {
-    id: '6',
-    name: 'Chioma Nwankwo',
-    email: 'critic@test.com',
-    password: 'critic123',
-    bio: 'Professional film critic and Nollywood analyst',
-    location: 'Lagos, Nigeria',
-    joinDate: '2023-02-15',
-    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20woman%20film%20critic%20professional%20headshot&image_size=square',
-    isActive: true,
-    loginAttempts: 0,
-    role: 'critic'
-  },
-  {
-    id: '7',
-    name: 'Emeka Okonkwo',
-    email: 'critic2@test.com',
-    password: 'critic456',
-    bio: 'Award-winning film journalist and cinema expert',
-    location: 'Abuja, Nigeria',
-    joinDate: '2023-01-20',
-    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20film%20critic%20professional%20headshot&image_size=square',
-    isActive: true,
-    loginAttempts: 0,
-    role: 'critic'
   }
 ]
 

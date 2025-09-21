@@ -113,7 +113,7 @@
           <!-- Testing Buttons (Development Only) -->
           <div class="mt-6 p-4 bg-gray-800 rounded-lg border border-gray-600">
             <h3 class="text-sm font-medium text-gray-300 mb-3">Quick Test Logins:</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
                 @click="quickLogin('admin@admin.com', 'admin123')"
@@ -129,22 +129,6 @@
                 :disabled="isLoading"
               >
                 ✓ User Login
-              </button>
-              <button
-                type="button"
-                @click="quickLogin('critic@test.com', 'critic123')"
-                class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold rounded transition-all transform hover:scale-105 shadow-lg"
-                :disabled="isLoading"
-              >
-                ⭐ Critic Login
-              </button>
-              <button
-                type="button"
-                @click="quickLogin('critic2@test.com', 'critic456')"
-                class="px-3 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-black font-semibold rounded transition-all transform hover:scale-105 shadow-lg"
-                :disabled="isLoading"
-              >
-                ⭐ Critic Login 2
               </button>
               <button
                 type="button"

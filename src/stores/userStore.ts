@@ -19,7 +19,6 @@ interface User {
   location?: string
   joinDate: string
   avatar?: string
-  role: 'user' | 'admin' | 'moderator' | 'critic'
 }
 
 interface UserStats {
@@ -47,8 +46,7 @@ export const useUserStore = defineStore('user', () => {
     bio: 'Passionate Nollywood enthusiast and film critic',
     location: 'Lagos, Nigeria',
     joinDate: '2023-01-15',
-    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square',
-    role: 'admin'
+    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square'
   }
 
   // Getters
@@ -247,8 +245,7 @@ export const useUserStore = defineStore('user', () => {
         bio: user.bio || '',
         location: user.location || '',
         joinDate: user.joinDate,
-        avatar: user.avatar,
-        role: user.role
+        avatar: user.avatar
       }
       
       // Generate mock JWT token
@@ -303,8 +300,7 @@ export const useUserStore = defineStore('user', () => {
         id: Date.now().toString(),
         name: userData.name,
         email: userData.email,
-        joinDate: new Date().toISOString().split('T')[0],
-        role: 'user'
+        joinDate: new Date().toISOString().split('T')[0]
       }
       
       currentUser.value = newUser
@@ -491,53 +487,6 @@ export const useUserStore = defineStore('user', () => {
     loadUserData()
   }
 
-  // Role management functions
-  const hasRole = (role: User['role']): boolean => {
-    return currentUser.value?.role === role
-  }
-
-  const isCritic = (): boolean => {
-    return hasRole('critic')
-  }
-
-  const isAdmin = (): boolean => {
-    return hasRole('admin')
-  }
-
-  const isModerator = (): boolean => {
-    return hasRole('moderator')
-  }
-
-  const canSubmitCritique = (): boolean => {
-    return isCritic() || isAdmin()
-  }
-
-  const assignRole = async (userId: string, role: User['role']) => {
-    if (!isAdmin()) {
-      return { success: false, error: 'Insufficient permissions' }
-    }
-
-    isLoading.value = true
-    error.value = null
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // If updating current user's role
-      if (currentUser.value?.id === userId) {
-        currentUser.value.role = role
-      }
-      
-      return { success: true }
-    } catch (err) {
-      error.value = 'Failed to assign role'
-      return { success: false, error: error.value }
-    } finally {
-      isLoading.value = false
-    }
-  }
-
   return {
     // State
     currentUser,
@@ -571,14 +520,6 @@ export const useUserStore = defineStore('user', () => {
     addUserReview,
     updateUserReview,
     deleteUserReview,
-    initializeMockAuth,
-    
-    // Role management
-    hasRole,
-    isCritic,
-    isAdmin,
-    isModerator,
-    canSubmitCritique,
-    assignRole
+    initializeMockAuth
   }
 })

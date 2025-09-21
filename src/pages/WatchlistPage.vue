@@ -337,14 +337,6 @@ const sortOrder = ref<'asc' | 'desc'>('desc')
 // Computed properties
 const watchlistMovies = computed(() => userStore.watchlistMovies)
 
-const availableGenres = computed(() => {
-  const genres = new Set<string>()
-  watchlistMovies.value.forEach(movie => {
-    movie.genre.forEach(g => genres.add(g))
-  })
-  return Array.from(genres).sort()
-})
-
 const filteredAndSortedMovies = computed(() => {
   let filtered = watchlistMovies.value
 
@@ -365,11 +357,10 @@ const filteredAndSortedMovies = computed(() => {
   if (selectedFilter.value !== 'all') {
     switch (selectedFilter.value) {
       case 'movies':
-        // All items in watchlist are movies, so no filtering needed
+        filtered = filtered.filter(movie => movie.type === 'movie')
         break
       case 'series':
-        // No series in current Movie interface, filter to empty array
-        filtered = []
+        filtered = filtered.filter(movie => movie.type === 'series')
         break
       case 'recent':
         // Show items added in the last 30 days (mock implementation)
@@ -377,12 +368,10 @@ const filteredAndSortedMovies = computed(() => {
         break
     }
   }
-
+  
   // Apply genre filter
   if (selectedGenre.value) {
-    filtered = filtered.filter(movie => 
-      movie.genre.includes(selectedGenre.value)
-    )
+    filtered = filtered.filter(movie => movie.genre.includes(selectedGenre.value))
   }
 
   // Apply sorting
@@ -410,6 +399,14 @@ const filteredAndSortedMovies = computed(() => {
   })
 
   return sorted
+})
+
+const availableGenres = computed(() => {
+  const genres = new Set<string>()
+  watchlistMovies.value.forEach(movie => {
+    movie.genre.forEach(g => genres.add(g))
+  })
+  return Array.from(genres).sort()
 })
 
 const availableStatuses = computed(() => {
