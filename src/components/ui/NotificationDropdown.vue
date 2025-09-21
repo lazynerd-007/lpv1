@@ -2,7 +2,7 @@
   <div class="relative" ref="dropdownRef">
     <!-- Notification Bell Icon -->
     <button
-      @click="toggleDropdown"
+      @click="notificationStore.toggleDropdown"
       class="relative p-2 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-lg"
       :aria-expanded="notificationStore.isDropdownOpen"
       aria-haspopup="true"
@@ -98,7 +98,7 @@
               :tabindex="0"
               @keydown.enter="handleNotificationClick(notification)"
               @keydown.space.prevent="handleNotificationClick(notification)"
-              :aria-label="`${notification.title}. ${notification.isRead ? 'Read' : 'Unread'}. ${formatTimestamp(notification.timestamp)}`"
+              :aria-label="`${notification.title}. ${notification.isRead ? 'Read' : 'Unread'}. ${notificationStore.formatTimestamp(notification.timestamp)}`"
             >
               <div class="flex items-start space-x-3">
                 <!-- Notification Type Icon -->
@@ -144,7 +144,7 @@
 
                 <!-- Remove Button -->
                 <button
-                  @click.stop="removeNotification(notification.id)"
+                  @click.stop="notificationStore.removeNotification(notification.id)"
                   class="flex-shrink-0 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded p-1"
                   :aria-label="`Remove ${notification.title} notification`"
                 >
@@ -158,9 +158,9 @@
         </div>
 
         <!-- Footer -->
-        <div v-if="sortedNotifications.length > 0" class="p-3 border-t border-gray-200 dark:border-gray-700">
+        <div v-if="notificationStore.sortedNotifications.length > 0" class="p-3 border-t border-gray-200 dark:border-gray-700">
           <button
-            @click="clearAllNotifications"
+            @click="notificationStore.clearAllNotifications"
             class="w-full text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded py-2"
           >
             Clear all notifications
@@ -186,11 +186,11 @@ const dropdownRef = ref<HTMLElement>()
 // Handle notification click
 const handleNotificationClick = (notification: Notification) => {
   if (!notification.isRead) {
-    markAsRead(notification.id)
+    notificationStore.markAsRead(notification.id)
   }
   
   if (notification.actionUrl) {
-    closeDropdown()
+    notificationStore.closeDropdown()
     router.push(notification.actionUrl)
   }
 }
@@ -198,11 +198,11 @@ const handleNotificationClick = (notification: Notification) => {
 // Handle action button click
 const handleActionClick = (notification: Notification) => {
   if (!notification.isRead) {
-    markAsRead(notification.id)
+    notificationStore.markAsRead(notification.id)
   }
   
   if (notification.actionUrl) {
-    closeDropdown()
+    notificationStore.closeDropdown()
     router.push(notification.actionUrl)
   }
 }
@@ -232,14 +232,14 @@ const getNotificationIconClass = (type: Notification['type']) => {
 // Click outside handler
 const handleClickOutside = (event: MouseEvent) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
-    closeDropdown()
+    notificationStore.closeDropdown()
   }
 }
 
 // Escape key handler
 const handleEscapeKey = (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && isDropdownOpen.value) {
-    closeDropdown()
+  if (event.key === 'Escape' && notificationStore.isDropdownOpen) {
+    notificationStore.closeDropdown()
   }
 }
 
