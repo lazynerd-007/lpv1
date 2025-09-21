@@ -14,7 +14,7 @@ export interface MockUser {
   lastLogin?: string
   loginAttempts: number
   lockedUntil?: string
-  role: 'user' | 'admin' | 'moderator'
+  role: 'user' | 'admin' | 'moderator' | 'critic'
 }
 
 export interface AuthAttempt {
@@ -89,6 +89,19 @@ export const mockUsers: MockUser[] = [
     isActive: false,
     loginAttempts: 0,
     role: 'user'
+  },
+  {
+    id: '6',
+    name: 'Chioma Eze',
+    email: 'critic@test.com',
+    password: 'critic123',
+    bio: 'Professional film critic with expertise in African cinema',
+    location: 'Enugu, Nigeria',
+    joinDate: '2023-05-15',
+    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20woman%20film%20critic%20professional%20headshot&image_size=square',
+    isActive: true,
+    loginAttempts: 0,
+    role: 'critic'
   }
 ]
 
@@ -171,6 +184,7 @@ export const getTestCredentials = () => {
     validAdmin: { email: 'admin@admin.com', password: 'admin123' },
     validUser: { email: 'user@test.com', password: 'password123' },
     validModerator: { email: 'moderator@test.com', password: 'mod123456' },
+    validCritic: { email: 'critic@test.com', password: 'critic123' },
     lockedAccount: { email: 'locked@test.com', password: 'locked123' },
     inactiveAccount: { email: 'inactive@test.com', password: 'inactive123' }
   }

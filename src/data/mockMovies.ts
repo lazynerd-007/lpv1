@@ -10,6 +10,7 @@ export interface Movie {
   director: string;
   producer: string;
   cast: string[];
+  type?: 'movie' | 'series';
   plotSummary: string;
   posterUrl: string;
   poster?: string;
@@ -38,6 +39,7 @@ export interface TVShow {
   creator: string;
   producer: string;
   cast: string[];
+  type?: 'movie' | 'series';
   plotSummary: string;
   posterUrl: string;
   trailerUrl?: string;

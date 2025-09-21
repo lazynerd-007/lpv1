@@ -43,14 +43,40 @@ const handlePlayTrailer = (event: Event, series: TVShow) => {
   }
 }
 
-const toggleWatchlist = (event: Event, seriesId: string) => {
+const toggleWatchlist = async (event: Event, seriesId: string) => {
   event.stopPropagation()
-  // userStore.toggleWatchlist(seriesId)
+  if (!userStore.isAuthenticated) {
+    uiStore.openModal({ id: 'auth', title: 'Authentication Required', content: 'Please log in to continue' })
+    return
+  }
+  
+  try {
+    if (userStore.isInWatchlist(seriesId)) {
+      await userStore.removeFromWatchlist(seriesId)
+    } else {
+      await userStore.addToWatchlist(seriesId)
+    }
+  } catch (error) {
+    console.error('Error updating watchlist:', error)
+  }
 }
 
-const toggleFavorite = (event: Event, seriesId: string) => {
+const toggleFavorite = async (event: Event, seriesId: string) => {
   event.stopPropagation()
-  // userStore.toggleFavorites(seriesId)
+  if (!userStore.isAuthenticated) {
+    uiStore.openModal({ id: 'auth', title: 'Authentication Required', content: 'Please log in to continue' })
+    return
+  }
+  
+  try {
+    if (userStore.isInFavorites(seriesId)) {
+      await userStore.removeFromFavorites(seriesId)
+    } else {
+      await userStore.addToFavorites(seriesId)
+    }
+  } catch (error) {
+    console.error('Error updating favorites:', error)
+  }
 }
 
 const formatRating = (rating: number) => {

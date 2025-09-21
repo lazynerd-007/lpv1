@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { RouterLink } from 'vue-router';
 import type { Movie } from '@/data/mockMovies';
 import LemonPieRating from './LemonPieRating.vue';
 
@@ -148,9 +149,12 @@ const formatGenres = (genres: string[]) => {
       
       <!-- Action Buttons -->
       <div class="card-actions justify-end mt-4">
-        <button class="btn btn-primary btn-sm">
+        <router-link 
+          :to="movie.type === 'series' ? `/series/${movie.id}` : `/movie/${movie.id}`" 
+          class="btn btn-primary btn-sm"
+        >
           View Details
-        </button>
+        </router-link>
         <button v-if="variant !== 'compact'" class="btn btn-outline btn-sm">
           Add to Watchlist
         </button>

@@ -198,9 +198,9 @@
               class="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-colors duration-200"
             >
               <div class="relative">
-                <img :src="movie.poster" :alt="movie.title" class="w-full h-64 object-cover" />
+                <img :src="movie.posterUrl" :alt="movie.title" class="w-full h-64 object-cover" />
                 <button 
-                  @click="removeFromWatchlist(movie.id)"
+                  @click="removeFromWatchlist(movie.id, movie.type as 'movie' | 'series')"
                   class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
                 >
                   <X class="w-4 h-4" />
@@ -208,9 +208,9 @@
               </div>
               <div class="p-4">
                 <h3 class="text-lg font-bold text-white mb-2">{{ movie.title }}</h3>
-                <p class="text-sm text-gray-400 mb-4">{{ movie.year }} • {{ movie.genre }}</p>
+                <p class="text-sm text-gray-400 mb-4">{{ movie.releaseDate.split('-')[0] }} • {{ movie.genre.join(', ') }}</p>
                 <router-link 
-                  :to="`/movie/${movie.id}`" 
+                  :to="movie.type === 'series' ? `/series/${movie.id}` : `/movie/${movie.id}`" 
                   class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition-colors w-full block text-center"
                 >
                   View Details
@@ -242,8 +242,9 @@
             <MovieCard 
               v-for="movie in favorites" 
               :key="movie.id" 
-              :movie="movie"
+              :movie="movie as any"
               class="transform hover:scale-105 transition-transform duration-200"
+              @click="router.push(movie.type === 'series' ? `/series/${movie.id}` : `/movie/${movie.id}`)"
             />
           </div>
           
@@ -419,12 +420,12 @@ const getMovieTitle = (movieId: string) => {
   return movie?.title || 'Unknown Movie'
 }
 
-const removeFromWatchlist = async (movieId: string) => {
+const removeFromWatchlist = async (itemId: string, itemType: 'movie' | 'series') => {
   try {
-    await userStore.removeFromWatchlist(movieId)
-    uiStore.showSuccessToast('Movie removed from watchlist')
+    await userStore.removeFromWatchlist(itemId)
+    uiStore.showSuccessToast(`${itemType === 'movie' ? 'Movie' : 'Series'} removed from watchlist`)
   } catch (error) {
-    uiStore.showErrorToast('Failed to remove movie from watchlist')
+    uiStore.showErrorToast(`Failed to remove ${itemType === 'movie' ? 'movie' : 'series'} from watchlist`)
   }
 }
 

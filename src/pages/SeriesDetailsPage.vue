@@ -146,7 +146,7 @@ const castWithImages = computed(() => {
 })
 
 const isInWatchlist = computed(() => {
-  return userStore.watchlist.includes(seriesId.value)
+  return userStore.isInWatchlist(seriesId.value)
 })
 
 const isInFavorites = computed(() => {

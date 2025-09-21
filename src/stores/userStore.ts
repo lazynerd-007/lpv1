@@ -10,6 +10,7 @@ import {
   type AuthAttempt,
   RATE_LIMIT_CONFIG 
 } from '@/data/mockAuth'
+import { useSeriesStore } from '@/stores/seriesStore'
 
 interface User {
   id: string
@@ -19,6 +20,7 @@ interface User {
   location?: string
   joinDate: string
   avatar?: string
+  role?: 'user' | 'admin' | 'moderator' | 'critic'
 }
 
 interface UserStats {
@@ -38,6 +40,14 @@ export const useUserStore = defineStore('user', () => {
   const favorites = ref<string[]>([]) // Movie IDs
   const userReviews = ref<Review[]>([])
 
+  // State for login and registration
+  const loginError = ref<string | null>(null)
+  const loginInProgress = ref(false)
+  const registrationError = ref<string | null>(null)
+  const registrationInProgress = ref(false)
+  const profileUpdateSuccess = ref(false)
+  const profileUpdateError = ref<string | null>(null)
+  
   // Mock user data
   const mockUser: User = {
     id: '1',
@@ -68,11 +78,49 @@ export const useUserStore = defineStore('user', () => {
   })
 
   const watchlistMovies = computed(() => {
-    return watchlist.value.map(id => getMovieById(id)).filter(Boolean)
+    // Initialize seriesStore
+    const seriesStore = useSeriesStore()
+    
+    return watchlist.value.map(id => {
+      // Try to get as movie first
+      const movie = getMovieById(id)
+      if (movie) {
+        // Add type property to each movie object
+        return { ...movie, type: 'movie' }
+      }
+      
+      // If not found as movie, try to get as series
+      const series = seriesStore.getSeriesById(id)
+      if (series) {
+        // Add type property to each series object
+        return { ...series, type: 'series' }
+      }
+      
+      return null
+    }).filter(Boolean)
   })
 
   const favoriteMovies = computed(() => {
-    return favorites.value.map(id => getMovieById(id)).filter(Boolean)
+    // Initialize seriesStore
+    const seriesStore = useSeriesStore()
+    
+    return favorites.value.map(id => {
+      // Try to get as movie first
+      const movie = getMovieById(id)
+      if (movie) {
+        // Add type property to each movie object
+        return { ...movie, type: 'movie' }
+      }
+      
+      // If not found as movie, try to get as series
+      const series = seriesStore.getSeriesById(id)
+      if (series) {
+        // Add type property to each series object
+        return { ...series, type: 'series' }
+      }
+      
+      return null
+    }).filter(Boolean)
   })
 
   const isInWatchlist = computed(() => (movieId: string) => {
@@ -334,61 +382,18 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Check if user is authenticated on app initialization
-  const checkAuthStatus = async (): Promise<boolean> => {
-    try {
-      const token = localStorage.getItem('auth_token')
-      const userData = localStorage.getItem('user_data')
-      
-      if (!token || !userData) {
-        return false
-      }
-      
-      // In a real app, you would validate the token with the server
-      // For mock purposes, we'll check if it's a valid format and not expired
-      const tokenParts = token.split('_')
-      if (tokenParts.length !== 3 || tokenParts[0] !== 'mock' || tokenParts[1] !== 'jwt') {
-        logout() // Invalid token format
-        return false
-      }
-      
-      const tokenTimestamp = parseInt(tokenParts[2])
-      const tokenAge = Date.now() - tokenTimestamp
-      const TOKEN_EXPIRY = 24 * 60 * 60 * 1000 // 24 hours
-      
-      if (tokenAge > TOKEN_EXPIRY) {
-        logout() // Token expired
-        return false
-      }
-      
-      // Restore user data
-      const user = JSON.parse(userData)
-      currentUser.value = user
-      isAuthenticated.value = true
-      
-      // Load user data
-      await loadUserData()
-      
-      return true
-    } catch (error) {
-      console.error('Auth check failed:', error)
-      logout()
-      return false
-    }
+  const checkAuthStatus = () => {
+    // In a real app, this would check if the user's token is still valid
+    // For this mock, we'll just return the current authentication state
+    return isAuthenticated.value
   }
 
   const loadUserData = async () => {
-    if (!currentUser.value) return
-
-    try {
-      // Load user reviews
-      userReviews.value = mockReviews.filter(review => review.userId === currentUser.value?.id)
-      
-      // Load watchlist and favorites (mock data)
-      watchlist.value = ['1', '3', '5'] // Mock movie IDs
-      favorites.value = ['2', '4'] // Mock movie IDs
-    } catch (err) {
-      console.error('Failed to load user data:', err)
-    }
+    // In a real app, this would load user data from an API
+    // For this mock, we'll just set the mock user data
+    currentUser.value = mockUser as any
+    isAuthenticated.value = true
+    return true
   }
 
   const updateProfile = async (updates: Partial<User>) => {
@@ -487,6 +492,34 @@ export const useUserStore = defineStore('user', () => {
     loadUserData()
   }
 
+  // Role check methods
+  const isAdmin = () => {
+    return currentUser.value?.role === 'admin'
+  }
+  
+  const isModerator = () => {
+    return currentUser.value?.role === 'moderator'
+  }
+  
+  const isCritic = () => {
+    return currentUser.value?.role === 'critic'
+  }
+  
+  const hasRole = (role: 'user' | 'admin' | 'moderator' | 'critic') => {
+    return currentUser.value?.role === role
+  }
+  
+  const assignRole = (userId: string, role: 'user' | 'admin' | 'moderator' | 'critic') => {
+    // Find user in mock database
+    const userIndex = mockUsers.findIndex(user => user.id === userId)
+    if (userIndex === -1) return false
+    
+    // Update role
+    mockUsers[userIndex].role = role
+    return true
+  }
+  
+  // Return the store
   return {
     // State
     currentUser,
@@ -496,6 +529,12 @@ export const useUserStore = defineStore('user', () => {
     watchlist,
     favorites,
     userReviews,
+    loginError,
+    loginInProgress,
+    registrationError,
+    registrationInProgress,
+    profileUpdateSuccess,
+    profileUpdateError,
     
     // Getters
     userStats,
@@ -506,10 +545,8 @@ export const useUserStore = defineStore('user', () => {
     
     // Actions
     login,
-    register,
     logout,
-    checkAuthStatus,
-    loadUserData,
+    register,
     updateProfile,
     addToWatchlist,
     removeFromWatchlist,
@@ -520,6 +557,15 @@ export const useUserStore = defineStore('user', () => {
     addUserReview,
     updateUserReview,
     deleteUserReview,
-    initializeMockAuth
+    initializeMockAuth,
+    checkAuthStatus,
+    loadUserData,
+    
+    // Role methods
+    isAdmin,
+    isModerator,
+    isCritic,
+    hasRole,
+    assignRole
   }
 })
