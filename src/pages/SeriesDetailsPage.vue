@@ -681,15 +681,15 @@ onMounted(async () => {
                 class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
               >
                 <div 
-                  v-for="similarSeries in similarSeries" 
-                  :key="similarSeries.id"
-                  @click="navigateToSeries(similarSeries.id)"
+                  v-for="series in similarSeries" 
+                  :key="series.id"
+                  @click="navigateToSeries(series.id)"
                   class="flex-shrink-0 w-48 cursor-pointer group"
                 >
                   <div class="relative rounded-lg overflow-hidden mb-2">
                     <img 
-                      :src="similarSeries.posterUrl" 
-                      :alt="similarSeries.title"
+                      :src="series.posterUrl" 
+                      :alt="series.title"
                       class="w-full h-64 object-cover group-hover:scale-105 transition-transform"
                     >
                     <div class="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-10 transition-opacity"></div>
@@ -701,10 +701,10 @@ onMounted(async () => {
                     </button>
                     <div class="absolute bottom-2 left-2 bg-yellow-500 text-black text-xs font-bold rounded px-1.5 py-0.5 flex items-center">
                       <Star class="w-3 h-3 fill-current" />
-                      <span class="ml-1">{{ similarSeries.userRating.toFixed(1) }}</span>
+                      <span class="ml-1">{{ series.userRating.toFixed(1) }}</span>
                     </div>
                   </div>
-                  <h4 class="font-medium text-sm line-clamp-2 group-hover:text-orange-500 transition-colors">{{ similarSeries.title }}</h4>
+                  <h4 class="font-medium text-sm line-clamp-2 group-hover:text-orange-500 transition-colors">{{ series.title }}</h4>
                 </div>
               </div>
             </div>
