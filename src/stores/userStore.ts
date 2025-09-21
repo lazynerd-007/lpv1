@@ -19,7 +19,7 @@ interface User {
   location?: string
   joinDate: string
   avatar?: string
-  role: 'user' | 'admin' | 'moderator'
+  role: 'user' | 'admin' | 'moderator' | 'critic'
 }
 
 interface UserStats {
@@ -491,6 +491,53 @@ export const useUserStore = defineStore('user', () => {
     loadUserData()
   }
 
+  // Role management functions
+  const hasRole = (role: User['role']): boolean => {
+    return currentUser.value?.role === role
+  }
+
+  const isCritic = (): boolean => {
+    return hasRole('critic')
+  }
+
+  const isAdmin = (): boolean => {
+    return hasRole('admin')
+  }
+
+  const isModerator = (): boolean => {
+    return hasRole('moderator')
+  }
+
+  const canSubmitCritique = (): boolean => {
+    return isCritic() || isAdmin()
+  }
+
+  const assignRole = async (userId: string, role: User['role']) => {
+    if (!isAdmin()) {
+      return { success: false, error: 'Insufficient permissions' }
+    }
+
+    isLoading.value = true
+    error.value = null
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // If updating current user's role
+      if (currentUser.value?.id === userId) {
+        currentUser.value.role = role
+      }
+      
+      return { success: true }
+    } catch (err) {
+      error.value = 'Failed to assign role'
+      return { success: false, error: error.value }
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     // State
     currentUser,
@@ -524,6 +571,14 @@ export const useUserStore = defineStore('user', () => {
     addUserReview,
     updateUserReview,
     deleteUserReview,
-    initializeMockAuth
+    initializeMockAuth,
+    
+    // Role management
+    hasRole,
+    isCritic,
+    isAdmin,
+    isModerator,
+    canSubmitCritique,
+    assignRole
   }
 })

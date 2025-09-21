@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings, Shield } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
 import NotificationDropdown from '@/components/ui/NotificationDropdown.vue';
+import CriticBadge from '@/components/CriticBadge.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -29,6 +30,10 @@ const baseUserMenuItems = [
   { name: 'Settings', path: '/settings', icon: Settings }
 ];
 
+const criticMenuItems = [
+  { name: 'Submit Critique', path: '/critique/submit', icon: Settings }
+];
+
 const adminMenuItems = [
   { name: 'Admin Area', path: '/admin', icon: Shield }
 ];
@@ -37,6 +42,7 @@ const adminMenuItems = [
 const isLoggedIn = computed(() => userStore.isAuthenticated);
 const currentUser = computed(() => userStore.currentUser);
 const isAdmin = computed(() => currentUser.value?.role === 'admin');
+const isCritic = computed(() => currentUser.value?.role === 'critic');
 const userLastName = computed(() => {
   if (!currentUser.value?.name) return '';
   const nameParts = currentUser.value.name.split(' ');
@@ -46,6 +52,9 @@ const userLastName = computed(() => {
 // Dynamic user menu items based on user role
 const userMenuItems = computed(() => {
   const items = [...baseUserMenuItems];
+  if (isCritic.value) {
+    items.unshift(...criticMenuItems); // Add critic items at the beginning
+  }
   if (isAdmin.value) {
     items.unshift(...adminMenuItems); // Add admin items at the beginning
   }
@@ -187,7 +196,10 @@ onUnmounted(() => {
                 aria-orientation="vertical"
               >
                 <div class="px-4 py-2 border-b border-gray-700">
-                  <p class="text-sm font-medium text-white">{{ currentUser?.name }}</p>
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-medium text-white">{{ currentUser?.name }}</p>
+                    <CriticBadge v-if="isCritic" size="small" :showText="false" />
+                  </div>
                   <p class="text-xs text-gray-400">{{ currentUser?.email }}</p>
                 </div>
                 

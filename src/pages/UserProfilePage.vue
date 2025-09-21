@@ -13,7 +13,10 @@
           
           <!-- Profile Info -->
           <div class="text-center md:text-left text-white">
-            <h1 class="text-4xl font-bold mb-2">{{ user.name }}</h1>
+            <div class="flex flex-col md:flex-row items-center md:items-start gap-3 mb-2">
+              <h1 class="text-4xl font-bold">{{ user.name }}</h1>
+              <CriticBadge v-if="user.role === 'critic'" size="large" class="mt-1" />
+            </div>
             <p class="text-xl text-yellow-100 mb-4">{{ user.bio || 'Nollywood Movie Enthusiast' }}</p>
             <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm">
               <div class="flex items-center gap-2">
@@ -367,6 +370,7 @@ import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
 import MovieCard from '@/components/MovieCard.vue'
 import LemonPieRating from '@/components/LemonPieRating.vue'
+import CriticBadge from '@/components/CriticBadge.vue'
 // Using uiStore.showSuccessToast instead of sonner
 
 const router = useRouter()
