@@ -170,8 +170,8 @@ const knownForMovies = computed(() => {
 
 // Generate actor credits based on their known works and additional mock data
 const actorCredits = computed(() => {
-  if (!actor.value) return []
-  
+  if (!actor.value || typeof actor.value.movieCount !== 'number') return []
+
   // Acting credits from known works
   const baseCredits = actor.value.knownFor?.map((title, index) => ({
     title,

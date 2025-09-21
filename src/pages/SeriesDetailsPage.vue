@@ -543,8 +543,8 @@ onMounted(async () => {
                       <span class="text-gray-400 text-sm">{{ critic.date }}</span>
                     </div>
                     <div class="flex items-center gap-1 mb-3">
-                      <Star v-for="i in Math.floor(critic.rating)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <Star v-for="i in (5 - Math.floor(critic.rating))" :key="i + Math.floor(critic.rating)" class="w-4 h-4 text-gray-400" />
+                      <Star v-for="i in Math.round(critic.rating / 2)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star v-for="i in (5 - Math.round(critic.rating / 2))" :key="i + Math.round(critic.rating / 2)" class="w-4 h-4 text-gray-400" />
                       <span class="text-sm text-gray-400 ml-2">{{ critic.rating }} / 10</span>
                     </div>
                     <h4 class="font-semibold mb-2">{{ critic.title }}</h4>
@@ -558,7 +558,7 @@ onMounted(async () => {
                   @click="showAllCritics = !showAllCritics" 
                   class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
                 >
-                  <span>{{ showAllCritics ? 'Show Less' : `Show More (${critics.length - 5})` }}</span>
+                  <span>{{ showAllCritics ? 'Show Less' : `Show More (${(critics?.length || 0) - 5})` }}</span>
                   <ChevronDown :class="{'transform rotate-180': showAllCritics}" class="w-4 h-4 transition-transform" />
                 </button>
               </div>
@@ -633,7 +633,7 @@ onMounted(async () => {
                 @click="navigateToActor(actor.name)"
               >
                 <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 flex-shrink-0 shadow-lg group">
-                  <img :src="actor.imageUrl" :alt="actor.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                  <img :src="actor.imageUrl" :alt="actor.name" class="w-full h-full object-cover transition-transform duration-300" />
                 </div>
                 <div class="flex-1">
                   <h4 class="font-semibold text-lg">{{ actor.name }}</h4>
@@ -761,6 +761,7 @@ onMounted(async () => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

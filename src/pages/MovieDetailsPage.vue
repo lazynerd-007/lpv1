@@ -27,8 +27,14 @@ const showAllReviews = ref(false)
 const showAllCritics = ref(false)
 const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
 const hasMoreReviews = computed(() => reviews.value.length > 5)
-const criticsToShow = computed(() => showAllCritics.value ? critics : critics.slice(0, 5))
-const hasMoreCritics = computed(() => critics.length > 5)
+const criticsToShow = computed(() => {
+  const criticsArray = critics.value || []
+  return showAllCritics.value ? criticsArray : criticsArray.slice(0, 5)
+})
+const hasMoreCritics = computed(() => {
+  const criticsArray = critics.value || []
+  return criticsArray.length > 5
+})
 
 // Get similar movies based on genre matching
 const similarMovies = computed(() => {
@@ -70,57 +76,60 @@ const scrollRight = () => {
 }
 
 // Sample critics data
-const critics = [
-  {
-    source: 'The Guardian',
-    date: '2 days ago',
-    rating: 8,
-    title: 'A Masterpiece of Nigerian Cinema',
-    content: 'This film represents a significant leap forward for Nollywood, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.'
-  },
-  {
-    source: 'Variety',
-    date: '1 week ago',
-    rating: 7.5,
-    title: 'Impressive Technical Achievement',
-    content: 'While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.'
-  },
-  {
-    source: 'Film Comment',
-    date: '3 days ago',
-    rating: 8.5,
-    title: 'Bold Vision and Execution',
-    content: 'The director demonstrates remarkable control over the material, balancing cultural specificity with universal themes. The result is a film that feels both authentic and accessible to international audiences.'
-  },
-  {
-    source: 'The New York Times',
-    date: '5 days ago',
-    rating: 7,
-    title: 'Promising But Uneven',
-    content: 'There are moments of brilliance throughout, though the pacing issues in the second act prevent it from achieving greatness. Nevertheless, it represents an important voice in contemporary African cinema.'
-  },
-  {
-    source: 'IndieWire',
-    date: '1 week ago',
-    rating: 9,
-    title: 'A Revelation in Storytelling',
-    content: 'Few films this year have managed to balance entertainment value with cultural significance so effectively. The director has crafted a work that feels both timely and timeless.'
-  },
-  {
-    source: 'The Hollywood Reporter',
-    date: '2 weeks ago',
-    rating: 8,
-    title: 'Visually Stunning Drama',
-    content: 'The cinematography alone makes this worth watching, but the performances and screenplay elevate it to something truly special. A standout achievement for Nigerian cinema.'
-  },
-  {
-    source: 'RogerEbert.com',
-    date: '4 days ago',
-    rating: 7.5,
-    title: 'Thoughtful and Engaging',
-    content: 'While not without flaws, this film offers a refreshing perspective and demonstrates the growing technical sophistication of Nollywood productions. The cultural specificity adds richness to the universal themes explored.'
-  }
-]
+const critics = computed(() => {
+  // The Movie interface doesn't have a critics property, so we'll always use our sample data
+  return [
+    {
+      source: 'The Guardian',
+      date: '2 days ago',
+      rating: 8,
+      title: 'A Masterpiece of Nigerian Cinema',
+      content: 'This film represents a significant leap forward for Nollywood, combining compelling storytelling with exceptional production values. The performances are nuanced and the direction is confident throughout.'
+    },
+    {
+      source: 'Variety',
+      date: '1 week ago',
+      rating: 7.5,
+      title: 'Impressive Technical Achievement',
+      content: 'While the narrative occasionally stumbles, the technical prowess on display is undeniable. The cinematography and sound design elevate this above typical genre fare.'
+    },
+    {
+      source: 'Film Comment',
+      date: '3 days ago',
+      rating: 8.5,
+      title: 'Bold Vision and Execution',
+      content: 'The director demonstrates remarkable control over the material, balancing cultural specificity with universal themes. The result is a film that feels both authentic and accessible to international audiences.'
+    },
+    {
+      source: 'The New York Times',
+      date: '5 days ago',
+      rating: 7,
+      title: 'Promising But Uneven',
+      content: 'There are moments of brilliance throughout, though the pacing issues in the second act prevent it from achieving greatness. Nevertheless, it represents an important voice in contemporary African cinema.'
+    },
+    {
+      source: 'IndieWire',
+      date: '1 week ago',
+      rating: 9,
+      title: 'A Revelation in Storytelling',
+      content: 'Few films this year have managed to balance entertainment value with cultural significance so effectively. The director has crafted a work that feels both timely and timeless.'
+    },
+    {
+      source: 'The Hollywood Reporter',
+      date: '2 weeks ago',
+      rating: 8,
+      title: 'Visually Stunning Drama',
+      content: 'The cinematography alone makes this worth watching, but the performances and screenplay elevate it to something truly special. A standout achievement for Nigerian cinema.'
+    },
+    {
+      source: 'RogerEbert.com',
+      date: '4 days ago',
+      rating: 7.5,
+      title: 'Thoughtful and Engaging',
+      content: 'While not without flaws, this film offers a refreshing perspective and demonstrates the growing technical sophistication of Nollywood productions. The cultural specificity adds richness to the universal themes explored.'
+    }
+  ];
+});
 
 const averageRating = computed(() => {
   if (!reviews.value.length) return movie.value?.lemonPieRating || 0
@@ -546,8 +555,8 @@ onMounted(async () => {
                       <span class="text-gray-400 text-sm">{{ critic.date }}</span>
                     </div>
                     <div class="flex items-center gap-1 mb-3">
-                      <Star v-for="i in Math.floor(critic.rating)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <Star v-for="i in (5 - Math.floor(critic.rating))" :key="i + Math.floor(critic.rating)" class="w-4 h-4 text-gray-400" />
+                      <Star v-for="i in Math.round(critic.rating / 2)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
+                      <Star v-for="i in (5 - Math.round(critic.rating / 2))" :key="i + Math.round(critic.rating / 2)" class="w-4 h-4 text-gray-400" />
                       <span class="text-sm text-gray-400 ml-2">{{ critic.rating }} / 10</span>
                     </div>
                     <h4 class="font-semibold mb-2">{{ critic.title }}</h4>
@@ -561,7 +570,7 @@ onMounted(async () => {
                   @click="showAllCritics = !showAllCritics" 
                   class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
                 >
-                  <span>{{ showAllCritics ? 'Show Less' : `Show More (${critics.length - 5})` }}</span>
+                  <span>{{ showAllCritics ? 'Show Less' : `Show More (${(critics?.length || 0) - 5})` }}</span>
                   <ChevronDown :class="{'transform rotate-180': showAllCritics}" class="w-4 h-4 transition-transform" />
                 </button>
               </div>
