@@ -15,3 +15,102 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Light theme variables (default) - White primary background */
+:root {
+  --color-primary: #FFD700;
+  --color-primary-dark: #FFC107;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-card: #ffffff;
+  --color-text-primary: #1f2937;
+  --color-text-secondary: #6b7280;
+  --color-text-muted: #9ca3af;
+  --color-border: #e5e7eb;
+  --color-border-light: #f3f4f6;
+  --color-accent: #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #06b6d4;
+  
+  /* Section backgrounds for variety in light mode */
+  --color-section-alt: #f8fafc;
+  --color-section-accent: #f1f5f9;
+}
+
+/* Dark theme variables - Dark primary background */
+[data-theme="dark"] {
+  --color-primary: #FFD700;
+  --color-primary-dark: #FFC107;
+  --color-background: #0f172a;
+  --color-surface: #1e293b;
+  --color-card: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-border: #475569;
+  --color-border-light: #64748b;
+  --color-accent: #60a5fa;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #22d3ee;
+  
+  /* Section backgrounds for variety in dark mode */
+  --color-section-alt: #1e293b;
+  --color-section-accent: #334155;
+}
+
+/* Utility classes for theme colors */
+.bg-theme-background {
+  background-color: var(--color-background);
+}
+
+.bg-theme-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-theme-card {
+  background-color: var(--color-card);
+}
+
+.bg-theme-section-alt {
+  background-color: var(--color-section-alt);
+}
+
+.bg-theme-section-accent {
+  background-color: var(--color-section-accent);
+}
+
+.text-theme-primary {
+  color: var(--color-text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--color-text-muted);
+}
+
+.border-theme {
+  border-color: var(--color-border);
+}
+
+.border-theme-light {
+  border-color: var(--color-border-light);
+}
+
+/* Global theme application */
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Ensure smooth transitions for all theme-aware elements */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+

@@ -311,7 +311,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="movie" class="min-h-screen bg-gray-900 text-white">
+  <div v-if="movie" class="min-h-screen bg-theme-background text-theme-text">
     <!-- Hero Video Section -->
     <div class="relative w-full h-[500px] mb-8">
       <div class="relative group cursor-pointer bg-gray-800 w-full h-full overflow-hidden">
@@ -753,10 +753,10 @@ onMounted(async () => {
   </div>
   
   <!-- Movie Not Found -->
-  <div v-else class="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+  <div v-else class="min-h-screen flex items-center justify-center bg-theme-background text-theme-text">
     <div class="text-center">
       <h1 class="text-4xl font-bold mb-4">Movie Not Found</h1>
-      <p class="text-gray-400 mb-8">The movie you're looking for doesn't exist or has been removed.</p>
+      <p class="text-theme-secondary mb-8">The movie you're looking for doesn't exist or has been removed.</p>
       <router-link 
         to="/" 
         class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"

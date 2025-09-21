@@ -5,6 +5,7 @@ import './focus-styles.css'
 import App from './App.vue'
 import router from './router'
 import { useUserStore } from './stores/userStore'
+import { useTheme } from './composables/useTheme'
 
 // Create Vue app instance
 const app = createApp(App)
@@ -13,6 +14,10 @@ const pinia = createPinia()
 // Use plugins
 app.use(pinia)
 app.use(router)
+
+// Initialize theme
+const { initTheme } = useTheme()
+initTheme()
 
 // Initialize authentication status
 const initializeAuth = async () => {

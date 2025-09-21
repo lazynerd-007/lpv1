@@ -23,13 +23,13 @@ export function useTheme() {
   
   const updateTheme = () => {
     const html = document.documentElement;
-    html.setAttribute('data-theme', currentTheme.value);
     
-    // Update class for Tailwind dark mode
     if (currentTheme.value === 'dark') {
       html.classList.add('dark');
+      html.setAttribute('data-theme', 'dark');
     } else {
       html.classList.remove('dark');
+      html.setAttribute('data-theme', 'light');
     }
   };
   

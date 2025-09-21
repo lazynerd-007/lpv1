@@ -40,7 +40,7 @@ watch(() => route.query, (newQuery) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-base-100">
+  <div class="min-h-screen bg-theme-background">
     <!-- Search Header -->
     <SearchHeader />
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-theme-background">
     <!-- Header Section -->
     <div class="container mx-auto px-2 py-4">
       <div class="flex items-center justify-between mb-8">
@@ -14,7 +14,7 @@
             <select 
               v-model="selectedGenre" 
               @change="handleGenreChange"
-              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              class="appearance-none bg-theme-surface border border-theme rounded-lg px-4 py-2 pr-8 text-theme-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="">All Genres</option>
               <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
@@ -27,7 +27,7 @@
             <select 
               v-model="sortBy" 
               @change="handleSortChange"
-              class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              class="appearance-none bg-theme-surface border border-theme rounded-lg px-4 py-2 pr-8 text-theme-primary focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
               <option value="popularity">Most popular first</option>
               <option value="rating">Highest rated</option>
@@ -46,8 +46,8 @@
               :class="[
                 'px-3 py-2 transition-colors',
                 viewMode === 'grid' 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-theme-primary text-theme-primary-text' 
+                  : 'bg-theme-surface text-theme-text hover:bg-theme-surface-hover'
               ]"
             >
               <Grid class="w-4 h-4" />
@@ -55,10 +55,10 @@
             <button 
               @click="viewMode = 'list'" 
               :class="[
-                'px-3 py-2 transition-colors border-l border-gray-300',
+                'px-3 py-2 transition-colors border-l border-theme-border',
                 viewMode === 'list' 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                  ? 'bg-theme-primary text-theme-primary-text' 
+                  : 'bg-theme-surface text-theme-text hover:bg-theme-surface-hover'
               ]"
             >
               <List class="w-4 h-4" />
@@ -118,7 +118,7 @@
                   <span 
                     v-for="actor in show.cast.slice(0, 3)" 
                     :key="actor" 
-                    class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                    class="bg-theme-surface text-theme-text px-3 py-1 rounded-full text-sm"
                   >
                     {{ actor }}
                   </span>
@@ -156,7 +156,7 @@
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+      <div v-else class="text-center py-8 bg-theme-section-alt rounded-lg border border-theme-light">
         <div class="text-6xl mb-4">🔍</div>
         <h3 class="text-2xl font-bold text-gray-900 mb-2">No series found</h3>
         <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
@@ -290,7 +290,7 @@ const getStatusColor = (status: string) => {
     case 'cancelled':
       return 'bg-red-100 text-red-800'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-theme-surface text-theme-text'
   }
 }
 

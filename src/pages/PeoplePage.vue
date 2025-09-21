@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-theme-background">
     <!-- Header -->
     <div class="container mx-auto px-2 py-4">
       <div class="flex items-center justify-between mb-6">
@@ -13,7 +13,7 @@
           <div class="flex items-center gap-2">
             <select 
               v-model="sortBy" 
-              class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              class="bg-theme-surface border border-theme-border rounded-lg px-3 py-2 text-sm text-theme-primary focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="popularity">Most popular first</option>
               <option value="name">Name A-Z</option>

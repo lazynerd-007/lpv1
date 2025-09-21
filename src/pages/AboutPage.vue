@@ -16,7 +16,7 @@
     <div class="container mx-auto px-4 py-12">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <!-- Our Story -->
-        <div class="card bg-white shadow-xl">
+        <div class="card bg-theme-card shadow-xl">
           <div class="card-body">
             <h2 class="card-title text-3xl mb-4 text-orange-600">
               <Clapperboard class="w-8 h-8" />
@@ -143,7 +143,7 @@
       </div>
 
       <!-- Contact Section -->
-      <div class="card bg-white shadow-xl mt-16">
+      <div class="card bg-theme-card shadow-xl mt-16">
         <div class="card-body text-center">
           <h2 class="card-title text-3xl mb-4 justify-center text-gray-800">
             <Mail class="w-8 h-8" />

@@ -14,7 +14,7 @@
 
     <!-- Main Content -->
     <div class="container mx-auto px-4 py-12">
-      <div class="card bg-white shadow-xl">
+      <div class="card bg-theme-card shadow-xl">
         <div class="card-body">
           <h2 class="card-title text-3xl mb-6 text-orange-600">
             <FileText class="w-8 h-8" />

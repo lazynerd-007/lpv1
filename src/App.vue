@@ -21,12 +21,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div id="app" class="min-h-screen flex flex-col">
+  <div id="app" class="min-h-screen flex flex-col bg-theme-background text-theme-primary">
     <!-- Header (hidden on login, register, and forgot-password pages) -->
     <AppHeader v-if="!isAuthPage" />
     
     <!-- Main Content -->
-    <main class="flex-1">
+    <main class="flex-1 bg-theme-background">
       <router-view />
     </main>
     

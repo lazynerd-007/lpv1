@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings } from 'lucide-vue-next';
+import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings, Sun, Moon } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
+import { useTheme } from '@/composables/useTheme';
 import NotificationDropdown from '@/components/ui/NotificationDropdown.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
+const { theme, isDark, toggleTheme } = useTheme();
 
 // State
 const isMenuOpen = ref(false);
@@ -75,6 +77,11 @@ const handleLogout = () => {
   userStore.logout();
   closeUserDropdown();
   router.push('/');
+};
+
+const handleThemeToggle = () => {
+  toggleTheme();
+  // Don't close dropdown immediately to show the theme change
 };
 
 // Click outside handler
@@ -188,6 +195,17 @@ onUnmounted(() => {
                     <component :is="item.icon" class="w-4 h-4" />
                     {{ item.name }}
                   </button>
+                  
+                  <!-- Theme Toggle -->
+                  <button
+                    @click="handleThemeToggle"
+                    class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 transition-colors flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <Sun v-if="isDark" class="w-4 h-4" />
+                    <Moon v-else class="w-4 h-4" />
+                    {{ isDark ? 'Light Mode' : 'Dark Mode' }}
+                  </button>
                 </div>
                 
                 <div class="border-t border-gray-700 py-1">
@@ -295,6 +313,16 @@ onUnmounted(() => {
               >
                 <component :is="item.icon" class="w-4 h-4" />
                 {{ item.name }}
+              </button>
+              
+              <!-- Theme Toggle (Mobile) -->
+              <button
+                @click="handleThemeToggle"
+                class="w-full text-left px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition-colors flex items-center gap-3"
+              >
+                <Sun v-if="isDark" class="w-4 h-4" />
+                <Moon v-else class="w-4 h-4" />
+                {{ isDark ? 'Light Mode' : 'Dark Mode' }}
               </button>
               
               <button

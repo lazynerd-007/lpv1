@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white">
+  <div class="min-h-screen bg-theme-background text-theme-text">
     <!-- Header Section -->
     <div class="bg-gradient-to-r from-yellow-600 to-orange-600 py-12">
       <div class="container mx-auto px-4">
@@ -50,7 +50,7 @@
                 v-model="searchQuery"
                 type="text"
                 placeholder="Search your watchlist..."
-                class="w-full pl-10 pr-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-white placeholder-gray-400"
+                class="w-full pl-10 pr-4 py-3 bg-theme-surface border border-theme-border rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-theme-text placeholder-theme-secondary"
               />
             </div>
             
@@ -58,7 +58,7 @@
             <div class="relative">
               <select
                 v-model="selectedFilter"
-                class="appearance-none bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pr-10 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                class="appearance-none bg-theme-surface border border-theme-border rounded-lg px-4 py-3 pr-10 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               >
                 <option value="all">All Items</option>
                 <option value="movies">Movies Only</option>
@@ -72,7 +72,7 @@
             <div class="relative">
               <select
                 v-model="selectedGenre"
-                class="appearance-none bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pr-10 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                class="appearance-none bg-theme-surface border border-theme-border rounded-lg px-4 py-3 pr-10 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
               >
                 <option value="">All Genres</option>
                 <option v-for="genre in availableGenres" :key="genre" :value="genre">
@@ -88,7 +88,7 @@
             <span class="text-gray-400 text-sm">Sort by:</span>
             <select
               v-model="sortBy"
-              class="appearance-none bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 pr-10 text-white focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+              class="appearance-none bg-theme-surface border border-theme-border rounded-lg px-4 py-3 pr-10 text-theme-text focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
             >
               <option value="dateAdded">Date Added</option>
               <option value="title">Title (A-Z)</option>
@@ -97,7 +97,7 @@
             </select>
             <button
               @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-              class="p-2 bg-gray-800 border border-gray-700 rounded-lg hover:bg-gray-700 transition-colors"
+              class="p-2 bg-theme-surface border border-theme-border rounded-lg hover:bg-theme-surface-hover transition-colors"
               :title="sortOrder === 'asc' ? 'Sort Descending' : 'Sort Ascending'"
             >
               <ArrowUpDown class="w-5 h-5" :class="sortOrder === 'desc' ? 'rotate-180' : ''" />
@@ -128,7 +128,7 @@
           <div
             v-for="movie in filteredAndSortedMovies"
             :key="movie.id"
-            class="group relative bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-750 transition-all duration-300 hover:scale-105 cursor-pointer"
+            class="group relative bg-theme-card rounded-lg overflow-hidden hover:bg-theme-card-hover transition-all duration-300 hover:scale-105 cursor-pointer"
             @click="goToDetails(movie.id)"
           >
             <!-- Movie Poster -->
@@ -178,7 +178,11 @@
               <h3 class="font-semibold text-white mb-1 line-clamp-2 group-hover:text-yellow-400 transition-colors" :title="movie.title">
                 {{ movie.title }}
               </h3>
-              <p class="text-gray-400 text-sm mb-2">{{ formatDate(movie.releaseDate) }} • {{ formatRuntime(movie.runtime) }}</p>
+              <p class="text-gray-400 text-sm mb-2">
+                {{ formatDate(movie.releaseDate) }}
+                <span v-if="movie.type === 'movie'"> • {{ formatRuntime((movie as Movie).runtime) }}</span>
+                <span v-else> • {{ (movie as TVShow).seasons }} Season{{ (movie as TVShow).seasons !== 1 ? 's' : '' }}</span>
+              </p>
               <p class="text-gray-300 text-sm mb-2">{{ movie.genre.slice(0, 3).join(', ') }}</p>
               <div class="flex items-center justify-between">
                 <div class="flex items-center space-x-1">
@@ -196,7 +200,7 @@
           <div
             v-for="movie in filteredAndSortedMovies"
             :key="movie.id"
-            class="bg-gray-800 rounded-lg p-4 hover:bg-gray-750 transition-colors group cursor-pointer"
+            class="bg-theme-card rounded-lg p-4 hover:bg-theme-card-hover transition-colors group cursor-pointer"
             @click="goToDetails(movie.id)"
           >
             <div class="flex items-center space-x-4">
@@ -227,7 +231,11 @@
                         {{ movie.productionState }}
                       </span>
                     </div>
-                    <p class="text-gray-400 text-sm mb-2">{{ formatDate(movie.releaseDate) }} • {{ formatRuntime(movie.runtime) }} • {{ movie.director }}</p>
+                    <p class="text-gray-400 text-sm mb-2">
+                      {{ formatDate(movie.releaseDate) }}
+                      <span v-if="movie.type === 'movie'"> • {{ formatRuntime((movie as Movie).runtime) }} • {{ (movie as Movie).director }}</span>
+                      <span v-else> • {{ (movie as TVShow).seasons }} Season{{ (movie as TVShow).seasons !== 1 ? 's' : '' }} • {{ (movie as TVShow).creator }}</span>
+                    </p>
                     <p class="text-gray-300 text-sm mb-2">{{ movie.genre.join(', ') }}</p>
                     <p class="text-gray-300 text-sm line-clamp-2">{{ movie.plotSummary }}</p>
                   </div>
@@ -287,7 +295,7 @@
             </button>
             <router-link
               to="/browse/movies"
-              class="inline-block bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              class="inline-block bg-theme-surface hover:bg-theme-surface-hover text-theme-text px-6 py-3 rounded-lg font-semibold transition-colors"
             >
               Browse Movies
             </router-link>
@@ -318,7 +326,9 @@ import {
   Clock,
   Trash2
 } from 'lucide-vue-next'
-import type { Movie } from '@/data/mockMovies'
+import type { Movie, TVShow } from '@/data/mockMovies'
+
+type WatchlistItem = (Movie | TVShow) & { type: 'movie' | 'series' }
 
 // Stores
 const userStore = useUserStore()
@@ -335,7 +345,7 @@ const sortBy = ref('dateAdded')
 const sortOrder = ref<'asc' | 'desc'>('desc')
 
 // Computed properties
-const watchlistMovies = computed(() => userStore.watchlistMovies)
+const watchlistMovies = computed(() => userStore.watchlistMovies as WatchlistItem[])
 
 const filteredAndSortedMovies = computed(() => {
   let filtered = watchlistMovies.value
@@ -343,13 +353,14 @@ const filteredAndSortedMovies = computed(() => {
   // Apply search filter
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
-    filtered = filtered.filter(movie => 
-      movie.title.toLowerCase().includes(query) ||
-      movie.localTitle?.toLowerCase().includes(query) ||
-      movie.director.toLowerCase().includes(query) ||
-      movie.cast.some(actor => actor.toLowerCase().includes(query)) ||
-      movie.genre.some(g => g.toLowerCase().includes(query)) ||
-      movie.plotSummary.toLowerCase().includes(query)
+    filtered = filtered.filter(item => 
+      item.title.toLowerCase().includes(query) ||
+      item.localTitle?.toLowerCase().includes(query) ||
+      (item.type === 'movie' && (item as Movie).director.toLowerCase().includes(query)) ||
+      (item.type === 'series' && (item as TVShow).creator.toLowerCase().includes(query)) ||
+      item.cast.some(actor => actor.toLowerCase().includes(query)) ||
+      item.genre.some(g => g.toLowerCase().includes(query)) ||
+      item.plotSummary.toLowerCase().includes(query)
     )
   }
 
@@ -357,10 +368,10 @@ const filteredAndSortedMovies = computed(() => {
   if (selectedFilter.value !== 'all') {
     switch (selectedFilter.value) {
       case 'movies':
-        filtered = filtered.filter(movie => movie.type === 'movie')
+        filtered = filtered.filter(item => item.type === 'movie')
         break
       case 'series':
-        filtered = filtered.filter(movie => movie.type === 'series')
+        filtered = filtered.filter(item => item.type === 'series')
         break
       case 'recent':
         // Show items added in the last 30 days (mock implementation)
@@ -371,7 +382,7 @@ const filteredAndSortedMovies = computed(() => {
   
   // Apply genre filter
   if (selectedGenre.value) {
-    filtered = filtered.filter(movie => movie.genre.includes(selectedGenre.value))
+    filtered = filtered.filter(item => item.genre.includes(selectedGenre.value))
   }
 
   // Apply sorting
@@ -403,38 +414,47 @@ const filteredAndSortedMovies = computed(() => {
 
 const availableGenres = computed(() => {
   const genres = new Set<string>()
-  watchlistMovies.value.forEach(movie => {
-    movie.genre.forEach(g => genres.add(g))
+  watchlistMovies.value.forEach(item => {
+    item.genre.forEach(g => genres.add(g))
   })
   return Array.from(genres).sort()
 })
 
 const availableStatuses = computed(() => {
   const statuses = new Set<string>()
-  watchlistMovies.value.forEach(movie => {
-    statuses.add(movie.productionState)
+  watchlistMovies.value.forEach(item => {
+    statuses.add(item.productionState)
   })
   return Array.from(statuses).sort()
 })
 
 // Methods
-const removeFromWatchlist = async (movieId: string) => {
+const removeFromWatchlist = async (itemId: string) => {
   try {
-    await userStore.removeFromWatchlist(movieId)
-    uiStore.showSuccessToast('Movie removed from watchlist')
+    const item = watchlistMovies.value.find(item => item.id === itemId)
+    await userStore.removeFromWatchlist(itemId)
+    const itemType = item?.type === 'movie' ? 'Movie' : 'Series'
+    uiStore.showSuccessToast(`${itemType} removed from watchlist`)
   } catch (error) {
     console.error('Error removing from watchlist:', error)
-    uiStore.showErrorToast('Failed to remove movie from watchlist')
+    uiStore.showErrorToast('Failed to remove item from watchlist')
   }
 }
 
-const goToDetails = (movieId: string) => {
-  router.push(`/movie/${movieId}`)
+const goToDetails = (itemId: string) => {
+  const item = watchlistMovies.value.find(item => item.id === itemId)
+  if (item) {
+    if (item.type === 'movie') {
+      router.push(`/movie/${itemId}`)
+    } else {
+      router.push(`/series/${itemId}`)
+    }
+  }
 }
 
-const playTrailer = (movie: Movie) => {
-  if (movie.trailerUrl) {
-    window.open(movie.trailerUrl, '_blank')
+const playTrailer = (item: WatchlistItem) => {
+  if (item.trailerUrl) {
+    window.open(item.trailerUrl, '_blank')
   }
 }
 

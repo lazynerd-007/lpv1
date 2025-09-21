@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
+  <div class="min-h-screen bg-theme-background">
     <!-- Profile Header -->
     <div class="bg-gradient-to-r from-yellow-500 to-orange-600 py-16">
       <div class="container mx-auto px-4">
@@ -33,31 +33,31 @@
     <div class="container mx-auto px-4 py-8">
       <!-- Stats Cards -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-theme-card rounded-lg p-6 text-center">
           <div class="text-3xl font-bold text-yellow-400">{{ userStats.totalReviews }}</div>
-          <div class="text-gray-300">Reviews Written</div>
+          <div class="text-theme-secondary">Reviews Written</div>
         </div>
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-theme-card rounded-lg p-6 text-center">
           <div class="text-3xl font-bold text-green-400">{{ userStats.averageRating.toFixed(1) }}</div>
-          <div class="text-gray-300">Average Rating</div>
+          <div class="text-theme-secondary">Average Rating</div>
         </div>
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-theme-card rounded-lg p-6 text-center">
           <div class="text-3xl font-bold text-blue-400">{{ userStats.totalLikes }}</div>
-          <div class="text-gray-300">Likes Received</div>
+          <div class="text-theme-secondary">Likes Received</div>
         </div>
-        <div class="bg-gray-800 rounded-lg p-6 text-center">
+        <div class="bg-theme-card rounded-lg p-6 text-center">
           <div class="text-3xl font-bold text-purple-400">{{ userStats.moviesWatched }}</div>
-          <div class="text-gray-300">Movies Watched</div>
+          <div class="text-theme-secondary">Movies Watched</div>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="bg-gray-800 rounded-lg p-2 mb-8 flex flex-wrap gap-2">
+      <div class="bg-theme-surface rounded-lg p-2 mb-8 flex flex-wrap gap-2">
         <button 
           @click="activeTab = 'reviews'"
           :class="[
             'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
-            activeTab === 'reviews' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+            activeTab === 'reviews' ? 'bg-theme-primary text-theme-primary-text' : 'text-theme-text hover:bg-theme-surface-hover'
           ]"
         >
           <MessageSquare class="w-4 h-4" />
@@ -67,7 +67,7 @@
           @click="activeTab = 'watchlist'"
           :class="[
             'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
-            activeTab === 'watchlist' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+            activeTab === 'watchlist' ? 'bg-theme-primary text-theme-primary-text' : 'text-theme-text hover:bg-theme-surface-hover'
           ]"
         >
           <Bookmark class="w-4 h-4" />
@@ -77,7 +77,7 @@
           @click="activeTab = 'favorites'"
           :class="[
             'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
-            activeTab === 'favorites' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+            activeTab === 'favorites' ? 'bg-theme-primary text-theme-primary-text' : 'text-theme-text hover:bg-theme-surface-hover'
           ]"
         >
           <Heart class="w-4 h-4" />
@@ -87,7 +87,7 @@
           @click="activeTab = 'settings'"
           :class="[
             'px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2',
-            activeTab === 'settings' ? 'bg-yellow-500 text-black' : 'text-white hover:bg-gray-700'
+            activeTab === 'settings' ? 'bg-theme-primary text-theme-primary-text' : 'text-theme-text hover:bg-theme-surface-hover'
           ]"
         >
           <Settings class="w-4 h-4" />
@@ -100,7 +100,7 @@
         <!-- Reviews Tab -->
         <div v-if="activeTab === 'reviews'">
           <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-white">My Reviews ({{ userReviews.length }})</h2>
+            <h2 class="text-2xl font-bold text-theme-text">My Reviews ({{ userReviews.length }})</h2>
             <button 
               @click="router.push('/write-review')"
               class="bg-yellow-500 text-black px-4 py-2 rounded-lg font-medium hover:bg-yellow-400 transition-colors flex items-center gap-2"
@@ -114,7 +114,7 @@
             <div 
               v-for="review in userReviews" 
               :key="review.id"
-              class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition-colors duration-200"
+              class="bg-theme-card rounded-lg p-6 hover:bg-theme-card-hover transition-colors duration-200"
             >
               <div class="flex justify-between items-start mb-4">
                 <div class="flex-1">

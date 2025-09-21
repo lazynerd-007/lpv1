@@ -1,12 +1,12 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
+  <div class="min-h-screen bg-theme-background">
     <div v-if="loading" class="flex justify-center items-center min-h-screen">
       <div class="loading loading-spinner loading-lg text-primary"></div>
     </div>
     
     <div v-else-if="!actor" class="flex justify-center items-center min-h-screen">
       <div class="text-center">
-        <h2 class="text-2xl font-bold text-white mb-4">Person Not Found</h2>
+        <h2 class="text-2xl font-bold text-theme-text mb-4">Person Not Found</h2>
         <router-link to="/people" class="btn btn-primary">Back to People</router-link>
       </div>
     </div>
@@ -26,8 +26,8 @@
           </div>
           
           <!-- Personal Details -->
-          <div class="bg-gray-800 rounded-lg p-6">
-            <h3 class="text-lg font-bold text-white mb-4">Personal Info</h3>
+          <div class="bg-theme-card rounded-lg p-6">
+            <h3 class="text-lg font-bold text-theme-text mb-4">Personal Info</h3>
             
             <div class="space-y-3">
               <div>

@@ -20,7 +20,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-base-100">
+  <div class="min-h-screen bg-theme-background">
     <!-- Hero Section -->
     <HeroSection />
 
@@ -47,12 +47,35 @@ onMounted(async () => {
       subtitle="Most popular Nollywood films right now"
       :movies="movieStore.movies.slice(0, 8)"
       :max-items="8"
-      background-color="bg-gray-50"
+      background-color="bg-theme-section-alt"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
     />
 
     <!-- Fresh Lemons Section -->
     <FreshLemonsSection />
 
+    <!-- Top Rated Section -->
+    <MovieCarousel 
+      title="Top Rated"
+      subtitle="Highest rated Nollywood films of all time"
+      :movies="movieStore.topRatedMovies"
+      :max-items="8"
+      background-color="bg-theme-section-accent"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
+    />
+
+    <!-- Recently Added Section -->
+    <MovieCarousel 
+      title="Recently Added"
+      subtitle="Fresh additions to our Nollywood collection"
+      :movies="movieStore.recentlyAddedMovies"
+      :max-items="8"
+      background-color="bg-theme-background"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
+    />
   </div>
 </template>
 

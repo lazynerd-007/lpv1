@@ -1,14 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-    <!-- LemonNPie Logo -->
-    <div class="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-      <LemonPieLogo size="lg" />
-    </div>
-
-    <!-- Main Content -->
-    <div class="w-full max-w-md">
-      <!-- Form Container -->
-      <div class="bg-gray-800 rounded-lg p-8 shadow-xl">
+  <div class="bg-theme-background min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <div class="bg-theme-card rounded-lg shadow-md p-8">
         <!-- Header Text -->
         <div class="mb-6">
           <p class="text-gray-300 text-sm leading-relaxed">
@@ -26,7 +19,7 @@
             <input
               v-model="email"
               type="email"
-              class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
               placeholder="Enter your email"
               required
             />

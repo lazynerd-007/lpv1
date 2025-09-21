@@ -30,6 +30,18 @@ export const useMovieStore = defineStore('movie', () => {
   const trendingMovies = computed(() => getTrendingMovies())
   const trendingTVShows = computed(() => getTrendingTVShows())
   
+  const topRatedMovies = computed(() => {
+    return [...movies.value]
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 8)
+  })
+  
+  const recentlyAddedMovies = computed(() => {
+    return [...movies.value]
+      .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
+      .slice(0, 8)
+  })
+  
   const moviesByGenre = computed(() => {
     const genres: Record<string, Movie[]> = {}
     movies.value.forEach(movie => {
@@ -222,6 +234,8 @@ export const useMovieStore = defineStore('movie', () => {
     lemonMovies,
     trendingMovies,
     trendingTVShows,
+    topRatedMovies,
+    recentlyAddedMovies,
     moviesByGenre,
     moviesByYear,
     

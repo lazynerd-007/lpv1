@@ -1,5 +1,5 @@
 <template>
-  <div class="settings-page min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+  <div class="settings-page min-h-screen bg-theme-background py-8">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Page Header -->
       <div class="mb-8">
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Settings Content -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-theme-card shadow rounded-lg">
         <!-- Profile Information -->
         <div v-if="activeTab === 'profile'" class="p-6">
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6">Profile Information</h2>
@@ -332,7 +332,7 @@
                         <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
                         <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
                       </svg>
-                      {{ userStore.currentUser?.role?.charAt(0).toUpperCase() + userStore.currentUser?.role?.slice(1) }}
+                      {{ userStore.currentUser?.role ? userStore.currentUser.role.charAt(0).toUpperCase() + userStore.currentUser.role.slice(1) : 'User' }}
                     </span>
                   </div>
                 </div>
@@ -549,7 +549,9 @@ const saveProfile = () => {
   userStore.updateProfile(profileData)
   notificationStore.addNotification({
     type: 'success',
-    message: 'Profile updated successfully!'
+    title: 'Profile Updated',
+    message: 'Profile updated successfully!',
+    isRead: false
   })
 }
 
@@ -557,7 +559,9 @@ const saveNotifications = () => {
   // Save notification preferences
   notificationStore.addNotification({
     type: 'success',
-    message: 'Notification preferences saved!'
+    title: 'Settings Saved',
+    message: 'Notification preferences saved!',
+    isRead: false
   })
 }
 
@@ -565,7 +569,9 @@ const savePrivacy = () => {
   // Save privacy settings
   notificationStore.addNotification({
     type: 'success',
-    message: 'Privacy settings updated!'
+    title: 'Privacy Updated',
+    message: 'Privacy settings updated!',
+    isRead: false
   })
 }
 
@@ -573,7 +579,9 @@ const changePassword = () => {
   if (passwordData.new !== passwordData.confirm) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'New passwords do not match!'
+      title: 'Password Mismatch',
+      message: 'New passwords do not match!',
+      isRead: false
     })
     return
   }
@@ -581,7 +589,9 @@ const changePassword = () => {
   if (passwordData.new.length < 8) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'Password must be at least 8 characters long!'
+      title: 'Invalid Password',
+      message: 'Password must be at least 8 characters long!',
+      isRead: false
     })
     return
   }
@@ -589,7 +599,9 @@ const changePassword = () => {
   // Update password
   notificationStore.addNotification({
     type: 'success',
-    message: 'Password updated successfully!'
+    title: 'Password Updated',
+    message: 'Password updated successfully!',
+    isRead: false
   })
   
   // Clear form
@@ -602,7 +614,9 @@ const toggle2FA = () => {
   accountSettings.twoFactorEnabled = !accountSettings.twoFactorEnabled
   notificationStore.addNotification({
     type: 'success',
-    message: `Two-factor authentication ${accountSettings.twoFactorEnabled ? 'enabled' : 'disabled'}!`
+    title: '2FA Updated',
+    message: `Two-factor authentication ${accountSettings.twoFactorEnabled ? 'enabled' : 'disabled'}!`,
+    isRead: false
   })
 }
 
@@ -610,7 +624,9 @@ const assignRole = async () => {
   if (!roleManagement.userId || !roleManagement.selectedRole) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'Please provide both user ID and role selection!'
+      title: 'Missing Information',
+      message: 'Please provide both user ID and role selection!',
+      isRead: false
     })
     return
   }
@@ -627,7 +643,9 @@ const assignRole = async () => {
     if (success) {
       notificationStore.addNotification({
         type: 'success',
-        message: `Successfully assigned ${roleManagement.selectedRole} role to user ${roleManagement.userId}!`
+        title: 'Role Assigned',
+        message: `Successfully assigned ${roleManagement.selectedRole} role to user ${roleManagement.userId}!`,
+        isRead: false
       })
       
       // Clear form
@@ -636,13 +654,17 @@ const assignRole = async () => {
     } else {
       notificationStore.addNotification({
         type: 'error',
-        message: 'Failed to assign role. User may not exist or you may not have permission.'
+        title: 'Role Assignment Failed',
+        message: 'Failed to assign role. User may not exist or you may not have permission.',
+        isRead: false
       })
     }
   } catch (error) {
     notificationStore.addNotification({
       type: 'error',
-      message: 'An error occurred while assigning the role. Please try again.'
+      title: 'Assignment Error',
+      message: 'An error occurred while assigning the role. Please try again.',
+      isRead: false
     })
   } finally {
     isAssigningRole.value = false
@@ -653,7 +675,9 @@ const deleteAccount = () => {
   // Perform account deletion
   notificationStore.addNotification({
     type: 'success',
-    message: 'Account deletion initiated. You will be logged out shortly.'
+    title: 'Account Deletion',
+    message: 'Account deletion initiated. You will be logged out shortly.',
+    isRead: false
   })
   
   // Close modal and redirect
