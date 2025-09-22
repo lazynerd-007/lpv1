@@ -77,17 +77,17 @@ const playTrailer = (movie: any) => {
 </script>
 
 <template>
-  <section class="py-12 bg-white">
+  <section class="py-12 bg-theme-background">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-8">
         <div>
-          <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 class="text-2xl font-bold text-theme-primary flex items-center gap-2">
             <span class="w-1 h-6 bg-orange-500 rounded"></span>
             Fresh pies
-            <ChevronRight class="w-5 h-5 text-gray-400" />
+            <ChevronRight class="w-5 h-5 text-theme-tertiary" />
           </h2>
-          <p class="text-gray-600 mt-1">Fresh and exciting movies coming your way</p>
+          <p class="text-theme-secondary mt-1">Fresh and exciting movies coming your way</p>
         </div>
         
         <!-- Navigation Buttons -->

@@ -64,14 +64,14 @@ const scrollRight = () => {
 </script>
 
 <template>
-  <section class="py-12 bg-white">
+  <section class="py-12 bg-theme-surface">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
             <span class="w-1 h-6 bg-orange-500 rounded"></span>
-            <h2 class="text-2xl font-bold text-gray-900">Trending Actors</h2>
+            <h2 class="text-2xl font-bold text-theme-primary">Trending Actors</h2>
           </div>
           <ChevronRight class="w-5 h-5 text-orange-500" />
         </div>
@@ -80,15 +80,15 @@ const scrollRight = () => {
         <div class="flex gap-2">
           <button 
             @click="scrollLeft"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+            class="p-2 rounded-full bg-theme-background hover:bg-theme-surface-hover transition-colors duration-200"
           >
-            <ChevronLeft class="w-5 h-5 text-gray-600" />
+            <ChevronLeft class="w-5 h-5 text-theme-secondary" />
           </button>
           <button 
             @click="scrollRight"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+            class="p-2 rounded-full bg-theme-background hover:bg-theme-surface-hover transition-colors duration-200"
           >
-            <ChevronRight class="w-5 h-5 text-gray-600" />
+            <ChevronRight class="w-5 h-5 text-theme-secondary" />
           </button>
         </div>
       </div>
@@ -107,7 +107,7 @@ const scrollRight = () => {
         >
           <!-- Actor Profile Image -->
           <div class="relative mb-3">
-            <div class="w-40 h-40 rounded-full overflow-hidden bg-gray-200 mx-auto group-hover:scale-105 transition-transform duration-300">
+            <div class="w-40 h-40 rounded-full overflow-hidden bg-theme-background mx-auto group-hover:scale-105 transition-transform duration-300">
               <img 
                 :src="actor.profileImage" 
                 :alt="actor.name"
@@ -119,10 +119,10 @@ const scrollRight = () => {
           
           <!-- Actor Info -->
           <div class="space-y-1">
-            <h3 class="font-semibold text-gray-900 text-base group-hover:text-orange-500 transition-colors duration-200">
+            <h3 class="font-semibold text-theme-primary text-base group-hover:text-orange-500 transition-colors duration-200">
               {{ actor.name }}
             </h3>
-            <p class="text-gray-500 text-sm">
+            <p class="text-theme-secondary text-sm">
               Age {{ actor.age }}
             </p>
           </div>
