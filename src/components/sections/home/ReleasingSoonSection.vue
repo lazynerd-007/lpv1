@@ -95,16 +95,16 @@ const playTrailer = (movie: any) => {
           <button 
             @click="scrollLeft"
             :disabled="!canScrollLeft"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="p-2 rounded-full bg-theme-surface hover:bg-theme-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronLeft class="w-5 h-5 text-gray-600" />
+            <ChevronLeft class="w-5 h-5 text-theme-secondary" />
           </button>
           <button 
             @click="scrollRight"
             :disabled="!canScrollRight"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="p-2 rounded-full bg-theme-surface hover:bg-theme-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <ChevronRight class="w-5 h-5 text-gray-600" />
+            <ChevronRight class="w-5 h-5 text-theme-secondary" />
           </button>
         </div>
       </div>
@@ -143,8 +143,8 @@ const playTrailer = (movie: any) => {
             
             <!-- Movie Info -->
             <div class="space-y-1">
-              <h3 class="font-semibold text-gray-900 text-lg leading-tight">{{ movie.title }}</h3>
-              <p class="text-gray-600 text-sm">{{ movie.releaseDate }}</p>
+              <h3 class="font-semibold text-theme-primary text-lg leading-tight">{{ movie.title }}</h3>
+              <p class="text-theme-secondary text-sm">{{ movie.releaseDate }}</p>
             </div>
           </div>
         </div>

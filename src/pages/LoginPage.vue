@@ -169,6 +169,7 @@
             </p>
           </div>
         </form>
+        </div>
 
         <!-- Divider -->
         <div class="my-6">

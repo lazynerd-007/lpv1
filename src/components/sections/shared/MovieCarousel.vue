@@ -65,17 +65,17 @@ const navigateToMovie = (movieId: string) => {
         <div class="flex gap-2">
           <button 
             @click="scrollLeft"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            class="p-2 rounded-full bg-theme-surface hover:bg-theme-surface-hover transition-colors"
           >
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
             </svg>
           </button>
           <button 
             @click="scrollRight"
-            class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            class="p-2 rounded-full bg-theme-surface hover:bg-theme-surface-hover transition-colors"
           >
-            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-theme-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
           </button>
@@ -127,7 +127,7 @@ const navigateToMovie = (movieId: string) => {
           </h3>
           
           <!-- Additional Info -->
-          <div class="text-xs text-gray-500 mt-1">
+          <div class="text-xs text-theme-tertiary mt-1">
             {{ movie.releaseDate.split('-')[0] }} • {{ movie.genre.slice(0, 2).join(', ') }}
           </div>
         </div>

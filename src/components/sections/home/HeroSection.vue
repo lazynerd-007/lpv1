@@ -67,7 +67,7 @@ const playTrailer = () => {
             </p>
             
             <!-- Description -->
-            <p class="text-lg text-gray-200 mb-8 max-w-2xl leading-relaxed">
+            <p class="text-lg text-white/90 mb-8 max-w-2xl leading-relaxed">
               {{ featuredMovie.plotSummary }}
             </p>
             
@@ -85,12 +85,12 @@ const playTrailer = () => {
     </div>
     
     <!-- Navigation Arrows -->
-    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors">
+    <button class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-colors">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
       </svg>
     </button>
-    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors">
+    <button class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/60 text-white p-3 rounded-full transition-colors">
       <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
       </svg>

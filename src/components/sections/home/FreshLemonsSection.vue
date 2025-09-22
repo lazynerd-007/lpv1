@@ -27,31 +27,31 @@ const playTrailer = (movieId: string) => {
 </script>
 
 <template>
-  <section class="py-16 bg-yellow-50">
+  <section class="py-16 bg-theme-surface">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-4">
           <div class="flex items-center gap-3">
             <span class="w-1 h-6 bg-yellow-500 rounded"></span>
-            <h2 class="text-2xl font-bold text-gray-900">Fresh Lemons</h2>
+            <h2 class="text-2xl font-bold text-theme-primary">Fresh Lemons</h2>
           </div>
-          <p class="text-gray-600 hidden sm:block">Zesty and refreshing movie picks</p>
+          <p class="text-theme-secondary hidden sm:block">Zesty and refreshing movie picks</p>
         </div>
         
         <!-- Navigation Arrows -->
         <div class="flex gap-2">
           <button 
             @click="scrollLeft"
-            class="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow duration-200 hover:bg-gray-50"
+            class="p-2 rounded-full bg-theme-background shadow-md hover:shadow-lg transition-shadow duration-200 hover:bg-theme-surface-hover"
           >
-            <ChevronLeft class="w-5 h-5 text-gray-600" />
+            <ChevronLeft class="w-5 h-5 text-theme-secondary" />
           </button>
           <button 
             @click="scrollRight"
-            class="p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-shadow duration-200 hover:bg-gray-50"
+            class="p-2 rounded-full bg-theme-background shadow-md hover:shadow-lg transition-shadow duration-200 hover:bg-theme-surface-hover"
           >
-            <ChevronRight class="w-5 h-5 text-gray-600" />
+            <ChevronRight class="w-5 h-5 text-theme-secondary" />
           </button>
         </div>
       </div>
@@ -69,7 +69,7 @@ const playTrailer = (movieId: string) => {
           style="scroll-snap-align: start;"
         >
           <!-- Movie Card -->
-          <div class="relative bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+          <div class="relative bg-theme-background rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
             <!-- Movie Poster -->
             <div class="relative aspect-[3/4] overflow-hidden">
               <img 
@@ -97,9 +97,9 @@ const playTrailer = (movieId: string) => {
             
             <!-- Movie Info -->
             <div class="p-4">
-              <h3 class="font-semibold text-lg text-gray-900 mb-1 line-clamp-1">{{ movie.title }}</h3>
-              <p class="text-gray-600 text-sm mb-2">{{ movie.releaseDate.split('-')[0] }}</p>
-              <div class="flex items-center justify-between text-sm text-gray-500">
+              <h3 class="font-semibold text-lg text-theme-primary mb-1 line-clamp-1">{{ movie.title }}</h3>
+              <p class="text-theme-secondary text-sm mb-2">{{ movie.releaseDate.split('-')[0] }}</p>
+              <div class="flex items-center justify-between text-sm text-theme-tertiary">
                 <span>{{ movie.reviewCount }} reviews</span>
                 <span class="text-yellow-600 font-medium">{{ movie.genre[0] }}</span>
               </div>

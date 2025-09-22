@@ -30,9 +30,9 @@ onMounted(async () => {
       subtitle="Latest Nollywood releases in cinemas"
       :movies="movieStore.trendingMovies"
       :max-items="8"
-      background-color="bg-gray-900"
-      text-color="text-white"
-      subtitle-color="text-gray-300"
+      background-color="bg-theme-surface"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
     />
 
     <!-- Releasing Soon Section -->
@@ -41,41 +41,52 @@ onMounted(async () => {
     <!-- Trending Actors Section -->
     <TrendingActorsSection />
 
+    <!-- Featured Movies Section -->
+    <MovieCarousel 
+      title="Featured Movies" 
+      subtitle="Handpicked selections from our critics"
+      :movies="movieStore.pieMovies"
+      :max-items="6"
+      background-color="bg-theme-background"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
+    />
+    
     <!-- Trending Movies Section -->
     <MovieCarousel 
-      title="Trending Movies"
-      subtitle="Most popular Nollywood films right now"
-      :movies="movieStore.movies.slice(0, 8)"
-      :max-items="8"
-      background-color="bg-theme-section-alt"
+      title="Trending Now" 
+      subtitle="What everyone's watching"
+      :movies="movieStore.trendingMovies"
+      :max-items="6"
+      background-color="bg-theme-surface"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
+    />
+    
+    <!-- Top Rated Movies Section -->
+    <MovieCarousel 
+      title="Top Rated" 
+      subtitle="Highest rated by our community"
+      :movies="movieStore.topRatedMovies"
+      :max-items="6"
+      background-color="bg-theme-background"
+      text-color="text-theme-primary"
+      subtitle-color="text-theme-secondary"
+    />
+    
+    <!-- New Releases Section -->
+    <MovieCarousel 
+      title="New Releases" 
+      subtitle="Fresh content just added"
+      :movies="movieStore.recentlyAddedMovies"
+      :max-items="6"
+      background-color="bg-theme-surface"
       text-color="text-theme-primary"
       subtitle-color="text-theme-secondary"
     />
 
     <!-- Fresh Lemons Section -->
     <FreshLemonsSection />
-
-    <!-- Top Rated Section -->
-    <MovieCarousel 
-      title="Top Rated"
-      subtitle="Highest rated Nollywood films of all time"
-      :movies="movieStore.topRatedMovies"
-      :max-items="8"
-      background-color="bg-theme-section-accent"
-      text-color="text-theme-primary"
-      subtitle-color="text-theme-secondary"
-    />
-
-    <!-- Recently Added Section -->
-    <MovieCarousel 
-      title="Recently Added"
-      subtitle="Fresh additions to our Nollywood collection"
-      :movies="movieStore.recentlyAddedMovies"
-      :max-items="8"
-      background-color="bg-theme-background"
-      text-color="text-theme-primary"
-      subtitle-color="text-theme-secondary"
-    />
   </div>
 </template>
 

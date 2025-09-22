@@ -294,7 +294,8 @@ export const useUserStore = defineStore('user', () => {
         bio: user.bio || '',
         location: user.location || '',
         joinDate: user.joinDate,
-        avatar: user.avatar
+        avatar: user.avatar,
+        role: user.role
       }
       
       // Generate mock JWT token
@@ -392,7 +393,7 @@ export const useUserStore = defineStore('user', () => {
   const loadUserData = async () => {
     // In a real app, this would load user data from an API
     // For this mock, we'll just set the mock user data
-    currentUser.value = mockUser as any
+    currentUser.value = mockUser
     isAuthenticated.value = true
     return true
   }
