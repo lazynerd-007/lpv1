@@ -1,17 +1,15 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import './style.css'
-import './focus-styles.css'
 import App from './App.vue'
 import router from './router'
 import { useUserStore } from './stores/userStore'
 import { useTheme } from './composables/useTheme'
+import { measurePerformance, preloadCriticalImages } from './utils/performance'
 
-// Create Vue app instance
 const app = createApp(App)
 const pinia = createPinia()
 
-// Use plugins
 app.use(pinia)
 app.use(router)
 
@@ -19,16 +17,18 @@ app.use(router)
 const { initTheme } = useTheme()
 initTheme()
 
-// Initialize authentication status
-const initializeAuth = async () => {
-  const userStore = useUserStore()
-  await userStore.checkAuthStatus()
-}
+// Check authentication status
+const userStore = useUserStore()
+userStore.checkAuthStatus()
 
-// Mount app and initialize auth
-initializeAuth().then(() => {
-  app.mount('#app')
-}).catch((error) => {
-  console.error('Failed to initialize authentication:', error)
-  app.mount('#app') // Mount anyway
-})
+// Performance optimizations
+measurePerformance()
+
+// Preload critical images (featured movie posters)
+const criticalImages = [
+  'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=nollywood%20movie%20poster%20dramatic%20african%20cinema&image_size=portrait_4_3',
+  'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=nollywood%20action%20movie%20poster%20nigerian%20film&image_size=portrait_4_3'
+]
+preloadCriticalImages(criticalImages)
+
+app.mount('#app')

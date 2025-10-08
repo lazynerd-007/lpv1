@@ -14,4 +14,23 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // ✅ 定义 @ = src
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue', 'vue-router', 'pinia'],
+          ui: ['lucide-vue-next'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
+  optimizeDeps: {
+    include: ['vue', 'vue-router', 'pinia', 'lucide-vue-next'],
+  },
+  server: {
+    hmr: {
+      overlay: false,
+    },
+  },
 })

@@ -1,12 +1,30 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, defineAsyncComponent } from 'vue'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUIStore } from '@/stores/uiStore'
 import HeroSection from '@/components/sections/home/HeroSection.vue'
 import MovieCarousel from '@/components/sections/shared/MovieCarousel.vue'
-import ReleasingSoonSection from '@/components/sections/home/ReleasingSoonSection.vue'
-import TrendingActorsSection from '@/components/sections/home/TrendingActorsSection.vue'
-import FreshLemonsSection from '@/components/sections/home/FreshLemonsSection.vue'
+
+// Lazy load non-critical sections with loading states
+const ReleasingSoonSection = defineAsyncComponent({
+  loader: () => import('@/components/sections/home/ReleasingSoonSection.vue'),
+  loadingComponent: { template: '<div class="h-64 bg-theme-surface animate-pulse rounded-lg mx-4 my-8"></div>' },
+  delay: 200
+})
+
+const TrendingActorsSection = defineAsyncComponent({
+  loader: () => import('@/components/sections/home/TrendingActorsSection.vue'),
+  loadingComponent: { template: '<div class="h-64 bg-theme-surface animate-pulse rounded-lg mx-4 my-8"></div>' },
+  delay: 200
+})
+
+const FreshLemonsSection = defineAsyncComponent({
+  loader: () => import('@/components/sections/home/FreshLemonsSection.vue'),
+  loadingComponent: { template: '<div class="h-64 bg-theme-surface animate-pulse rounded-lg mx-4 my-8"></div>' },
+  delay: 200
+})
+
+
 
 const movieStore = useMovieStore()
 const uiStore = useUIStore()
@@ -40,6 +58,8 @@ onMounted(async () => {
 
     <!-- Trending Actors Section -->
     <TrendingActorsSection />
+
+
 
     <!-- Featured Movies Section -->
     <MovieCarousel 

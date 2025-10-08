@@ -78,7 +78,7 @@ const toggleWatchlist = async (event: Event) => {
     if (userStore.isInWatchlist(props.movie.id)) {
       await userStore.removeFromWatchlist(props.movie.id)
     } else {
-      await userStore.addToWatchlist(props.movie.id)
+      await userStore.addToWatchlistWithActivity(props.movie.id)
     }
   } catch (error) {
     console.error('Error updating watchlist:', error)
@@ -97,7 +97,7 @@ const toggleFavorite = async (event: Event) => {
     if (userStore.isInFavorites(props.movie.id)) {
       await userStore.removeFromFavorites(props.movie.id)
     } else {
-      await userStore.addToFavorites(props.movie.id)
+      await userStore.addToFavoritesWithActivity(props.movie.id)
     }
   } catch (error) {
     console.error('Error updating favorites:', error)
@@ -205,36 +205,46 @@ const getMovieTypeBadge = (movie: Movie) => {
         </div>
       </div>
       
+      <!-- Rating & Type -->
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="badge badge-primary text-xs">
+            ⭐ {{ movie.rating }}
+          </span>
+          <span class="badge badge-ghost text-xs">
+            {{ movie.type }}
+          </span>
+        </div>
+      </div>
+      
       <!-- Genres -->
-      <div class="flex flex-wrap gap-1 mt-2">
+      <div class="flex flex-wrap gap-1 mb-2">
         <span 
-          v-for="genre in movie.genre.slice(0, 2)" 
+          v-for="genre in movie.genres" 
           :key="genre"
-          class="badge badge-outline badge-xs"
+          class="badge badge-outline text-xs"
         >
           {{ genre }}
         </span>
-        <span 
-          v-if="movie.genre.length > 2"
-          class="badge badge-outline badge-xs"
-        >
-          +{{ movie.genre.length - 2 }}
-        </span>
       </div>
       
-      <!-- Production State & Location -->
-      <div class="flex items-center justify-between mt-2 text-xs text-gray-500">
-        <span v-if="movie.productionState">{{ movie.productionState }}</span>
-        <div v-if="movie.director" class="flex items-center gap-1">
-          <MapPin class="w-3 h-3" />
-          <span>{{ movie.director }}</span>
+      <!-- Director & Cast -->
+      <div class="text-theme-text text-sm">
+        <div v-if="movie.director" class="mb-1">
+          <span class="font-medium">Director:</span> {{ movie.director }}
+        </div>
+        <div v-if="movie.cast && movie.cast.length > 0">
+          <span class="font-medium">Cast:</span> {{ movie.cast.slice(0, 2).join(', ') }}
+          <span v-if="movie.cast.length > 2" class="text-theme-text-secondary">
+            +{{ movie.cast.length - 2 }} more
+          </span>
         </div>
       </div>
       
       <!-- Synopsis (for larger cards) -->
       <p 
         v-if="size === 'lg' && movie.plotSummary" 
-        class="text-sm text-gray-600 mt-2 line-clamp-3"
+        class="text-sm text-theme-text-secondary mt-2 line-clamp-3"
       >
         {{ movie.plotSummary }}
       </p>

@@ -55,6 +55,17 @@ export interface TVShow {
   status: 'ongoing' | 'completed' | 'cancelled';
 }
 
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  bio?: string;
+  location?: string;
+  joinDate: string;
+  avatar?: string;
+  role?: 'user' | 'admin' | 'moderator' | 'critic';
+}
+
 export interface Review {
   id: string;
   userId: string;
@@ -67,8 +78,15 @@ export interface Review {
   spoilerWarning: boolean;
   culturalAuthenticityRating: number;
   productionQualityRating: number;
+  // Category ratings
+  storyRating: number;
+  actingRating: number;
+  cinematographyRating: number;
   nollywoodTags: string[];
   helpfulnessScore: number;
+  helpfulVotes: number;
+  unhelpfulVotes: number;
+  userVotes: { [userId: string]: 'helpful' | 'unhelpful' }; // Track who voted what
   createdAt: string;
   isVerifiedCritic: boolean;
 }
@@ -598,8 +616,14 @@ export const mockReviews: Review[] = [
     spoilerWarning: false,
     culturalAuthenticityRating: 9,
     productionQualityRating: 9,
+    storyRating: 9,
+    actingRating: 10,
+    cinematographyRating: 8,
     nollywoodTags: ['Star Power', 'Cultural Impact', 'Political Drama'],
     helpfulnessScore: 156,
+    helpfulVotes: 178,
+    unhelpfulVotes: 22,
+    userVotes: {},
     createdAt: '2024-01-15T10:30:00Z',
     isVerifiedCritic: true
   },
@@ -615,8 +639,14 @@ export const mockReviews: Review[] = [
     spoilerWarning: false,
     culturalAuthenticityRating: 8,
     productionQualityRating: 8,
+    storyRating: 8,
+    actingRating: 7,
+    cinematographyRating: 8,
     nollywoodTags: ['Comedy Gold', 'Romance', 'International Appeal'],
     helpfulnessScore: 89,
+    helpfulVotes: 102,
+    unhelpfulVotes: 13,
+    userVotes: {},
     createdAt: '2024-01-10T14:20:00Z',
     isVerifiedCritic: false
   },
@@ -632,8 +662,14 @@ export const mockReviews: Review[] = [
     spoilerWarning: true,
     culturalAuthenticityRating: 5,
     productionQualityRating: 4,
+    storyRating: 3,
+    actingRating: 5,
+    cinematographyRating: 6,
     nollywoodTags: ['Disappointing', 'Wasted Potential'],
     helpfulnessScore: 67,
+    helpfulVotes: 78,
+    unhelpfulVotes: 11,
+    userVotes: {},
     createdAt: '2024-01-08T16:45:00Z',
     isVerifiedCritic: true
   }

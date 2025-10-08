@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { Play } from 'lucide-vue-next'
 import { useUIStore } from '@/stores/uiStore'
 import type { Movie } from '@/data/mockMovies'
@@ -25,6 +25,8 @@ const props = withDefaults(defineProps<Props>(), {
 
 const uiStore = useUIStore()
 const carouselRef = ref<HTMLElement>()
+const loadedImages = ref<Set<string>>(new Set())
+let imageObserver: IntersectionObserver | null = null
 
 const scrollLeft = () => {
   if (carouselRef.value) {
@@ -46,6 +48,43 @@ const navigateToMovie = (movieId: string) => {
   // This would typically use router.push
   window.location.href = `/movie/${movieId}`
 }
+
+const handleImageLoad = (movieId: string) => {
+  loadedImages.value.add(movieId)
+}
+
+const isImageLoaded = (movieId: string) => {
+  return loadedImages.value.has(movieId)
+}
+
+onMounted(() => {
+  // Set up intersection observer for lazy loading
+  imageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const img = entry.target as HTMLImageElement
+          const movieId = img.dataset.movieId
+          if (movieId && img.dataset.src) {
+            img.src = img.dataset.src
+            img.onload = () => handleImageLoad(movieId)
+            imageObserver?.unobserve(img)
+          }
+        }
+      })
+    },
+    {
+      rootMargin: '50px',
+      threshold: 0.1
+    }
+  )
+})
+
+onUnmounted(() => {
+  if (imageObserver) {
+    imageObserver.disconnect()
+  }
+})
 </script>
 
 <template>
@@ -95,11 +134,25 @@ const navigateToMovie = (movieId: string) => {
         >
           <!-- Movie Poster with Play Button -->
           <div class="relative mb-3">
-            <img 
-              :src="movie.posterUrl" 
-              :alt="movie.title"
-              class="w-full h-72 object-cover rounded-lg shadow-md"
-            />
+            <div class="relative w-full h-72 rounded-lg overflow-hidden shadow-md">
+              <img 
+                :data-src="movie.posterUrl"
+                :data-movie-id="movie.id"
+                :alt="movie.title"
+                :src="isImageLoaded(movie.id) ? movie.posterUrl : ''"
+                class="w-full h-full object-cover transition-opacity duration-300"
+                :class="{ 'opacity-100': isImageLoaded(movie.id), 'opacity-0': !isImageLoaded(movie.id) }"
+                ref="(el) => el && imageObserver?.observe(el as HTMLImageElement)"
+                loading="lazy"
+                decoding="async"
+              />
+              <div 
+                v-if="!isImageLoaded(movie.id)"
+                class="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 animate-pulse flex items-center justify-center"
+              >
+                <div class="text-gray-500 text-sm">Loading...</div>
+              </div>
+            </div>
             
             <!-- Play Button Overlay -->
             <div 

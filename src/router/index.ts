@@ -1,23 +1,31 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '@/pages/HomePage.vue'
-import MovieDetailsPage from '@/pages/MovieDetailsPage.vue'
-import SeriesDetailsPage from '@/pages/SeriesDetailsPage.vue'
-import SearchPage from '@/pages/SearchPage.vue'
-import BrowseMoviesPage from '@/pages/BrowseMoviesPage.vue'
-import BrowseSeriesPage from '@/pages/BrowseSeriesPage.vue'
-import PeoplePage from '@/pages/PeoplePage.vue'
-import WriteReviewPage from '@/pages/WriteReviewPage.vue'
-import UserProfilePage from '@/pages/UserProfilePage.vue'
-import LoginPage from '@/pages/LoginPage.vue'
-import RegisterPage from '@/pages/RegisterPage.vue'
-import ForgotPasswordPage from '@/pages/ForgotPasswordPage.vue'
-import AboutPage from '@/pages/AboutPage.vue'
-import PersonDetailsPage from '@/pages/PersonDetailsPage.vue'
-import PrivacyPolicyPage from '@/pages/PrivacyPolicyPage.vue'
-import TermsOfServicePage from '@/pages/TermsOfServicePage.vue'
-import ContactUsPage from '@/pages/ContactUsPage.vue'
-import MovieCastAndCrewPage from '@/pages/MovieCastAndCrewPage.vue'
-import SeriesCastAndCrewPage from '@/pages/SeriesCastAndCrewPage.vue'
+import { useUserStore } from '@/stores/userStore'
+
+// Lazy-loaded components for code splitting
+const HomePage = () => import('@/pages/HomePage.vue')
+const MovieDetailsPage = () => import('@/pages/MovieDetailsPage.vue')
+const SeriesDetailsPage = () => import('@/pages/SeriesDetailsPage.vue')
+const SearchPage = () => import('@/pages/SearchPage.vue')
+const BrowseMoviesPage = () => import('@/pages/BrowseMoviesPage.vue')
+const BrowseSeriesPage = () => import('@/pages/BrowseSeriesPage.vue')
+const PeoplePage = () => import('@/pages/PeoplePage.vue')
+const WriteReviewPage = () => import('@/pages/WriteReviewPage.vue')
+const UserProfilePage = () => import('@/pages/UserProfilePage.vue')
+const LoginPage = () => import('@/pages/LoginPage.vue')
+const RegisterPage = () => import('@/pages/RegisterPage.vue')
+const ForgotPasswordPage = () => import('@/pages/ForgotPasswordPage.vue')
+const AboutPage = () => import('@/pages/AboutPage.vue')
+const PersonDetailsPage = () => import('@/pages/PersonDetailsPage.vue')
+const PrivacyPolicyPage = () => import('@/pages/PrivacyPolicyPage.vue')
+const TermsOfServicePage = () => import('@/pages/TermsOfServicePage.vue')
+const ContactUsPage = () => import('@/pages/ContactUsPage.vue')
+const MovieCastAndCrewPage = () => import('@/pages/MovieCastAndCrewPage.vue')
+const SeriesCastAndCrewPage = () => import('@/pages/SeriesCastAndCrewPage.vue')
+const AdminPage = () => import('@/pages/AdminPage.vue')
+const SettingsPage = () => import('@/pages/SettingsPage.vue')
+const UserSettings = () => import('@/pages/UserSettings.vue')
+const WatchlistPage = () => import('@/pages/WatchlistPage.vue')
+const UserDashboard = () => import('@/pages/UserDashboard.vue')
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -180,6 +188,52 @@ const router = createRouter({
       }
     },
     {
+      path: '/admin',
+      name: 'admin',
+      component: AdminPage,
+      meta: {
+        title: 'Admin Dashboard - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsPage,
+      meta: {
+        title: 'Settings - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/user-settings',
+      name: 'user-settings',
+      component: UserSettings,
+      meta: {
+        title: 'User Settings - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/watchlist',
+      name: 'watchlist',
+      component: WatchlistPage,
+      meta: {
+        title: 'My Watchlist - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: UserDashboard,
+      meta: {
+        title: 'Dashboard - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
       path: '/series/:id',
       name: 'series-details',
       component: SeriesDetailsPage,
@@ -216,16 +270,41 @@ router.beforeEach((to, from, next) => {
     document.title = to.meta.title as string;
   }
   
-  // Check authentication requirements
-  const isAuthenticated = false; // TODO: Replace with actual auth check
+  const userStore = useUserStore();
+  const isAuthenticated = userStore.isAuthenticated;
+  const user = userStore.currentUser;
   
+  // Check authentication requirements
   if (to.meta.requiresAuth && !isAuthenticated) {
     next({ name: 'login', query: { redirect: to.fullPath } });
-  } else if (to.meta.hideForAuth && isAuthenticated) {
-    next({ name: 'home' });
-  } else {
-    next();
+    return;
   }
+  
+  // Check admin requirements
+  if (to.meta.requiresAdmin && (!isAuthenticated || !userStore.hasRole('admin'))) {
+    next({ name: 'home' });
+    return;
+  }
+  
+  // Check critic requirements (for future critic-only routes)
+  if (to.meta.requiresCritic && (!isAuthenticated || !userStore.hasRole('critic'))) {
+    next({ name: 'home' });
+    return;
+  }
+  
+  // Check moderator requirements (for future moderator-only routes)
+  if (to.meta.requiresModerator && (!isAuthenticated || !userStore.hasRole('moderator'))) {
+    next({ name: 'home' });
+    return;
+  }
+  
+  // Redirect authenticated users away from auth pages
+  if (to.meta.hideForAuth && isAuthenticated) {
+    next({ name: 'home' });
+    return;
+  }
+  
+  next();
 });
 
 export default router

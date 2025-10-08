@@ -28,6 +28,20 @@ interface UserStats {
   averageRating: number
   totalLikes: number
   moviesWatched: number
+  followingCount: number
+  followersCount: number
+}
+
+export interface UserActivity {
+  id: string
+  userId: string
+  type: 'review' | 'rating' | 'follow' | 'watchlist_add' | 'favorite_add'
+  targetId: string // Movie ID or User ID
+  targetType: 'movie' | 'series' | 'user'
+  content?: string // Review content or activity description
+  rating?: number // For rating activities
+  timestamp: string
+  metadata?: Record<string, any>
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -39,6 +53,9 @@ export const useUserStore = defineStore('user', () => {
   const watchlist = ref<string[]>([]) // Movie IDs
   const favorites = ref<string[]>([]) // Movie IDs
   const userReviews = ref<Review[]>([])
+  const following = ref<string[]>([]) // User IDs that current user follows
+  const followers = ref<string[]>([]) // User IDs that follow current user
+  const userActivities = ref<UserActivity[]>([]) // User activity feed
 
   // State for login and registration
   const loginError = ref<string | null>(null)
@@ -69,12 +86,16 @@ export const useUserStore = defineStore('user', () => {
       : 0
     const totalLikes = reviews.reduce((sum, review) => sum + (review.helpfulnessScore || 0), 0)
     const moviesWatched = new Set(reviews.map(r => r.movieId)).size
+    const followingCount = following.value.length
+    const followersCount = followers.value.length
 
     return {
       totalReviews,
       averageRating,
       totalLikes,
-      moviesWatched
+      moviesWatched,
+      followingCount,
+      followersCount
     }
   })
 
@@ -130,6 +151,46 @@ export const useUserStore = defineStore('user', () => {
 
   const isInFavorites = computed(() => (movieId: string) => {
     return favorites.value.includes(movieId)
+  })
+
+  const isFollowing = computed(() => (userId: string) => {
+    return following.value.includes(userId)
+  })
+
+  const isFollowedBy = computed(() => (userId: string) => {
+    return followers.value.includes(userId)
+  })
+
+  const followingUsers = computed(() => {
+    return following.value.map(userId => {
+      const user = mockUsers.find(u => u.id === userId)
+      return user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        bio: user.bio
+      } : null
+    }).filter(Boolean)
+  })
+
+  const followerUsers = computed(() => {
+    return followers.value.map(userId => {
+      const user = mockUsers.find(u => u.id === userId)
+      return user ? {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        bio: user.bio
+      } : null
+    }).filter(Boolean)
+  })
+
+  const recentActivities = computed(() => {
+    return userActivities.value
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 20)
   })
 
   // Actions
@@ -305,8 +366,7 @@ export const useUserStore = defineStore('user', () => {
       localStorage.setItem('auth_token', token)
       localStorage.setItem('user_data', JSON.stringify(currentUser.value))
       
-      // Load user data
-      await loadUserData()
+      // Note: loadUserData() removed as it was overwriting the correctly set currentUser
       
       return {
         success: true,
@@ -378,6 +438,9 @@ export const useUserStore = defineStore('user', () => {
     watchlist.value = []
     favorites.value = []
     userReviews.value = []
+    following.value = []
+    followers.value = []
+    userActivities.value = []
     error.value = null
     
     console.log('User logged out successfully')
@@ -393,7 +456,7 @@ export const useUserStore = defineStore('user', () => {
   const loadUserData = async () => {
     // In a real app, this would load user data from an API
     // For this mock, we'll just set the mock user data
-    currentUser.value = mockUser
+    currentUser.value = mockUser as any
     isAuthenticated.value = true
     return true
   }
@@ -460,7 +523,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const addUserReview = (review: Omit<Review, 'id' | 'date' | 'userId'>) => {
+  const addUserReview = (review: Omit<Review, 'id' | 'createdAt' | 'userId'>) => {
     if (!currentUser.value) return
 
     const newReview: Review = {
@@ -485,6 +548,139 @@ export const useUserStore = defineStore('user', () => {
     if (index !== -1) {
       userReviews.value.splice(index, 1)
     }
+  }
+
+  // Following system actions
+  const followUser = async (userId: string) => {
+    if (!currentUser.value || userId === currentUser.value.id) return { success: false, error: 'Cannot follow yourself' }
+    
+    if (following.value.includes(userId)) {
+      return { success: false, error: 'Already following this user' }
+    }
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Add to following list
+      following.value.push(userId)
+      
+      // Add activity
+      addActivity({
+        type: 'follow',
+        targetId: userId,
+        targetType: 'user',
+        content: `Started following user`
+      })
+      
+      // In a real app, this would also update the target user's followers list
+      // For mock purposes, we'll simulate this
+      const targetUser = mockUsers.find(u => u.id === userId)
+      if (targetUser) {
+        // This would be handled by the backend in a real app
+        console.log(`User ${currentUser.value.name} followed ${targetUser.name}`)
+      }
+      
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Failed to follow user' }
+    }
+  }
+
+  const unfollowUser = async (userId: string) => {
+    if (!currentUser.value) return { success: false, error: 'Not authenticated' }
+    
+    const index = following.value.indexOf(userId)
+    if (index === -1) {
+      return { success: false, error: 'Not following this user' }
+    }
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Remove from following list
+      following.value.splice(index, 1)
+      
+      // Add activity
+      addActivity({
+        type: 'follow',
+        targetId: userId,
+        targetType: 'user',
+        content: `Unfollowed user`
+      })
+      
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: 'Failed to unfollow user' }
+    }
+  }
+
+  const toggleFollow = async (userId: string) => {
+    if (isFollowing.value(userId)) {
+      return await unfollowUser(userId)
+    } else {
+      return await followUser(userId)
+    }
+  }
+
+  // Activity tracking
+  const addActivity = (activity: Omit<UserActivity, 'id' | 'userId' | 'timestamp'>) => {
+    if (!currentUser.value) return
+
+    const newActivity: UserActivity = {
+      ...activity,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      userId: currentUser.value.id,
+      timestamp: new Date().toISOString()
+    }
+
+    userActivities.value.unshift(newActivity)
+    
+    // Keep only last 100 activities to prevent memory issues
+    if (userActivities.value.length > 100) {
+      userActivities.value = userActivities.value.slice(0, 100)
+    }
+  }
+
+  const getActivitiesByType = (type: UserActivity['type']) => {
+    return userActivities.value.filter(activity => activity.type === type)
+  }
+
+  const getActivitiesForUser = (userId: string) => {
+    return userActivities.value.filter(activity => activity.userId === userId)
+  }
+
+  // Enhanced watchlist and favorites with activity tracking
+  const addToWatchlistWithActivity = (movieId: string) => {
+    addToWatchlist(movieId)
+    addActivity({
+      type: 'watchlist_add',
+      targetId: movieId,
+      targetType: 'movie',
+      content: 'Added movie to watchlist'
+    })
+  }
+
+  const addToFavoritesWithActivity = (movieId: string) => {
+    addToFavorites(movieId)
+    addActivity({
+      type: 'favorite_add',
+      targetId: movieId,
+      targetType: 'movie',
+      content: 'Added movie to favorites'
+    })
+  }
+
+  const addUserReviewWithActivity = (review: Omit<Review, 'id' | 'createdAt' | 'userId'>) => {
+    addUserReview(review)
+    addActivity({
+      type: 'review',
+      targetId: review.movieId,
+      targetType: 'movie',
+      content: review.reviewText,
+      rating: review.lemonPieRating
+    })
   }
 
   // Initialize with mock authentication for demo
@@ -531,6 +727,9 @@ export const useUserStore = defineStore('user', () => {
     watchlist,
     favorites,
     userReviews,
+    following,
+    followers,
+    userActivities,
     loginError,
     loginInProgress,
     registrationError,
@@ -544,6 +743,11 @@ export const useUserStore = defineStore('user', () => {
     favoriteMovies,
     isInWatchlist,
     isInFavorites,
+    isFollowing,
+    isFollowedBy,
+    followingUsers,
+    followerUsers,
+    recentActivities,
     
     // Actions
     login,
@@ -562,6 +766,19 @@ export const useUserStore = defineStore('user', () => {
     initializeMockAuth,
     checkAuthStatus,
     loadUserData,
+    
+    // Following system
+    followUser,
+    unfollowUser,
+    toggleFollow,
+    
+    // Activity tracking
+    addActivity,
+    getActivitiesByType,
+    getActivitiesForUser,
+    addToWatchlistWithActivity,
+    addToFavoritesWithActivity,
+    addUserReviewWithActivity,
     
     // Role methods
     isAdmin,

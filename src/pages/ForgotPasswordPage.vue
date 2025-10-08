@@ -4,7 +4,7 @@
       <div class="bg-theme-card rounded-lg shadow-md p-8">
         <!-- Header Text -->
         <div class="mb-6">
-          <p class="text-gray-300 text-sm leading-relaxed">
+          <p class="text-theme-secondary text-sm leading-relaxed">
             Enter your email address below and we will send you a link to reset or create your password.
           </p>
         </div>
@@ -13,13 +13,13 @@
         <form @submit.prevent="handleForgotPassword" class="space-y-6">
           <!-- Email Field -->
           <div>
-            <label class="block text-gray-300 text-sm font-medium mb-2">
+            <label class="block text-theme-secondary text-sm font-medium mb-2">
               Email
             </label>
             <input
               v-model="email"
               type="email"
-              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-gray-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
               placeholder="Enter your email"
               required
             />
@@ -39,7 +39,7 @@
 
       <!-- Sign Up Link -->
       <div class="text-center mt-6">
-        <p class="text-gray-400 text-sm">
+        <p class="text-theme-secondary text-sm">
           Don't have an account?
           <router-link to="/register" class="text-orange-500 hover:text-orange-400 font-medium">
             Sign up.
@@ -49,7 +49,7 @@
 
       <!-- Footer -->
       <div class="text-center mt-16">
-        <p class="text-gray-500 text-xs">© LemonNPie</p>
+        <p class="text-theme-secondary text-xs">© LemonNPie</p>
       </div>
     </div>
   </div>

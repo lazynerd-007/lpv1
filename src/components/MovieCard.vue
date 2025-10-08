@@ -2,7 +2,10 @@
 import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import type { Movie } from '@/data/mockMovies';
+import { useUserStore } from '@/stores/userStore';
+import { useUIStore } from '@/stores/uiStore';
 import LemonPieRating from './LemonPieRating.vue';
+import LazyImage from '@/components/ui/LazyImage.vue';
 
 interface Props {
   movie: Movie;
@@ -44,16 +47,47 @@ const formatRuntime = (minutes: number) => {
 const formatGenres = (genres: string[]) => {
   return genres.slice(0, 2).join(', ');
 };
+
+const userStore = useUserStore();
+const uiStore = useUIStore();
+
+const isInWatchlist = computed(() => {
+  return userStore.isInWatchlist(props.movie.id);
+});
+
+const toggleWatchlist = async () => {
+  if (!userStore.isAuthenticated) {
+    uiStore.openModal({ id: 'auth', title: 'Authentication Required', content: 'Please log in to continue' });
+    return;
+  }
+  
+  try {
+    if (isInWatchlist.value) {
+      await userStore.removeFromWatchlist(props.movie.id);
+    } else {
+      await userStore.addToWatchlistWithActivity(props.movie.id);
+    }
+  } catch (error) {
+    console.error('Error updating watchlist:', error);
+  }
+};
 </script>
 
 <template>
   <div :class="cardClasses">
     <!-- Movie Poster -->
     <figure :class="imageClasses">
-      <img 
+      <LazyImage 
         :src="movie.posterUrl" 
         :alt="movie.title"
-        class="w-full h-full object-cover"
+        :width="variant === 'featured' ? 384 : 300"
+        :height="variant === 'compact' ? 192 : (variant === 'featured' ? 256 : 224)"
+        :quality="85"
+        format="webp"
+        :fade-in="true"
+        :show-placeholder="true"
+        image-class="w-full h-full object-cover"
+        :optimize="true"
         loading="lazy"
       />
     </figure>
@@ -155,8 +189,15 @@ const formatGenres = (genres: string[]) => {
         >
           View Details
         </router-link>
-        <button v-if="variant !== 'compact'" class="btn btn-outline btn-sm">
-          Add to Watchlist
+        <button 
+          v-if="variant !== 'compact'" 
+          @click="toggleWatchlist"
+          :class="[
+            'btn btn-sm',
+            isInWatchlist ? 'btn-success' : 'btn-outline'
+          ]"
+        >
+          {{ isInWatchlist ? 'In Watchlist' : 'Add to Watchlist' }}
         </button>
       </div>
     </div>

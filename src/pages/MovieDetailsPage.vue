@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus, ChevronDown, Check } from 'lucide-vue-next'
+import { Star, Clock, Calendar, MapPin, Award, Play, Heart, Share2, MessageCircle, User, Plus, ChevronDown, Check, ChevronRight } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
 import { useActorsStore, type Actor } from '@/stores/actorsStore'
 import ReviewCard from '@/components/ui/ReviewCard.vue'
+import ReviewForm from '@/components/ReviewForm.vue'
 
 interface Props {
   id?: string
@@ -18,13 +20,16 @@ const router = useRouter()
 const movieStore = useMovieStore()
 const userStore = useUserStore()
 const uiStore = useUIStore()
+const authStore = useAuthStore()
 
 const movieId = computed(() => props.id || route.params.id as string)
 const movie = computed(() => movieStore.movies.find(m => m.id === movieId.value))
 const reviews = computed(() => movieStore.reviews.filter(r => r.movieId === movieId.value))
 const activeTab = ref('reviews')
-const showAllReviews = ref(false)
 const showAllCritics = ref(false)
+const showAllReviews = ref(false)
+const showReviewForm = ref(false)
+const editingReview = ref<any>(null)
 const reviewsToShow = computed(() => showAllReviews.value ? reviews.value : reviews.value.slice(0, 5))
 const hasMoreReviews = computed(() => reviews.value.length > 5)
 const criticsToShow = computed(() => {
@@ -155,20 +160,39 @@ const isInWatchlist = computed(() => {
 const castWithImages = computed(() => {
   if (!movie.value?.cast) return []
   
+  const actorStore = useActorsStore()
+  
   // Map cast names to objects with images and roles
   return movie.value.cast.map((castMember, index) => {
     // Split the cast member name if it contains a role
     const parts = castMember.split(' as ')
-    const name = parts[0]
-    const role = parts.length > 1 ? parts[1] : movie.value?.title ? `Character in ${movie.value.title}` : 'Character'
+    const actorName = parts[0].trim()
+    const role = parts.length > 1 ? parts[1].trim() : movie.value?.title ? `Character in ${movie.value.title}` : 'Character'
     
-    // Generate image URL based on actor name
-    const imageUrl = `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(name + ' actor portrait')}&image_size=square_1_1`
+    // Try to find the actor in the store first
+    const actor = actorStore.actors.find(a => a.name === actorName)
     
-    return {
-      name,
-      role,
-      imageUrl
+    if (actor) {
+      return {
+        id: actor.id,
+        name: actor.name,
+        role,
+        imageUrl: actor.image,
+        popularity: actor.popularity,
+        movieCount: actor.movieCount
+      }
+    } else {
+      // Fallback to generated image if actor not found in store
+      const imageUrl = `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(actorName + ' nigerian actor professional headshot')}&image_size=square`
+      
+      return {
+        id: null,
+        name: actorName,
+        role,
+        imageUrl,
+        popularity: 0,
+        movieCount: 0
+      }
     }
   })
 })
@@ -187,7 +211,7 @@ const toggleWatchlist = async () => {
     if (isInWatchlist.value) {
       await userStore.removeFromWatchlist(movieId.value)
     } else {
-      await userStore.addToWatchlist(movieId.value)
+      await userStore.addToWatchlistWithActivity(movieId.value)
     }
   } catch (error) {
     console.error('Error updating watchlist:', error)
@@ -204,7 +228,7 @@ const toggleFavorites = async () => {
     if (isInFavorites.value) {
       await userStore.removeFromFavorites(movieId.value)
     } else {
-      await userStore.addToFavorites(movieId.value)
+      await userStore.addToFavoritesWithActivity(movieId.value)
     }
   } catch (error) {
     console.error('Error updating favorites:', error)
@@ -235,10 +259,51 @@ const shareMovie = async () => {
   }
 }
 
+// Review form handlers
+const openReviewForm = () => {
+  if (!authStore.isAuthenticated) {
+    // Could redirect to login or show login modal
+    console.log('User must be logged in to write a review')
+    return
+  }
+  showReviewForm.value = true
+  editingReview.value = null
+}
+
+const editReview = (review: any) => {
+  if (!authStore.isAuthenticated || review.userId !== authStore.currentUserId) {
+    return
+  }
+  editingReview.value = review
+  showReviewForm.value = true
+}
+
+const handleReviewSubmit = async (reviewData: any) => {
+  try {
+    if (editingReview.value) {
+      await userStore.updateUserReview(editingReview.value.id, reviewData)
+    } else {
+      await userStore.addUserReviewWithActivity(reviewData)
+    }
+    showReviewForm.value = false
+    editingReview.value = null
+  } catch (error) {
+    console.error('Error submitting review:', error)
+  }
+}
+
+const handleReviewCancel = () => {
+  showReviewForm.value = false
+  editingReview.value = null
+}
+
 const navigateToActor = (actorName: string) => {
+  // Clean the actor name by removing any role information
+  const cleanActorName = actorName.split(' as ')[0].trim()
+  
   // Find actor by name in the actors store
   const actorStore = useActorsStore()
-  const actor = actorStore.actors.find(a => a.name === actorName)
+  const actor = actorStore.actors.find(a => a.name === cleanActorName)
   
   if (actor) {
     router.push({ name: 'person-details', params: { id: actor.id } })
@@ -247,11 +312,14 @@ const navigateToActor = (actorName: string) => {
     const newActorId = `temp-${Date.now()}`
     const newActor: Actor = {
       id: newActorId,
-      name: actorName,
+      name: cleanActorName,
       age: 0, // Default values
-      image: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20headshot%20of%20${encodeURIComponent(actorName)}&image_size=square`,
+      image: `https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(cleanActorName + ' nigerian actor professional headshot')}&image_size=square`,
       popularity: 0,
-      movieCount: 1
+      movieCount: 1,
+      biography: `Nigerian actor known for their work in Nollywood films.`,
+      birthPlace: 'Nigeria',
+      knownFor: [movie.value?.title || 'Various Films']
     }
     
     // Add the new actor to the store
@@ -517,7 +585,7 @@ onMounted(async () => {
           
           <!-- Content Tabs -->
           <div>
-            <div class="flex border-b border-gray-700 mb-6">
+            <div class="flex border-b border-theme-border mb-6">
               <button 
                 @click="activeTab = 'reviews'"
                 :class="[
@@ -544,23 +612,23 @@ onMounted(async () => {
             
             <!-- Critics Tab -->
             <div v-if="activeTab === 'critics'" class="space-y-6">
-              <div v-for="(critic, index) in criticsToShow" :key="index" class="bg-gray-800 rounded-lg p-6">
+              <div v-for="(critic, index) in criticsToShow" :key="index" class="bg-theme-surface rounded-lg p-6">
                 <div class="flex items-start gap-4">
-                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                    <User class="w-6 h-6 text-gray-400" />
+                  <div class="w-10 h-10 bg-theme-background rounded-full flex items-center justify-center">
+                    <User class="w-6 h-6 text-theme-secondary" />
                   </div>
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
                       <span class="font-semibold">{{ critic.source }}</span>
-                      <span class="text-gray-400 text-sm">{{ critic.date }}</span>
+                      <span class="text-theme-secondary text-sm">{{ critic.date }}</span>
                     </div>
                     <div class="flex items-center gap-1 mb-3">
                       <Star v-for="i in Math.round(critic.rating / 2)" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <Star v-for="i in (5 - Math.round(critic.rating / 2))" :key="i + Math.round(critic.rating / 2)" class="w-4 h-4 text-gray-400" />
-                      <span class="text-sm text-gray-400 ml-2">{{ critic.rating }} / 10</span>
+                      <Star v-for="i in (5 - Math.round(critic.rating / 2))" :key="i + Math.round(critic.rating / 2)" class="w-4 h-4 text-theme-tertiary" />
+                      <span class="text-sm text-theme-secondary ml-2">{{ critic.rating }} / 10</span>
                     </div>
                     <h4 class="font-semibold mb-2">{{ critic.title }}</h4>
-                    <p class="text-gray-300 leading-relaxed">{{ critic.content }}</p>
+                    <p class="text-theme-secondary leading-relaxed">{{ critic.content }}</p>
                   </div>
                 </div>
               </div>
@@ -568,7 +636,7 @@ onMounted(async () => {
               <div v-if="hasMoreCritics" class="flex justify-center mt-6">
                 <button 
                   @click="showAllCritics = !showAllCritics" 
-                  class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
+                  class="flex items-center gap-2 px-6 py-2 bg-theme-surface hover:bg-theme-surface/80 rounded-full text-theme-secondary hover:text-theme-primary transition-colors"
                 >
                   <span>{{ showAllCritics ? 'Show Less' : `Show More (${(critics?.length || 0) - 5})` }}</span>
                   <ChevronDown :class="{'transform rotate-180': showAllCritics}" class="w-4 h-4 transition-transform" />
@@ -583,43 +651,55 @@ onMounted(async () => {
                   <div class="flex items-center gap-2">
                     <Star class="w-5 h-5 text-yellow-400 fill-current" />
                     <span class="text-xl font-bold">{{ averageRating.toFixed(1) }}</span>
-                    <span class="text-gray-400">/ 10</span>
+                    <span class="text-theme-secondary">/ 10</span>
                   </div>
-                  <span class="text-gray-400">{{ reviews.length }} Reviews</span>
+                  <span class="text-theme-secondary">{{ reviews.length }} Reviews</span>
                 </div>
                 <button 
-                  @click="router.push(`/write-review?movie=${movieId}`)"
+                  @click="openReviewForm"
                   class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors text-sm"
                 >
+                  <Plus class="w-4 h-4" />
                   Add Review
                 </button>
               </div>
               
+              <!-- Review Form -->
+              <ReviewForm 
+                v-if="showReviewForm"
+                :movie-id="movieId"
+                :movie-title="movie?.title"
+                :edit-review="editingReview"
+                @submit="handleReviewSubmit"
+                @cancel="handleReviewCancel"
+                class="mb-6"
+              />
+              
               <!-- Account Required Message -->
-              <div class="bg-gray-800 border border-gray-700 rounded-lg p-6 text-center">
+              <div class="bg-theme-surface border border-theme-border rounded-lg p-6 text-center">
                 <h3 class="text-lg font-semibold mb-2">Account required</h3>
-                <p class="text-gray-400 mb-4">Please sign in or create account to add a review</p>
+                <p class="text-theme-secondary mb-4">Please sign in or create account to add a review</p>
               </div>
               
               <!-- Sample Review -->
-              <div class="bg-gray-800 rounded-lg p-6">
+              <div class="bg-theme-surface rounded-lg p-6">
                 <div class="flex items-start gap-4">
-                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center">
-                    <User class="w-6 h-6 text-gray-400" />
+                  <div class="w-10 h-10 bg-theme-background rounded-full flex items-center justify-center">
+                    <User class="w-6 h-6 text-theme-secondary" />
                   </div>
                   <div class="flex-1">
                     <div class="flex items-center gap-2 mb-2">
                       <span class="font-semibold">Logan Roberts</span>
-                      <span class="text-gray-400 text-sm">4 days ago</span>
+                      <span class="text-theme-secondary text-sm">4 days ago</span>
                     </div>
                     <div class="flex items-center gap-1 mb-3">
                       <Star v-for="i in 5" :key="i" class="w-4 h-4 text-yellow-400 fill-current" />
-                      <span class="text-sm text-gray-400 ml-2">9 / 10</span>
+                      <span class="text-sm text-theme-secondary ml-2">9 / 10</span>
                     </div>
                     <h4 class="font-semibold mb-2">Action-Packed and Exciting</h4>
-                    <p class="text-gray-300 leading-relaxed">This movie is a thrilling adventure from start to finish. The action sequences are mind-blowing, and the excitement never lets up. The characters are well-developed and the story is engaging throughout.</p>
+                    <p class="text-theme-secondary leading-relaxed">This movie is a thrilling adventure from start to finish. The action sequences are mind-blowing, and the excitement never lets up. The characters are well-developed and the story is engaging throughout.</p>
                     <div class="flex items-center gap-4 mt-4 text-sm">
-                      <span class="text-gray-400">Was this review helpful?</span>
+                      <span class="text-theme-secondary">Was this review helpful?</span>
                       <button class="text-blue-400 hover:text-blue-300">YES</button>
                       <button class="text-blue-400 hover:text-blue-300">NO</button>
                     </div>
@@ -627,8 +707,8 @@ onMounted(async () => {
                 </div>
               </div>
               
-              <div v-if="reviews.length === 0" class="text-center py-8 text-gray-400">
-                <MessageCircle class="w-12 h-12 mx-auto mb-4 text-gray-500" />
+              <div v-if="reviews.length === 0" class="text-center py-8 text-theme-secondary">
+                <MessageCircle class="w-12 h-12 mx-auto mb-4 text-theme-tertiary" />
                 <p>No reviews yet. Be the first to review this movie!</p>
               </div>
               
@@ -639,12 +719,13 @@ onMounted(async () => {
                   :review="review"
                   :show-movie-title="false"
                   @action="handleReviewAction"
+                  @edit="editReview"
                 />
                 
                 <div v-if="hasMoreReviews" class="flex justify-center mt-6">
                   <button 
                     @click="showAllReviews = !showAllReviews" 
-                    class="flex items-center gap-2 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-gray-300 hover:text-white transition-colors"
+                    class="flex items-center gap-2 px-6 py-2 bg-theme-surface hover:bg-theme-surface/80 rounded-full text-theme-secondary hover:text-theme-primary transition-colors"
                   >
                     <span>{{ showAllReviews ? 'Show Less' : `Show More (${reviews.length - 5})` }}</span>
                     <ChevronDown :class="{'transform rotate-180': showAllReviews}" class="w-4 h-4 transition-transform" />
@@ -658,28 +739,47 @@ onMounted(async () => {
           <div class="mt-12">
             <h3 class="text-xl font-semibold mb-6 flex items-center">
               <span class="mr-2">Cast</span>
-              <span class="text-sm text-gray-400 font-normal">{{ movie?.cast?.length || 0 }} actors</span>
+              <span class="text-sm text-theme-secondary font-normal">{{ movie?.cast?.length || 0 }} actors</span>
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div 
                 v-for="(actor, index) in castWithImages.slice(0, 10)" 
                 :key="index" 
-                class="flex items-center gap-4 bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800 transition-colors border-l-4 border-orange-500/70 cursor-pointer"
+                class="group flex items-center gap-4 bg-theme-surface/50 hover:bg-theme-surface rounded-lg p-4 transition-all duration-300 border-l-4 border-orange-500/70 hover:border-orange-500 cursor-pointer hover:shadow-lg hover:scale-[1.02] transform"
                 @click="navigateToActor(actor.name)"
               >
-                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-gray-700 flex-shrink-0 shadow-lg group">
-                  <img :src="actor.imageUrl" :alt="actor.name" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" />
+                <div class="relative w-16 h-16 rounded-full overflow-hidden border-2 border-theme-border group-hover:border-orange-400 flex-shrink-0 shadow-lg transition-all duration-300">
+                  <img 
+                    :src="actor.imageUrl" 
+                    :alt="actor.name" 
+                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
+                  />
+                  <!-- Hover overlay -->
+                  <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <ChevronRight class="w-5 h-5 text-white" />
+                  </div>
                 </div>
-                <div class="flex-1">
-                  <h4 class="font-semibold text-lg">{{ actor.name }}</h4>
-                  <p class="text-gray-400 text-sm">{{ actor.role }}</p>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-lg group-hover:text-orange-400 transition-colors duration-300 truncate">{{ actor.name }}</h4>
+                  <p class="text-theme-secondary text-sm group-hover:text-theme-text transition-colors duration-300 truncate">{{ actor.role }}</p>
+                  <!-- Show popularity if available -->
+                  <div v-if="actor.popularity > 0" class="flex items-center gap-1 mt-1">
+                    <Star class="w-3 h-3 text-yellow-400 fill-current" />
+                    <span class="text-xs text-theme-tertiary">{{ (actor.popularity / 1000000).toFixed(1) }}M followers</span>
+                  </div>
+                </div>
+                <!-- Click indicator -->
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div class="bg-orange-500 rounded-full p-1">
+                    <ChevronRight class="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </div>
             </div>
             <div class="mt-6 flex justify-center">
               <button 
                 @click="viewAllCast" 
-                class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
+                class="px-6 py-3 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 hover:shadow-lg transform hover:scale-105 duration-300"
               >
                 <User class="w-5 h-5" />
                 <span>View Complete Cast & Crew</span>

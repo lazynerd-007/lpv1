@@ -213,6 +213,53 @@ export const useMovieStore = defineStore('movie', () => {
     }
   }
 
+  const voteOnReview = (reviewId: string, userId: string, voteType: 'helpful' | 'unhelpful') => {
+    const reviewIndex = reviews.value.findIndex(r => r.id === reviewId)
+    if (reviewIndex === -1) return
+    
+    const review = reviews.value[reviewIndex]
+    
+    // Prevent users from voting on their own reviews
+    if (review.userId === userId) return
+    
+    // Remove previous vote if exists
+    const previousVote = review.userVotes[userId]
+    if (previousVote) {
+      if (previousVote === 'helpful') {
+        review.helpfulVotes--
+      } else {
+        review.unhelpfulVotes--
+      }
+    }
+    
+    // Add new vote
+    if (previousVote === voteType) {
+      // If clicking the same vote, remove it
+      delete review.userVotes[userId]
+    } else {
+      // Add new vote
+      review.userVotes[userId] = voteType
+      if (voteType === 'helpful') {
+        review.helpfulVotes++
+      } else {
+        review.unhelpfulVotes++
+      }
+    }
+    
+    // Update helpfulness score (helpful votes - unhelpful votes)
+    review.helpfulnessScore = review.helpfulVotes - review.unhelpfulVotes
+    
+    // Update current movie reviews if needed
+    if (currentMovie.value) {
+      currentMovieReviews.value = getReviewsForMovie(currentMovie.value.id)
+    }
+  }
+  
+  const getUserVoteOnReview = (reviewId: string, userId: string): 'helpful' | 'unhelpful' | null => {
+    const review = reviews.value.find(r => r.id === reviewId)
+    return review?.userVotes[userId] || null
+  }
+
   const clearCurrentMovie = () => {
     currentMovie.value = null
     currentMovieReviews.value = []
@@ -247,6 +294,9 @@ export const useMovieStore = defineStore('movie', () => {
     addReview,
     updateReview,
     deleteReview,
-    clearCurrentMovie
+    voteOnReview,
+    getUserVoteOnReview,
+    clearCurrentMovie,
+    getMovieById
   }
 })

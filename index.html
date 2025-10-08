@@ -2,9 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/favicon.svg?v=2" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/favicon.svg?v=2" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Vue App</title>
+    <meta name="description" content="LemonPie - Your ultimate destination for Nollywood movies, reviews, and entertainment" />
+    <meta name="theme-color" content="#7c3aed" />
+    
+    <!-- Resource hints for better performance -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+    
+    <!-- Preload critical resources -->
+    <link rel="modulepreload" href="/src/main.ts" />
+    <link rel="modulepreload" href="/src/App.vue" />
+    <link rel="modulepreload" href="/src/router/index.ts" />
+    
+    <title>LemonPie - Nollywood Movies & Reviews</title>
     <script type="module">
       if (import.meta.hot?.on) {
         import.meta.hot.on('vite:error', (error) => {

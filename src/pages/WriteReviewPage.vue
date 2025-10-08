@@ -71,14 +71,21 @@ const handleReviewSubmit = (formData: any) => {
     spoilerWarning: formData.containsSpoilers,
     culturalAuthenticityRating: formData.rating, // Default to same as overall rating
     productionQualityRating: formData.rating, // Default to same as overall rating
+    // Category ratings
+    storyRating: formData.rating, // Default to same as overall rating
+    actingRating: formData.rating, // Default to same as overall rating
+    cinematographyRating: formData.rating, // Default to same as overall rating
     nollywoodTags: [], // Could be enhanced to allow user selection
     helpfulnessScore: 0,
+    helpfulVotes: 0,
+    unhelpfulVotes: 0,
+    userVotes: {},
     createdAt: new Date().toISOString(),
     isVerifiedCritic: false
   }
   
-  // Add review to store
-  movieStore.addReview(newReview)
+  // Add review to store with activity tracking
+  userStore.addUserReviewWithActivity(newReview)
   
   // Show success message
   uiStore.showSuccessToast('Review submitted successfully! Thank you for sharing your thoughts.')

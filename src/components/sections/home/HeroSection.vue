@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { Play } from 'lucide-vue-next'
 import { useMovieStore } from '@/stores/movieStore'
 import { useUIStore } from '@/stores/uiStore'
@@ -14,23 +14,45 @@ const movieStore = useMovieStore()
 const uiStore = useUIStore()
 
 const featuredMovie = computed(() => props.movie || movieStore.featuredMovie)
+const imageLoaded = ref(false)
+const heroRef = ref<HTMLElement>()
 
 const playTrailer = () => {
   if (featuredMovie.value) {
     uiStore.openTrailerModal(featuredMovie.value.id, featuredMovie.value.trailerUrl || '')
   }
 }
+
+const handleImageLoad = () => {
+  imageLoaded.value = true
+}
+
+onMounted(() => {
+  // Preload the featured movie image
+  if (featuredMovie.value?.posterUrl) {
+    const img = new Image()
+    img.onload = handleImageLoad
+    img.src = featuredMovie.value.posterUrl
+  }
+})
 </script>
 
 <template>
-  <section v-if="featuredMovie" class="relative h-[80vh] overflow-hidden">
+  <section v-if="featuredMovie" ref="heroRef" class="relative h-[80vh] overflow-hidden">
     <!-- Background Image with Solid Color Overlay -->
     <div 
-      class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-      :style="{ backgroundImage: `url(${featuredMovie.posterUrl})` }"
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
+      :class="{ 'opacity-100': imageLoaded, 'opacity-0': !imageLoaded }"
+      :style="{ backgroundImage: imageLoaded ? `url(${featuredMovie.posterUrl})` : 'none' }"
     >
       <div class="absolute inset-0 bg-purple-900/80"></div>
     </div>
+    
+    <!-- Loading placeholder -->
+    <div 
+      v-if="!imageLoaded"
+      class="absolute inset-0 bg-gradient-to-r from-purple-900 to-purple-800 animate-pulse"
+    ></div>
     
     <!-- Content -->
     <div class="relative z-10 h-full flex items-center">
@@ -38,11 +60,22 @@ const playTrailer = () => {
         <div class="flex items-center gap-8 max-w-6xl">
           <!-- Movie Poster -->
           <div class="hidden md:block flex-shrink-0">
-            <img 
-              :src="featuredMovie.posterUrl" 
-              :alt="featuredMovie.title"
-              class="w-80 h-[450px] object-cover rounded-lg shadow-2xl"
-            />
+            <div class="relative w-80 h-[450px] rounded-lg overflow-hidden shadow-2xl">
+              <img 
+                v-if="imageLoaded"
+                :src="featuredMovie.posterUrl" 
+                :alt="featuredMovie.title"
+                class="w-full h-full object-cover transition-opacity duration-300"
+                loading="eager"
+                decoding="async"
+              />
+              <div 
+                v-else
+                class="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 animate-pulse flex items-center justify-center"
+              >
+                <div class="text-gray-400 text-lg">Loading...</div>
+              </div>
+            </div>
           </div>
           
           <!-- Movie Details -->

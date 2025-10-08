@@ -130,26 +130,7 @@
               </div>
             </div>
 
-            <!-- Push Notifications -->
-            <div>
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Push Notifications</h3>
-              <div class="space-y-4">
-                <div v-for="notification in pushNotifications" :key="notification.id" class="flex items-center justify-between">
-                  <div>
-                    <h4 class="text-sm font-medium text-gray-900 dark:text-white">{{ notification.title }}</h4>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ notification.description }}</p>
-                  </div>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      v-model="notification.enabled"
-                      type="checkbox"
-                      class="sr-only peer"
-                    />
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-              </div>
-            </div>
+
 
             <!-- Save Button -->
             <div class="flex justify-end">
@@ -308,82 +289,7 @@
               </div>
             </div>
 
-            <!-- Role Management (Admin Only) -->
-            <div v-if="userStore.isAdmin()" class="border-t border-gray-200 dark:border-gray-700 pt-6">
-              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Role Management</h3>
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
-                <div class="flex items-center mb-2">
-                  <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                  </svg>
-                  <h4 class="text-sm font-medium text-blue-800 dark:text-blue-200">Administrator Access</h4>
-                </div>
-                <p class="text-sm text-blue-700 dark:text-blue-300">
-                  As an administrator, you can assign roles to users. The 'Critic' role grants exclusive access to submit professional critiques.
-                </p>
-              </div>
-              
-              <div class="space-y-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Your Current Role</label>
-                  <div class="flex items-center space-x-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
-                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
-                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
-                      </svg>
-                      {{ userStore.currentUser?.role ? userStore.currentUser.role.charAt(0).toUpperCase() + userStore.currentUser.role.slice(1) : 'User' }}
-                    </span>
-                  </div>
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Assign Role to User</label>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <input
-                      v-model="roleManagement.userId"
-                      type="text"
-                      placeholder="User ID or Email"
-                      class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    />
-                    <select
-                      v-model="roleManagement.selectedRole"
-                      class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    >
-                      <option value="">Select Role</option>
-                      <option value="user">User</option>
-                      <option value="critic">Critic</option>
-                      <option value="moderator">Moderator</option>
-                      <option value="admin">Admin</option>
-                    </select>
-                    <button
-                      @click="assignRole"
-                      :disabled="!roleManagement.userId || !roleManagement.selectedRole || isAssigningRole"
-                      class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md font-medium transition-colors"
-                    >
-                      <span v-if="isAssigningRole" class="flex items-center justify-center">
-                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Assigning...
-                      </span>
-                      <span v-else>Assign Role</span>
-                    </button>
-                  </div>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Role Descriptions</h4>
-                  <div class="space-y-2 text-xs text-gray-600 dark:text-gray-400">
-                    <div><strong>User:</strong> Standard access to browse and review movies</div>
-                    <div><strong>Critic:</strong> Can submit professional critiques and reviews</div>
-                    <div><strong>Moderator:</strong> Can moderate content and manage user reports</div>
-                    <div><strong>Admin:</strong> Full system access including user and role management</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+
 
             <!-- Account Deletion -->
             <div class="border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -490,27 +396,7 @@ const emailNotifications = reactive([
   }
 ])
 
-// Push notifications
-const pushNotifications = reactive([
-  {
-    id: 'instant-reviews',
-    title: 'Instant Reviews',
-    description: 'Real-time notifications for new reviews',
-    enabled: false
-  },
-  {
-    id: 'friend-activity',
-    title: 'Friend Activity',
-    description: 'When friends add movies to their watchlist',
-    enabled: true
-  },
-  {
-    id: 'trending',
-    title: 'Trending Movies',
-    description: 'Notifications about trending movies and shows',
-    enabled: true
-  }
-])
+
 
 // Privacy settings
 const privacySettings = reactive({
@@ -535,13 +421,7 @@ const passwordData = reactive({
 // Modal state
 const showDeleteConfirmation = ref(false)
 
-// Role management data
-const roleManagement = reactive({
-  userId: '',
-  selectedRole: ''
-})
 
-const isAssigningRole = ref(false)
 
 // Methods
 const saveProfile = () => {
@@ -620,56 +500,7 @@ const toggle2FA = () => {
   })
 }
 
-const assignRole = async () => {
-  if (!roleManagement.userId || !roleManagement.selectedRole) {
-    notificationStore.addNotification({
-      type: 'error',
-      title: 'Missing Information',
-      message: 'Please provide both user ID and role selection!',
-      isRead: false
-    })
-    return
-  }
-  
-  isAssigningRole.value = true
-  
-  try {
-    // Simulate role assignment (in real app, this would be an API call)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Use the assignRole method from userStore
-    const success = userStore.assignRole(roleManagement.userId, roleManagement.selectedRole as 'user' | 'admin' | 'moderator' | 'critic')
-    
-    if (success) {
-      notificationStore.addNotification({
-        type: 'success',
-        title: 'Role Assigned',
-        message: `Successfully assigned ${roleManagement.selectedRole} role to user ${roleManagement.userId}!`,
-        isRead: false
-      })
-      
-      // Clear form
-      roleManagement.userId = ''
-      roleManagement.selectedRole = ''
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        title: 'Role Assignment Failed',
-        message: 'Failed to assign role. User may not exist or you may not have permission.',
-        isRead: false
-      })
-    }
-  } catch (error) {
-    notificationStore.addNotification({
-      type: 'error',
-      title: 'Assignment Error',
-      message: 'An error occurred while assigning the role. Please try again.',
-      isRead: false
-    })
-  } finally {
-    isAssigningRole.value = false
-  }
-}
+
 
 const deleteAccount = () => {
   // Perform account deletion

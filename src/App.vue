@@ -69,7 +69,26 @@ body {
 }
 
 /* Focus styles for accessibility */
-:focus {
+/* Use focus-visible for better UX - only shows focus on keyboard navigation */
+:focus-visible {
+  outline: 2px solid #FFD700;
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for navigation elements and logo */
+.router-link-active:focus,
+.router-link-exact-active:focus,
+a[href]:focus,
+button:focus:not(.btn):not([role="button"]) {
+  outline: none;
+}
+
+/* Ensure form elements and interactive buttons still get focus indicators */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+.btn:focus-visible,
+[role="button"]:focus-visible {
   outline: 2px solid #FFD700;
   outline-offset: 2px;
 }

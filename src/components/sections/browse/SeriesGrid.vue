@@ -54,7 +54,7 @@ const toggleWatchlist = async (event: Event, seriesId: string) => {
     if (userStore.isInWatchlist(seriesId)) {
       await userStore.removeFromWatchlist(seriesId)
     } else {
-      await userStore.addToWatchlist(seriesId)
+      await userStore.addToWatchlistWithActivity(seriesId)
     }
   } catch (error) {
     console.error('Error updating watchlist:', error)
@@ -72,7 +72,7 @@ const toggleFavorite = async (event: Event, seriesId: string) => {
     if (userStore.isInFavorites(seriesId)) {
       await userStore.removeFromFavorites(seriesId)
     } else {
-      await userStore.addToFavorites(seriesId)
+      await userStore.addToFavoritesWithActivity(seriesId)
     }
   } catch (error) {
     console.error('Error updating favorites:', error)
@@ -86,13 +86,13 @@ const formatRating = (rating: number) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'ongoing':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     case 'completed':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     case 'cancelled':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
   }
 }
 </script>
@@ -104,13 +104,13 @@ const getStatusColor = (status: string) => {
       <div 
         v-for="item in loadingItems" 
         :key="item.id"
-        class="bg-white rounded-lg shadow-md overflow-hidden animate-pulse"
+        class="bg-theme-surface rounded-lg shadow-md overflow-hidden animate-pulse border border-theme-border"
       >
-        <div class="aspect-[2/3] bg-gray-300"></div>
+        <div class="aspect-[2/3] bg-theme-border"></div>
         <div class="p-4">
-          <div class="h-4 bg-gray-300 rounded mb-2"></div>
-          <div class="h-3 bg-gray-300 rounded mb-2 w-3/4"></div>
-          <div class="h-3 bg-gray-300 rounded w-1/2"></div>
+          <div class="h-4 bg-theme-border rounded mb-2"></div>
+          <div class="h-3 bg-theme-border rounded mb-2 w-3/4"></div>
+          <div class="h-3 bg-theme-border rounded w-1/2"></div>
         </div>
       </div>
     </template>
@@ -121,7 +121,7 @@ const getStatusColor = (status: string) => {
         v-for="show in series" 
         :key="show.id"
         @click="handleSeriesClick(show)"
-        class="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+        class="group bg-theme-surface rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 border border-theme-border"
       >
         <!-- Poster -->
         <div class="relative aspect-[2/3] overflow-hidden">
@@ -171,25 +171,25 @@ const getStatusColor = (status: string) => {
         
         <!-- Content -->
         <div class="p-4">
-          <h3 class="font-bold text-gray-900 mb-1 line-clamp-2 group-hover:text-orange-600 transition-colors">
+          <h3 class="font-bold text-sm line-clamp-2 group-hover:text-orange-600 transition-colors text-theme-primary">
             {{ show.title }}
           </h3>
           
-          <p class="text-sm text-gray-600 mb-2">
-            {{ new Date(show.releaseDate).getFullYear() }}
-          </p>
+          <div class="flex items-center gap-2 text-xs text-theme-text-secondary mt-1">
+            <Star class="w-3 h-3 fill-orange-400 text-orange-400" />
+            <span>{{ show.lemonPieRating.toFixed(1) }}</span>
+          </div>
           
-          <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
-            <span>{{ show.seasons }} Season{{ show.seasons !== 1 ? 's' : '' }}</span>
-            <span>{{ show.episodes }} Episodes</span>
+          <div class="text-xs text-theme-text-secondary mt-1">
+            {{ show.releaseDate.split('-')[0] }} • {{ show.seasons }} Season{{ show.seasons > 1 ? 's' : '' }}
           </div>
           
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1 text-sm">
               <span class="text-orange-500 font-semibold">{{ formatRating(show.lemonPieRating) }}</span>
-              <span class="text-gray-500">/10</span>
+              <span class="text-theme-text-secondary">/10</span>
             </div>
-            <div class="flex items-center gap-1 text-xs text-gray-500">
+            <div class="flex items-center gap-1 text-xs text-theme-text-secondary">
               <Eye class="w-3 h-3" />
               <span>{{ show.reviewCount }}</span>
             </div>

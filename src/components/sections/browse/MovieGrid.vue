@@ -62,7 +62,7 @@ const toggleWatchlist = async (movie: Movie) => {
     if (userStore.isInWatchlist(movie.id)) {
       await userStore.removeFromWatchlist(movie.id)
     } else {
-      await userStore.addToWatchlist(movie.id)
+      await userStore.addToWatchlistWithActivity(movie.id)
     }
   } catch (error) {
     console.error('Error updating watchlist:', error)
@@ -79,7 +79,7 @@ const toggleFavorite = async (movie: Movie) => {
     if (userStore.isInFavorites(movie.id)) {
       await userStore.removeFromFavorites(movie.id)
     } else {
-      await userStore.addToFavorites(movie.id)
+      await userStore.addToFavoritesWithActivity(movie.id)
     }
   } catch (error) {
     console.error('Error updating favorites:', error)
@@ -110,13 +110,13 @@ const getMovieTypeBadge = (movie: Movie) => {
       <div 
         v-for="i in itemsPerPage" 
         :key="i" 
-        class="bg-white rounded-lg shadow-md animate-pulse border border-gray-200"
+        class="bg-theme-surface rounded-lg shadow-md animate-pulse border border-theme-border"
       >
-        <div class="bg-gray-300 h-64 rounded-t-lg"></div>
+        <div class="bg-theme-border h-64 rounded-t-lg"></div>
         <div class="p-4">
-          <div class="bg-gray-300 h-4 rounded mb-2"></div>
-          <div class="bg-gray-300 h-3 rounded w-3/4 mb-2"></div>
-          <div class="bg-gray-300 h-3 rounded w-1/2"></div>
+          <div class="bg-theme-border h-4 rounded mb-2"></div>
+          <div class="bg-theme-border h-3 rounded w-3/4 mb-2"></div>
+          <div class="bg-theme-border h-3 rounded w-1/2"></div>
         </div>
       </div>
     </template>
@@ -126,7 +126,7 @@ const getMovieTypeBadge = (movie: Movie) => {
         <div 
           v-for="movie in paginatedMovies" 
           :key="movie.id"
-          class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer border border-gray-200"
+          class="bg-theme-surface rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group cursor-pointer border border-theme-border"
           @click="navigateToMovie(movie)"
         >
           <!-- Movie Poster -->
@@ -191,11 +191,11 @@ const getMovieTypeBadge = (movie: Movie) => {
           
           <!-- Movie Info -->
           <div class="p-4">
-            <h3 class="text-sm font-bold line-clamp-2 group-hover:text-orange-600 transition-colors text-gray-900">
+            <h3 class="text-sm font-bold line-clamp-2 group-hover:text-orange-600 transition-colors text-theme-primary">
               {{ movie.title }}
             </h3>
             
-            <div class="flex items-center justify-between text-xs text-gray-600 mt-2">
+            <div class="flex items-center justify-between text-xs text-theme-text-secondary mt-2">
               <span>{{ movie.year }}</span>
             </div>
             
@@ -209,8 +209,8 @@ const getMovieTypeBadge = (movie: Movie) => {
     <!-- Empty State -->
     <div v-else class="col-span-full text-center py-12">
       <div class="text-6xl mb-4">🎬</div>
-      <h3 class="text-xl font-bold mb-2 text-gray-900">No movies found</h3>
-      <p class="text-gray-600 mb-4">Try adjusting your search criteria or filters</p>
+      <h3 class="text-xl font-bold mb-2 text-theme-primary">No movies found</h3>
+      <p class="text-theme-text-secondary mb-4">Try adjusting your search criteria or filters</p>
     </div>
   </div>
 
@@ -223,8 +223,8 @@ const getMovieTypeBadge = (movie: Movie) => {
         :class="[
           'px-4 py-2 rounded-lg font-medium transition-colors border',
           currentPage === 1
-            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ? 'bg-theme-surface text-theme-text-secondary border-theme-border cursor-not-allowed'
+            : 'bg-theme-surface text-theme-text border-theme-border hover:bg-theme-surface-hover'
         ]"
       >
         Previous
@@ -238,7 +238,7 @@ const getMovieTypeBadge = (movie: Movie) => {
           'px-4 py-2 rounded-lg font-medium transition-colors border',
           page === currentPage
             ? 'bg-orange-500 text-white border-orange-500'
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            : 'bg-theme-surface text-theme-text border-theme-border hover:bg-theme-surface-hover'
         ]"
       >
         {{ page }}
@@ -246,7 +246,7 @@ const getMovieTypeBadge = (movie: Movie) => {
       
       <button 
         v-if="totalPages > 5"
-        class="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+        class="px-4 py-2 rounded-lg font-medium bg-theme-surface text-theme-text-secondary border border-theme-border cursor-not-allowed"
         disabled
       >
         ...
@@ -258,8 +258,8 @@ const getMovieTypeBadge = (movie: Movie) => {
         :class="[
           'px-4 py-2 rounded-lg font-medium transition-colors border',
           currentPage === totalPages
-            ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-            : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+            ? 'bg-theme-surface text-theme-text-secondary border-theme-border cursor-not-allowed'
+            : 'bg-theme-surface text-theme-text border-theme-border hover:bg-theme-surface-hover'
         ]"
       >
         Next
@@ -268,7 +268,7 @@ const getMovieTypeBadge = (movie: Movie) => {
   </div>
   
   <!-- Results Summary -->
-  <div v-if="!loading" class="text-center mt-4 text-sm text-gray-600">
+  <div v-if="!loading" class="text-center mt-4 text-sm text-theme-text-secondary">
     Showing {{ paginatedMovies.length }} of {{ movies.length }} movies
     <span v-if="showPagination && totalPages > 1">
       (Page {{ currentPage }} of {{ totalPages }})

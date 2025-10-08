@@ -31,28 +31,28 @@
             
             <div class="space-y-3">
               <div>
-                <span class="text-gray-400 text-sm">Known for</span>
-                <p class="text-white font-medium">Acting</p>
+                <span class="text-theme-secondary text-sm">Known for</span>
+                <p class="text-theme-text font-medium">Acting</p>
               </div>
               
               <div>
-                <span class="text-gray-400 text-sm">Gender</span>
-                <p class="text-white font-medium">{{ getGender(actor.name) }}</p>
+                <span class="text-theme-secondary text-sm">Gender</span>
+                <p class="text-theme-text font-medium">{{ getGender(actor.name) }}</p>
               </div>
               
               <div>
-                <span class="text-gray-400 text-sm">Known credits</span>
-                <p class="text-white font-medium">{{ actor.movieCount }}</p>
+                <span class="text-theme-secondary text-sm">Known credits</span>
+                <p class="text-theme-text font-medium">{{ actor.movieCount }}</p>
               </div>
               
               <div>
-                <span class="text-gray-400 text-sm">Born</span>
-                <p class="text-white font-medium">{{ getBirthDate(actor.age) }} ({{ actor.age }} years old)</p>
+                <span class="text-theme-secondary text-sm">Born</span>
+                <p class="text-theme-text font-medium">{{ getBirthDate(actor.age) }} ({{ actor.age }} years old)</p>
               </div>
               
               <div v-if="actor.birthPlace">
-                <span class="text-gray-400 text-sm">Birthplace</span>
-                <p class="text-white font-medium">{{ actor.birthPlace }}</p>
+                <span class="text-theme-secondary text-sm">Birthplace</span>
+                <p class="text-theme-text font-medium">{{ actor.birthPlace }}</p>
               </div>
             </div>
           </div>
@@ -62,7 +62,7 @@
         <div class="lg:col-span-3">
           <!-- Header with Name and Share Button -->
           <div class="flex justify-between items-start mb-6">
-            <h1 class="text-4xl font-bold text-white">{{ actor.name }}</h1>
+            <h1 class="text-4xl font-bold text-theme-text">{{ actor.name }}</h1>
             <button class="btn btn-ghost text-orange-500 hover:bg-orange-500 hover:text-white">
               <Share2 class="w-5 h-5 mr-2" />
               Share
@@ -71,8 +71,8 @@
           
           <!-- Biography -->
           <div class="mb-8">
-            <h2 class="text-xl font-bold text-white mb-4">Biography</h2>
-            <div class="text-gray-300 leading-relaxed">
+            <h2 class="text-xl font-bold text-theme-text mb-4">Biography</h2>
+            <div class="text-theme-tertiary leading-relaxed">
               <p class="mb-4">{{ getFullBiography(actor) }}</p>
               <button 
                 v-if="!showFullBio && getFullBiography(actor).length > 300"
@@ -86,12 +86,12 @@
           
           <!-- Known For Section -->
           <div class="mb-8">
-            <h2 class="text-xl font-bold text-white mb-6">Known for</h2>
+            <h2 class="text-xl font-bold text-theme-text mb-6">Known for</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div 
                 v-for="movie in knownForMovies" 
                 :key="movie.id"
-                class="bg-gray-800 rounded-lg overflow-hidden hover:bg-gray-700 transition-colors cursor-pointer"
+                class="bg-theme-surface rounded-lg overflow-hidden hover:bg-theme-hover transition-colors cursor-pointer"
                 @click="navigateToMovie(movie.id)"
               >
                 <img 
@@ -100,8 +100,8 @@
                   class="w-full h-48 object-cover"
                 />
                 <div class="p-3">
-                  <h3 class="text-white font-medium text-sm mb-1 line-clamp-2">{{ movie.title }}</h3>
-                  <div class="flex items-center gap-2 text-xs text-gray-400">
+                  <h3 class="text-theme-text font-medium text-sm mb-1 line-clamp-2">{{ movie.title }}</h3>
+                  <div class="flex items-center gap-2 text-xs text-theme-secondary">
                     <Star class="w-3 h-3 text-yellow-500" />
                     <span>{{ movie.lemonPieRating.toFixed(1) }}/10</span>
                   </div>

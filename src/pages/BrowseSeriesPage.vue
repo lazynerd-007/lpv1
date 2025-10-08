@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-3">
           <span class="w-1 h-8 bg-orange-500 rounded"></span>
-          <h1 class="text-3xl font-bold text-gray-900">Browse Series</h1>
+          <h1 class="text-3xl font-bold text-theme-primary">Browse Series</h1>
         </div>
         
         <div class="flex items-center gap-4">
@@ -19,7 +19,7 @@
               <option value="">All Genres</option>
               <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
             </select>
-            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-text-secondary pointer-events-none" />
           </div>
           
           <!-- Sort Dropdown -->
@@ -36,11 +36,11 @@
               <option value="title">A-Z</option>
               <option value="seasons">Most seasons</option>
             </select>
-            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-text-secondary pointer-events-none" />
           </div>
           
           <!-- View Toggle -->
-          <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+          <div class="flex border border-theme-border rounded-lg overflow-hidden">
             <button 
               @click="viewMode = 'grid'" 
               :class="[
@@ -89,7 +89,7 @@
           <div 
             v-for="show in displayedSeries" 
             :key="show.id" 
-            class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+            class="bg-theme-surface border border-theme-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
           >
             <div class="flex flex-col md:flex-row gap-6">
               <div class="flex-shrink-0">
@@ -101,19 +101,19 @@
               </div>
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-3">
-                  <h3 class="text-xl font-bold text-gray-900">{{ show.title }}</h3>
+                  <h3 class="text-xl font-bold text-theme-primary">{{ show.title }}</h3>
                   <div class="flex items-center gap-1">
                     <span class="text-orange-500 font-semibold">{{ show.lemonPieRating.toFixed(1) }}</span>
-                    <span class="text-gray-500">/10</span>
+                    <span class="text-theme-text-secondary">/10</span>
                   </div>
                 </div>
-                <p class="text-gray-600 mb-3">
+                <p class="text-theme-text-secondary mb-3">
                   {{ show.releaseDate }} • {{ show.genre.join(', ') }} • 
                   <span :class="getStatusColor(show.status)" class="px-2 py-1 rounded text-xs font-semibold capitalize">
                     {{ show.status }}
                   </span>
                 </p>
-                <p class="text-gray-700 mb-4 line-clamp-2">{{ show.plotSummary }}</p>
+                <p class="text-theme-text mb-4 line-clamp-2">{{ show.plotSummary }}</p>
                 <div class="flex flex-wrap gap-2 mb-4">
                   <span 
                     v-for="actor in show.cast.slice(0, 3)" 
@@ -124,7 +124,7 @@
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <div class="text-sm text-gray-500">
+                  <div class="text-sm text-theme-text-secondary">
                     {{ show.seasons }} Season{{ show.seasons !== 1 ? 's' : '' }} • 
                     {{ show.episodes }} Episodes • 
                     {{ show.language.join(', ') }}
@@ -143,7 +143,7 @@
 
         <!-- Loading Indicator for Infinite Scroll -->
         <div v-if="isLoading" class="flex justify-center mt-8">
-          <div class="flex items-center gap-2 text-gray-600">
+          <div class="flex items-center gap-2 text-theme-text-secondary">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
             <span>Loading more series...</span>
           </div>
@@ -151,15 +151,15 @@
         
         <!-- End of Results Indicator -->
         <div v-else-if="!canLoadMore && displayedSeries.length > 0" class="text-center mt-8 py-4">
-          <p class="text-gray-500">You've reached the end of the series list</p>
+          <p class="text-theme-text-secondary">You've reached the end of the series list</p>
         </div>
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-8 bg-theme-section-alt rounded-lg border border-theme-light">
+      <div v-else class="text-center py-8 bg-theme-surface rounded-lg border border-theme-border">
         <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">No series found</h3>
-        <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+        <h3 class="text-2xl font-bold text-theme-primary mb-2">No series found</h3>
+        <p class="text-theme-text-secondary mb-6">Try adjusting your filters or search terms</p>
         <button 
           @click="clearFilters" 
           class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
@@ -284,11 +284,11 @@ const handleScroll = () => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'ongoing':
-      return 'bg-green-100 text-green-800'
+      return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
     case 'completed':
-      return 'bg-blue-100 text-blue-800'
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
     case 'cancelled':
-      return 'bg-red-100 text-red-800'
+      return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
     default:
       return 'bg-theme-surface text-theme-text'
   }

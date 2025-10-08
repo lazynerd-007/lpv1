@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings, Sun, Moon } from 'lucide-vue-next';
+import { Search, Menu, X, Bell, ChevronDown, User, Heart, Settings, Sun, Moon, Shield } from 'lucide-vue-next';
 import { useUserStore } from '@/stores/userStore';
 import { useTheme } from '@/composables/useTheme';
 import NotificationDropdown from '@/components/ui/NotificationDropdown.vue';
@@ -25,11 +25,15 @@ const navItems = [
 ];
 
 // User menu items (for when user is logged in)
-const userMenuItems = [
-  { name: 'Watchlist', path: '/watchlist', icon: Heart },
-  { name: 'Profile', path: '/profile', icon: User },
-  { name: 'Settings', path: '/settings', icon: Settings }
-];
+const userMenuItems = computed(() => {
+  const baseItems = [
+    { name: 'Watchlist', path: '/watchlist', icon: Heart },
+    { name: 'Profile', path: '/profile', icon: User },
+    { name: 'Settings', path: '/settings', icon: Settings }
+  ];
+  
+  return baseItems;
+});
 
 // Computed properties for user data
 const isLoggedIn = computed(() => userStore.isAuthenticated);

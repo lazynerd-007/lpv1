@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between mb-8">
         <div class="flex items-center gap-3">
           <span class="w-1 h-8 bg-orange-500 rounded"></span>
-          <h1 class="text-3xl font-bold text-gray-900">Browse Movies</h1>
+          <h1 class="text-3xl font-bold text-theme-primary">Browse Movies</h1>
         </div>
         
         <div class="flex items-center gap-4">
@@ -19,7 +19,7 @@
               <option value="">All Genres</option>
               <option v-for="genre in genres" :key="genre" :value="genre">{{ genre }}</option>
             </select>
-            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-text-secondary pointer-events-none" />
           </div>
           
           <!-- Sort Dropdown -->
@@ -35,11 +35,11 @@
               <option value="oldest">Oldest first</option>
               <option value="title">A-Z</option>
             </select>
-            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+            <ChevronDown class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-theme-text-secondary pointer-events-none" />
           </div>
           
           <!-- View Toggle -->
-          <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+          <div class="flex border border-theme-border rounded-lg overflow-hidden">
             <button 
               @click="viewMode = 'grid'" 
               :class="[
@@ -88,7 +88,7 @@
           <div 
             v-for="movie in displayedMovies" 
             :key="movie.id" 
-            class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
+            class="bg-theme-surface border border-theme-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200"
           >
             <div class="flex flex-col md:flex-row gap-6">
               <div class="flex-shrink-0">
@@ -100,14 +100,14 @@
               </div>
               <div class="flex-1">
                 <div class="flex justify-between items-start mb-3">
-                  <h3 class="text-xl font-bold text-gray-900">{{ movie.title }}</h3>
+                  <h3 class="text-xl font-bold text-theme-primary">{{ movie.title }}</h3>
                   <div class="flex items-center gap-1">
                     <span class="text-orange-500 font-semibold">{{ movie.lemonPieRating.toFixed(1) }}</span>
-                    <span class="text-gray-500">/10</span>
+                    <span class="text-theme-text-secondary">/10</span>
                   </div>
                 </div>
-                <p class="text-gray-600 mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
-                <p class="text-gray-700 mb-4 line-clamp-2">{{ movie.plotSummary }}</p>
+                <p class="text-theme-text-secondary mb-3">{{ movie.releaseDate }} • {{ movie.genre.join(', ') }}</p>
+                <p class="text-theme-text mb-4 line-clamp-2">{{ movie.plotSummary }}</p>
                 <div class="flex flex-wrap gap-2 mb-4">
                   <span 
                     v-for="actor in movie.cast.slice(0, 3)" 
@@ -118,7 +118,7 @@
                   </span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <div class="text-sm text-gray-500">
+                  <div class="text-sm text-theme-text-secondary">
                     {{ movie.runtime }} min • {{ movie.language }}
                   </div>
                   <router-link 
@@ -135,7 +135,7 @@
 
         <!-- Loading Indicator for Infinite Scroll -->
         <div v-if="isLoading" class="flex justify-center mt-8">
-          <div class="flex items-center gap-2 text-gray-600">
+          <div class="flex items-center gap-2 text-theme-text-secondary">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500"></div>
             <span>Loading more movies...</span>
           </div>
@@ -143,15 +143,15 @@
         
         <!-- End of Results Indicator -->
         <div v-else-if="!canLoadMore && displayedMovies.length > 0" class="text-center mt-8 py-4">
-          <p class="text-gray-500">You've reached the end of the movie list</p>
+          <p class="text-theme-text-secondary">You've reached the end of the movie list</p>
         </div>
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-8 bg-theme-section-alt rounded-lg border border-theme-light">
+      <div v-else class="text-center py-8 bg-theme-surface rounded-lg border border-theme-border">
         <div class="text-6xl mb-4">🔍</div>
-        <h3 class="text-2xl font-bold text-gray-900 mb-2">No movies found</h3>
-        <p class="text-gray-600 mb-6">Try adjusting your filters or search terms</p>
+        <h3 class="text-2xl font-bold text-theme-primary mb-2">No movies found</h3>
+        <p class="text-theme-text-secondary mb-6">Try adjusting your filters or search terms</p>
         <button 
           @click="clearFilters" 
           class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
