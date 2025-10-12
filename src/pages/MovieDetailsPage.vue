@@ -355,7 +355,7 @@ const handleReviewAction = async (action: string, reviewId: string) => {
         // Report functionality not implemented yet
         break
       case 'edit':
-        router.push(`/write-review?movie=${movieId.value}&edit=${reviewId}`)
+        router.push(`/edit-review/${reviewId}`)
         break
       case 'delete':
         await movieStore.deleteReview(reviewId)

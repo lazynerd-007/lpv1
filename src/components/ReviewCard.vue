@@ -243,10 +243,10 @@ const cardClasses = computed(() => {
             v-if="canEdit"
             @click="handleEdit"
             class="btn btn-ghost btn-xs gap-1 text-theme-secondary hover:text-primary"
-            title="Edit review"
+            title="Edit your review"
           >
             <Edit3 class="w-3 h-3" />
-            <span>Edit</span>
+            <span class="hidden sm:inline">Edit</span>
           </button>
           
           <!-- Language Badge -->

@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { Play } from 'lucide-vue-next'
 import { useUIStore } from '@/stores/uiStore'
 import type { Movie } from '@/data/mockMovies'
+import LemonPieRating from '@/components/LemonPieRating.vue'
 
 interface Props {
   title: string
@@ -122,12 +123,12 @@ onUnmounted(() => {
       </div>
       
       <!-- Movies Carousel -->
-      <div 
+      <div
         ref="carouselRef"
         class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
       >
-        <div 
-          v-for="movie in movies.slice(0, maxItems)" 
+        <div
+          v-for="movie in movies.slice(0, maxItems)"
           :key="movie.id"
           class="flex-shrink-0 w-48 group cursor-pointer"
           @click="navigateToMovie(movie.id)"
@@ -135,7 +136,7 @@ onUnmounted(() => {
           <!-- Movie Poster with Play Button -->
           <div class="relative mb-3">
             <div class="relative w-full h-72 rounded-lg overflow-hidden shadow-md">
-              <img 
+              <img
                 :data-src="movie.posterUrl"
                 :data-movie-id="movie.id"
                 :alt="movie.title"
@@ -146,31 +147,34 @@ onUnmounted(() => {
                 loading="lazy"
                 decoding="async"
               />
-              <div 
+              <div
                 v-if="!isImageLoaded(movie.id)"
                 class="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 animate-pulse flex items-center justify-center"
               >
                 <div class="text-gray-500 text-sm">Loading...</div>
               </div>
             </div>
-            
+           
             <!-- Play Button Overlay -->
-            <div 
+            <div
               v-if="showPlayButton"
               class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
             >
-              <div 
+              <div
                 class="bg-white/90 rounded-full p-3 transform scale-90 group-hover:scale-100 transition-transform"
                 @click.stop="playTrailer(movie)"
               >
                 <Play class="w-8 h-8 text-gray-800" fill="currentColor" />
               </div>
             </div>
-            
+           
             <!-- Rating Badge -->
-            <div class="absolute top-3 left-3 bg-black/70 text-white px-2 py-1 rounded text-sm font-medium">
-              <span class="text-yellow-400">⭐</span>
-              {{ movie.lemonPieRating }} / 10
+            <div class="absolute top-3 left-3">
+              <LemonPieRating
+                :rating="movie.lemonPieRating"
+                size="sm"
+                :show-text="false"
+              />
             </div>
           </div>
           

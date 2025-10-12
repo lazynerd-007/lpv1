@@ -174,32 +174,58 @@ export const useMovieStore = defineStore('movie', () => {
     return sorted
   }
 
-  const addReview = (review: Omit<Review, 'id' | 'date'>) => {
+  const addReview = (review: Omit<Review, 'id' | 'createdAt'>) => {
     const newReview: Review = {
-      ...review,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0]
+      id: `review-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      helpfulVotes: 0,
+      unhelpfulVotes: 0,
+      ...review
     }
     
     reviews.value.push(newReview)
     
-    // Update current movie reviews if viewing the same movie
-    if (currentMovie.value?.id === review.movieId) {
-      currentMovieReviews.value = getReviewsForMovie(review.movieId)
+    // If this is a review for the current movie, update currentMovieReviews
+    if (currentMovie.value && review.movieId === currentMovie.value.id) {
+      currentMovieReviews.value.push(newReview)
     }
+    
+    return newReview
+  }
+  
+  const updateReview = (updatedReview: Review) => {
+    // Find the review index in the reviews array
+    const reviewIndex = reviews.value.findIndex(r => r.id === updatedReview.id)
+    
+    if (reviewIndex !== -1) {
+      // Update the review in the reviews array
+      reviews.value[reviewIndex] = {
+        ...reviews.value[reviewIndex],
+        ...updatedReview
+      }
+      
+      // If this is a review for the current movie, update currentMovieReviews
+      if (currentMovie.value && updatedReview.movieId === currentMovie.value.id) {
+        const currentReviewIndex = currentMovieReviews.value.findIndex(r => r.id === updatedReview.id)
+        if (currentReviewIndex !== -1) {
+          currentMovieReviews.value[currentReviewIndex] = {
+            ...currentMovieReviews.value[currentReviewIndex],
+            ...updatedReview
+          }
+        }
+      }
+      
+      return true
+    }
+    
+    return false
+  }
+  
+  const getReviewById = (reviewId: string): Review | undefined => {
+    return reviews.value.find(review => review.id === reviewId)
   }
 
-  const updateReview = (reviewId: string, updates: Partial<Review>) => {
-    const index = reviews.value.findIndex(r => r.id === reviewId)
-    if (index !== -1) {
-      reviews.value[index] = { ...reviews.value[index], ...updates }
-      
-      // Update current movie reviews if needed
-      if (currentMovie.value) {
-        currentMovieReviews.value = getReviewsForMovie(currentMovie.value.id)
-      }
-    }
-  }
+  // This function is already defined above with a different signature
 
   const deleteReview = (reviewId: string) => {
     const index = reviews.value.findIndex(r => r.id === reviewId)

@@ -10,6 +10,7 @@ const BrowseMoviesPage = () => import('@/pages/BrowseMoviesPage.vue')
 const BrowseSeriesPage = () => import('@/pages/BrowseSeriesPage.vue')
 const PeoplePage = () => import('@/pages/PeoplePage.vue')
 const WriteReviewPage = () => import('@/pages/WriteReviewPage.vue')
+const EditReviewPage = () => import('@/pages/EditReviewPage.vue')
 const UserProfilePage = () => import('@/pages/UserProfilePage.vue')
 const LoginPage = () => import('@/pages/LoginPage.vue')
 const RegisterPage = () => import('@/pages/RegisterPage.vue')
@@ -117,6 +118,16 @@ const router = createRouter({
       props: true,
       meta: {
         title: 'Write Review - LemonNPie',
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/edit-review/:reviewId',
+      name: 'edit-review',
+      component: EditReviewPage,
+      props: true,
+      meta: {
+        title: 'Edit Review - LemonNPie',
         requiresAuth: true
       }
     },
