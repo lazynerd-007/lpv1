@@ -22,7 +22,18 @@ const TermsOfServicePage = () => import('@/pages/TermsOfServicePage.vue')
 const ContactUsPage = () => import('@/pages/ContactUsPage.vue')
 const MovieCastAndCrewPage = () => import('@/pages/MovieCastAndCrewPage.vue')
 const SeriesCastAndCrewPage = () => import('@/pages/SeriesCastAndCrewPage.vue')
+// Admin components
 const AdminPage = () => import('@/pages/AdminPage.vue')
+const AdminDashboard = () => import('@/pages/admin/AdminDashboard.vue')
+const AdminUsers = () => import('@/pages/admin/AdminUsers.vue')
+const AdminModeration = () => import('@/pages/admin/AdminModeration.vue')
+const AdminContent = () => import('@/pages/admin/AdminContent.vue')
+const AdminAnalytics = () => import('@/pages/admin/AdminAnalytics.vue')
+const AdminSettings = () => import('@/pages/admin/AdminSettings.vue')
+const AdminCritics = () => import('@/pages/admin/AdminCritics.vue')
+const AdminReports = () => import('@/pages/admin/AdminReports.vue')
+
+// User components
 const SettingsPage = () => import('@/pages/SettingsPage.vue')
 const UserSettings = () => import('@/pages/UserSettings.vue')
 const WatchlistPage = () => import('@/pages/WatchlistPage.vue')
@@ -201,13 +212,90 @@ const router = createRouter({
     {
       path: '/admin',
       name: 'admin',
-      component: AdminPage,
+      component: AdminDashboard,
       meta: {
         title: 'Admin Dashboard - LemonNPie',
         requiresAuth: true,
         requiresAdmin: true
       }
     },
+    {
+      path: '/admin/users',
+      name: 'admin-users',
+      component: AdminUsers,
+      meta: {
+        title: 'User Management - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+
+    {
+      path: '/admin/moderation',
+      name: 'admin-moderation',
+      component: AdminModeration,
+      meta: {
+        title: 'Content Moderation - LemonNPie',
+        requiresAuth: true,
+        requiresModerator: true
+      }
+    },
+
+    {
+      path: '/admin/content',
+      name: 'admin-content',
+      component: AdminContent,
+      meta: {
+        title: 'Content Management - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+
+    {
+      path: '/admin/analytics',
+      name: 'admin-analytics',
+      component: AdminAnalytics,
+      meta: {
+        title: 'Analytics Dashboard - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+
+    {
+      path: '/admin/settings',
+      name: 'admin-settings',
+      component: AdminSettings,
+      meta: {
+        title: 'System Settings - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+
+    {
+      path: '/admin/critics',
+      name: 'admin-critics',
+      component: AdminCritics,
+      meta: {
+        title: 'Critic Management - LemonNPie',
+        requiresAuth: true,
+        requiresAdmin: true
+      }
+    },
+
+    {
+      path: '/admin/reports',
+      name: 'admin-reports',
+      component: AdminReports,
+      meta: {
+        title: 'Reports Management - LemonNPie',
+        requiresAuth: true,
+        requiresModerator: true
+      }
+    },
+
     {
       path: '/settings',
       name: 'settings',
