@@ -279,6 +279,19 @@ def cache_result(ttl: Union[int, timedelta] = 300, key_prefix: str = ""):
     return decorator
 
 
+def get_redis_client() -> redis.Redis:
+    """
+    Get Redis client instance (synchronous version for rate limiter)
+    
+    Returns:
+        redis.Redis: Redis client
+    """
+    if not redis_client:
+        raise RuntimeError("Redis not initialized. Call init_redis() first.")
+    
+    return redis_client
+
+
 async def get_cache_service() -> CacheService:
     """
     Dependency to get cache service
