@@ -6,6 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from contextlib import asynccontextmanager
 import structlog
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.logging import configure_logging, LoggingMiddleware, get_logger
@@ -17,6 +19,11 @@ from app.core.exceptions import (
 )
 from app.db.database import init_db, close_db
 from app.cache.redis import init_redis, close_redis
+from app.auth.cors import setup_cors
+from app.auth.middleware import AuthMiddleware, RoleBasedAccessMiddleware, create_role_permissions_map
+from app.auth.security import SecurityMiddleware, InputValidationMiddleware
+from app.auth.rate_limiter import limiter
+from app.api.v1.auth import router as auth_router
 
 # Configure logging
 configure_logging()
@@ -63,17 +70,18 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     
-    # Add middleware
+    # Add security middleware (order matters)
+    app.add_middleware(SecurityMiddleware)
+    app.add_middleware(InputValidationMiddleware)
+    app.add_middleware(AuthMiddleware)
+    app.add_middleware(
+        RoleBasedAccessMiddleware, 
+        route_permissions=create_role_permissions_map()
+    )
     app.add_middleware(LoggingMiddleware)
     
-    # CORS middleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.ALLOWED_ORIGINS,
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
-        allow_headers=["*"],
-    )
+    # Setup CORS
+    setup_cors(app)
     
     # Trusted host middleware (security)
     if not settings.DEBUG:
@@ -82,10 +90,17 @@ def create_app() -> FastAPI:
             allowed_hosts=["localhost", "127.0.0.1", "*.lemonnpie.com"]
         )
     
+    # Rate limiting
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    
     # Exception handlers
     app.add_exception_handler(LemonPieException, lemonnpie_exception_handler)
     app.add_exception_handler(HTTPException, http_exception_handler)
     app.add_exception_handler(Exception, general_exception_handler)
+    
+    # Include API routes
+    app.include_router(auth_router, prefix="/api/v1")
     
     # Health check endpoint
     @app.get("/health")

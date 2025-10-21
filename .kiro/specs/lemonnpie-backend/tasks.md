@@ -53,7 +53,7 @@
   - _Requirements: 1.1, 2.1_
 
 - [-] 3. Implement authentication and authorization system
-- [x] 3.1 Create JWT authentication service
+- [-] 3.1 Create JWT authentication service
   - Implement JWT token generation and validation
   - Create password hashing with bcrypt
   - Set up token refresh mechanism
@@ -71,7 +71,7 @@
   - Add admin-only endpoint protection
   - _Requirements: 1.1, 6.1, 6.2_
 
-- [-] 3.4 Add rate limiting and security features
+- [ ] 3.4 Add rate limiting and security features
   - Implement rate limiting per user and IP address
   - Add request validation and sanitization
   - Configure CORS for frontend domains
