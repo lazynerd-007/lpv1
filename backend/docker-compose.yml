@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: lemonnpie_postgres
+    environment:
+      POSTGRES_DB: lemonnpie_db
+      POSTGRES_USER: lemonnpie
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lemonnpie -d lemonnpie_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lemonnpie_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: lemonnpie_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - lemonnpie_network
+
+  # FastAPI Application (for development)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: lemonnpie_api
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - DATABASE_URL=postgresql+asyncpg://lemonnpie:password@postgres:5432/lemonnpie_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=dev-secret-key-change-in-production
+    volumes:
+      - .:/app
+      - /app/__pycache__
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lemonnpie_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  lemonnpie_network:
+    driver: bridge
