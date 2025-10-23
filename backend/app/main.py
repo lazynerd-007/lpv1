@@ -24,6 +24,11 @@ from app.auth.middleware import AuthMiddleware, RoleBasedAccessMiddleware, creat
 from app.auth.security import SecurityMiddleware, InputValidationMiddleware
 from app.auth.rate_limiter import limiter
 from app.api.v1.auth import router as auth_router
+from app.api.v1.movies import router as movies_router
+from app.api.v1.reviews import router as reviews_router
+from app.api.v1.users import router as users_router
+from app.api.v1.uploads import router as uploads_router
+from app.api.v1.admin import router as admin_router
 
 # Configure logging
 configure_logging()
@@ -101,6 +106,11 @@ def create_app() -> FastAPI:
     
     # Include API routes
     app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(movies_router, prefix="/api/v1")
+    app.include_router(reviews_router, prefix="/api/v1")
+    app.include_router(users_router, prefix="/api/v1")
+    app.include_router(uploads_router, prefix="/api/v1")
+    app.include_router(admin_router, prefix="/api/v1")
     
     # Health check endpoint
     @app.get("/health")
