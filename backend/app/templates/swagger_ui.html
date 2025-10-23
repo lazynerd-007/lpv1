@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css">
+    <link rel="shortcut icon" href="https://lemonnpie.com/favicon.ico">
+    <title>{{title}}</title>
+    <style>
+        /* Custom LemonNPie styling */
+        :root {
+            --lemonnpie-green: #32CD32;
+            --lemonnpie-dark-green: #228B22;
+            --lemonnpie-light-green: #90EE90;
+            --lemonnpie-yellow: #FFD700;
+            --lemonnpie-orange: #FFA500;
+        }
+
+        /* Header customization */
+        .swagger-ui .topbar {
+            background-color: var(--lemonnpie-green);
+            border-bottom: 3px solid var(--lemonnpie-dark-green);
+        }
+
+        .swagger-ui .topbar .download-url-wrapper {
+            display: none;
+        }
+
+        /* Custom logo and title */
+        .swagger-ui .topbar-wrapper::before {
+            content: "🍋🥧";
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .swagger-ui .topbar-wrapper .link {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        /* Operation styling */
+        .swagger-ui .opblock.opblock-post {
+            border-color: var(--lemonnpie-green);
+        }
+
+        .swagger-ui .opblock.opblock-post .opblock-summary {
+            border-color: var(--lemonnpie-green);
+        }
+
+        .swagger-ui .opblock.opblock-post .opblock-summary-method {
+            background: var(--lemonnpie-green);
+        }
+
+        .swagger-ui .opblock.opblock-get {
+            border-color: var(--lemonnpie-yellow);
+        }
+
+        .swagger-ui .opblock.opblock-get .opblock-summary {
+            border-color: var(--lemonnpie-yellow);
+        }
+
+        .swagger-ui .opblock.opblock-get .opblock-summary-method {
+            background: var(--lemonnpie-yellow);
+            color: #333;
+        }
+
+        .swagger-ui .opblock.opblock-put {
+            border-color: var(--lemonnpie-orange);
+        }
+
+        .swagger-ui .opblock.opblock-put .opblock-summary {
+            border-color: var(--lemonnpie-orange);
+        }
+
+        .swagger-ui .opblock.opblock-put .opblock-summary-method {
+            background: var(--lemonnpie-orange);
+        }
+
+        .swagger-ui .opblock.opblock-delete {
+            border-color: #f93e3e;
+        }
+
+        /* Button styling */
+        .swagger-ui .btn.authorize {
+            background-color: var(--lemonnpie-green);
+            border-color: var(--lemonnpie-dark-green);
+        }
+
+        .swagger-ui .btn.authorize:hover {
+            background-color: var(--lemonnpie-dark-green);
+        }
+
+        .swagger-ui .btn.execute {
+            background-color: var(--lemonnpie-green);
+            border-color: var(--lemonnpie-dark-green);
+        }
+
+        .swagger-ui .btn.execute:hover {
+            background-color: var(--lemonnpie-dark-green);
+        }
+
+        /* Schema styling */
+        .swagger-ui .model-box {
+            border: 1px solid var(--lemonnpie-light-green);
+        }
+
+        .swagger-ui .model-title {
+            color: var(--lemonnpie-dark-green);
+        }
+
+        /* Response styling */
+        .swagger-ui .responses-inner h4 {
+            color: var(--lemonnpie-dark-green);
+        }
+
+        /* Custom info section */
+        .swagger-ui .info {
+            margin: 20px 0;
+        }
+
+        .swagger-ui .info .title {
+            color: var(--lemonnpie-dark-green);
+        }
+
+        /* Tag styling */
+        .swagger-ui .opblock-tag {
+            color: var(--lemonnpie-dark-green);
+            border-bottom: 2px solid var(--lemonnpie-light-green);
+        }
+
+        /* Custom footer */
+        .swagger-ui::after {
+            content: "Powered by LemonNPie 🍋🥧 | Built with FastAPI";
+            display: block;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: 40px;
+        }
+
+        /* Loading animation */
+        .swagger-ui .loading-container {
+            background: linear-gradient(45deg, var(--lemonnpie-green), var(--lemonnpie-yellow));
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--lemonnpie-green);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--lemonnpie-dark-green);
+        }
+
+        /* Custom banner */
+        .custom-banner {
+            background: linear-gradient(135deg, var(--lemonnpie-green), var(--lemonnpie-yellow));
+            color: white;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .custom-banner h2 {
+            margin: 0;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .custom-banner p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+        }
+
+        /* Environment indicator */
+        .env-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--lemonnpie-orange);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 9999;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .swagger-ui .topbar-wrapper .link {
+                font-size: 16px;
+            }
+            
+            .custom-banner h2 {
+                font-size: 20px;
+            }
+            
+            .env-indicator {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 10px;
+                display: inline-block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+    
+    <!-- Custom banner -->
+    <div class="custom-banner">
+        <h2>🍋🥧 LemonNPie Backend API Documentation</h2>
+        <p>Comprehensive RESTful API for Nollywood movie reviews and discovery</p>
+    </div>
+    
+    <!-- Environment indicator -->
+    <div class="env-indicator">
+        {{environment}} Environment
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script>
+        const ui = SwaggerUIBundle({
+            url: '{{openapi_url}}',
+            dom_id: '#swagger-ui',
+            presets: [
+                SwaggerUIBundle.presets.apis,
+                SwaggerUIBundle.presets.standalone
+            ],
+            layout: "StandaloneLayout",
+            deepLinking: true,
+            showExtensions: true,
+            showCommonExtensions: true,
+            defaultModelsExpandDepth: 1,
+            defaultModelExpandDepth: 1,
+            defaultModelRendering: 'example',
+            displayOperationId: false,
+            displayRequestDuration: true,
+            docExpansion: 'list',
+            filter: true,
+            tryItOutEnabled: true,
+            requestSnippetsEnabled: true,
+            requestSnippets: {
+                generators: {
+                    "curl_bash": {
+                        "title": "cURL (bash)",
+                        "syntax": "bash"
+                    },
+                    "curl_powershell": {
+                        "title": "cURL (PowerShell)", 
+                        "syntax": "powershell"
+                    },
+                    "curl_cmd": {
+                        "title": "cURL (CMD)",
+                        "syntax": "bash"
+                    },
+                    "javascript_fetch": {
+                        "title": "JavaScript (Fetch)",
+                        "syntax": "javascript"
+                    },
+                    "python_requests": {
+                        "title": "Python (Requests)",
+                        "syntax": "python"
+                    }
+                },
+                defaultExpanded: true,
+                languages: null
+            },
+            onComplete: function() {
+                // Add custom functionality after Swagger UI loads
+                console.log('🍋🥧 LemonNPie API Documentation loaded successfully!');
+                
+                // Add version info to the page
+                const infoSection = document.querySelector('.swagger-ui .info');
+                if (infoSection) {
+                    const versionBadge = document.createElement('div');
+                    versionBadge.innerHTML = `
+                        <div style="margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <span style="background: var(--lemonnpie-green); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                API v{{api_version}}
+                            </span>
+                            <span style="background: var(--lemonnpie-yellow); color: #333; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                FastAPI
+                            </span>
+                            <span style="background: var(--lemonnpie-orange); color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                                OpenAPI 3.0
+                            </span>
+                        </div>
+                    `;
+                    infoSection.appendChild(versionBadge);
+                }
+                
+                // Add quick links
+                const quickLinks = document.createElement('div');
+                quickLinks.innerHTML = `
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid var(--lemonnpie-green);">
+                        <h4 style="margin: 0 0 10px 0; color: var(--lemonnpie-dark-green);">🚀 Quick Start</h4>
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <a href="#/Authentication" style="color: var(--lemonnpie-dark-green); text-decoration: none; font-weight: bold;">
+                                🔐 Authentication
+                            </a>
+                            <a href="#/Movies" style="color: var(--lemonnpie-dark-green); text-decoration: none; font-weight: bold;">
+                                🎬 Movies API
+                            </a>
+                            <a href="#/Reviews" style="color: var(--lemonnpie-dark-green); text-decoration: none; font-weight: bold;">
+                                ⭐ Reviews API
+                            </a>
+                            <a href="#/Users" style="color: var(--lemonnpie-dark-green); text-decoration: none; font-weight: bold;">
+                                👥 Users API
+                            </a>
+                        </div>
+                    </div>
+                `;
+                if (infoSection) {
+                    infoSection.appendChild(quickLinks);
+                }
+            },
+            onFailure: function(data) {
+                console.error('Failed to load LemonNPie API documentation:', data);
+            }
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.querySelector('.swagger-ui .filter input');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+        });
+
+        // Add search placeholder text
+        setTimeout(() => {
+            const searchInput = document.querySelector('.swagger-ui .filter input');
+            if (searchInput) {
+                searchInput.placeholder = 'Search endpoints... (Ctrl+K)';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

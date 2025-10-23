@@ -1,7 +1,7 @@
 """
 Redis cache configuration and connection management
 """
-from typing import Optional, Any, Union
+from typing import Optional, Any, Union, Dict, List
 import json
 import pickle
 from datetime import timedelta
@@ -301,3 +301,280 @@ async def get_cache_service() -> CacheService:
     """
     redis_client = await get_redis()
     return CacheService(redis_client)
+
+
+class MovieCacheService:
+    """Specialized cache service for movie-related data"""
+    
+    def __init__(self, cache_service: CacheService):
+        self.cache = cache_service
+        self.logger = structlog.get_logger(__name__)
+    
+    async def get_movie(self, movie_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached movie data"""
+        key = cache_key("movie", movie_id)
+        return await self.cache.get(key)
+    
+    async def set_movie(self, movie_id: str, movie_data: Dict[str, Any], ttl: int = 3600) -> bool:
+        """Cache movie data for 1 hour by default"""
+        key = cache_key("movie", movie_id)
+        return await self.cache.set(key, movie_data, ttl)
+    
+    async def get_movie_stats(self, movie_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached movie statistics"""
+        key = cache_key("movie", movie_id, "stats")
+        return await self.cache.get(key)
+    
+    async def set_movie_stats(self, movie_id: str, stats_data: Dict[str, Any], ttl: int = 300) -> bool:
+        """Cache movie statistics for 5 minutes"""
+        key = cache_key("movie", movie_id, "stats")
+        return await self.cache.set(key, stats_data, ttl)
+    
+    async def get_trending_movies(self) -> Optional[List[Dict[str, Any]]]:
+        """Get cached trending movies"""
+        key = cache_key("movies", "trending")
+        return await self.cache.get(key)
+    
+    async def set_trending_movies(self, movies_data: List[Dict[str, Any]], ttl: int = 900) -> bool:
+        """Cache trending movies for 15 minutes"""
+        key = cache_key("movies", "trending")
+        return await self.cache.set(key, movies_data, ttl)
+    
+    async def get_featured_movies(self) -> Optional[List[Dict[str, Any]]]:
+        """Get cached featured movies"""
+        key = cache_key("movies", "featured")
+        return await self.cache.get(key)
+    
+    async def set_featured_movies(self, movies_data: List[Dict[str, Any]], ttl: int = 1800) -> bool:
+        """Cache featured movies for 30 minutes"""
+        key = cache_key("movies", "featured")
+        return await self.cache.set(key, movies_data, ttl)
+    
+    async def get_movie_reviews(self, movie_id: str, page: int, limit: int) -> Optional[Dict[str, Any]]:
+        """Get cached movie reviews"""
+        key = cache_key("movie", movie_id, "reviews", f"p{page}", f"l{limit}")
+        return await self.cache.get(key)
+    
+    async def set_movie_reviews(self, movie_id: str, page: int, limit: int, reviews_data: Dict[str, Any], ttl: int = 600) -> bool:
+        """Cache movie reviews for 10 minutes"""
+        key = cache_key("movie", movie_id, "reviews", f"p{page}", f"l{limit}")
+        return await self.cache.set(key, reviews_data, ttl)
+    
+    async def invalidate_movie(self, movie_id: str) -> int:
+        """Invalidate all cached data for a movie"""
+        pattern = cache_key("movie", movie_id, "*")
+        return await self.cache.delete_pattern(pattern)
+    
+    async def invalidate_movie_lists(self) -> int:
+        """Invalidate cached movie lists (trending, featured, etc.)"""
+        patterns = [
+            cache_key("movies", "trending"),
+            cache_key("movies", "featured"),
+            cache_key("movies", "search", "*")
+        ]
+        total_deleted = 0
+        for pattern in patterns:
+            total_deleted += await self.cache.delete_pattern(pattern)
+        return total_deleted
+
+
+class UserCacheService:
+    """Specialized cache service for user-related data"""
+    
+    def __init__(self, cache_service: CacheService):
+        self.cache = cache_service
+        self.logger = structlog.get_logger(__name__)
+    
+    async def get_user_session(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached user session data"""
+        key = cache_key("session", user_id)
+        return await self.cache.get(key)
+    
+    async def set_user_session(self, user_id: str, session_data: Dict[str, Any], ttl: int = 3600) -> bool:
+        """Cache user session for 1 hour"""
+        key = cache_key("session", user_id)
+        return await self.cache.set(key, session_data, ttl)
+    
+    async def get_user_profile(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached user profile"""
+        key = cache_key("user", user_id, "profile")
+        return await self.cache.get(key)
+    
+    async def set_user_profile(self, user_id: str, profile_data: Dict[str, Any], ttl: int = 1800) -> bool:
+        """Cache user profile for 30 minutes"""
+        key = cache_key("user", user_id, "profile")
+        return await self.cache.set(key, profile_data, ttl)
+    
+    async def get_user_stats(self, user_id: str) -> Optional[Dict[str, Any]]:
+        """Get cached user statistics"""
+        key = cache_key("user", user_id, "stats")
+        return await self.cache.get(key)
+    
+    async def set_user_stats(self, user_id: str, stats_data: Dict[str, Any], ttl: int = 600) -> bool:
+        """Cache user statistics for 10 minutes"""
+        key = cache_key("user", user_id, "stats")
+        return await self.cache.set(key, stats_data, ttl)
+    
+    async def get_user_watchlist(self, user_id: str, page: int, limit: int) -> Optional[Dict[str, Any]]:
+        """Get cached user watchlist"""
+        key = cache_key("user", user_id, "watchlist", f"p{page}", f"l{limit}")
+        return await self.cache.get(key)
+    
+    async def set_user_watchlist(self, user_id: str, page: int, limit: int, watchlist_data: Dict[str, Any], ttl: int = 600) -> bool:
+        """Cache user watchlist for 10 minutes"""
+        key = cache_key("user", user_id, "watchlist", f"p{page}", f"l{limit}")
+        return await self.cache.set(key, watchlist_data, ttl)
+    
+    async def get_user_favorites(self, user_id: str, page: int, limit: int) -> Optional[Dict[str, Any]]:
+        """Get cached user favorites"""
+        key = cache_key("user", user_id, "favorites", f"p{page}", f"l{limit}")
+        return await self.cache.get(key)
+    
+    async def set_user_favorites(self, user_id: str, page: int, limit: int, favorites_data: Dict[str, Any], ttl: int = 600) -> bool:
+        """Cache user favorites for 10 minutes"""
+        key = cache_key("user", user_id, "favorites", f"p{page}", f"l{limit}")
+        return await self.cache.set(key, favorites_data, ttl)
+    
+    async def get_activity_feed(self, user_id: str, page: int, limit: int) -> Optional[Dict[str, Any]]:
+        """Get cached user activity feed"""
+        key = cache_key("user", user_id, "feed", f"p{page}", f"l{limit}")
+        return await self.cache.get(key)
+    
+    async def set_activity_feed(self, user_id: str, page: int, limit: int, feed_data: Dict[str, Any], ttl: int = 300) -> bool:
+        """Cache activity feed for 5 minutes"""
+        key = cache_key("user", user_id, "feed", f"p{page}", f"l{limit}")
+        return await self.cache.set(key, feed_data, ttl)
+    
+    async def invalidate_user(self, user_id: str) -> int:
+        """Invalidate all cached data for a user"""
+        pattern = cache_key("user", user_id, "*")
+        return await self.cache.delete_pattern(pattern)
+    
+    async def invalidate_user_session(self, user_id: str) -> bool:
+        """Invalidate user session"""
+        key = cache_key("session", user_id)
+        return await self.cache.delete(key)
+    
+    async def invalidate_user_lists(self, user_id: str) -> int:
+        """Invalidate user's cached lists (watchlist, favorites, feed)"""
+        patterns = [
+            cache_key("user", user_id, "watchlist", "*"),
+            cache_key("user", user_id, "favorites", "*"),
+            cache_key("user", user_id, "feed", "*")
+        ]
+        total_deleted = 0
+        for pattern in patterns:
+            total_deleted += await self.cache.delete_pattern(pattern)
+        return total_deleted
+
+
+class SearchCacheService:
+    """Specialized cache service for search-related data"""
+    
+    def __init__(self, cache_service: CacheService):
+        self.cache = cache_service
+        self.logger = structlog.get_logger(__name__)
+    
+    async def get_search_results(self, query_hash: str) -> Optional[List[Dict[str, Any]]]:
+        """Get cached search results"""
+        key = cache_key("search", "movies", query_hash)
+        return await self.cache.get(key)
+    
+    async def set_search_results(self, query_hash: str, results: List[Dict[str, Any]], ttl: int = 1800) -> bool:
+        """Cache search results for 30 minutes"""
+        key = cache_key("search", "movies", query_hash)
+        return await self.cache.set(key, results, ttl)
+    
+    async def get_search_suggestions(self, partial_query: str) -> Optional[List[str]]:
+        """Get cached search suggestions"""
+        key = cache_key("search", "suggestions", partial_query.lower())
+        return await self.cache.get(key)
+    
+    async def set_search_suggestions(self, partial_query: str, suggestions: List[str], ttl: int = 3600) -> bool:
+        """Cache search suggestions for 1 hour"""
+        key = cache_key("search", "suggestions", partial_query.lower())
+        return await self.cache.set(key, suggestions, ttl)
+    
+    async def get_popular_searches(self) -> Optional[List[str]]:
+        """Get cached popular searches"""
+        key = cache_key("search", "popular")
+        return await self.cache.get(key)
+    
+    async def set_popular_searches(self, searches: List[str], ttl: int = 3600) -> bool:
+        """Cache popular searches for 1 hour"""
+        key = cache_key("search", "popular")
+        return await self.cache.set(key, searches, ttl)
+    
+    async def invalidate_search_cache(self) -> int:
+        """Invalidate all search cache"""
+        pattern = cache_key("search", "*")
+        return await self.cache.delete_pattern(pattern)
+
+
+class ReviewCacheService:
+    """Specialized cache service for review-related data"""
+    
+    def __init__(self, cache_service: CacheService):
+        self.cache = cache_service
+        self.logger = structlog.get_logger(__name__)
+    
+    async def get_trending_reviews(self) -> Optional[List[Dict[str, Any]]]:
+        """Get cached trending reviews"""
+        key = cache_key("reviews", "trending")
+        return await self.cache.get(key)
+    
+    async def set_trending_reviews(self, reviews: List[Dict[str, Any]], ttl: int = 600) -> bool:
+        """Cache trending reviews for 10 minutes"""
+        key = cache_key("reviews", "trending")
+        return await self.cache.set(key, reviews, ttl)
+    
+    async def get_user_reviews(self, user_id: str, page: int, limit: int) -> Optional[Dict[str, Any]]:
+        """Get cached user reviews"""
+        key = cache_key("user", user_id, "reviews", f"p{page}", f"l{limit}")
+        return await self.cache.get(key)
+    
+    async def set_user_reviews(self, user_id: str, page: int, limit: int, reviews_data: Dict[str, Any], ttl: int = 600) -> bool:
+        """Cache user reviews for 10 minutes"""
+        key = cache_key("user", user_id, "reviews", f"p{page}", f"l{limit}")
+        return await self.cache.set(key, reviews_data, ttl)
+    
+    async def invalidate_review_caches(self, user_id: str = None, movie_id: str = None) -> int:
+        """Invalidate review-related caches"""
+        patterns = [cache_key("reviews", "trending")]
+        
+        if user_id:
+            patterns.append(cache_key("user", user_id, "reviews", "*"))
+        
+        if movie_id:
+            patterns.append(cache_key("movie", movie_id, "reviews", "*"))
+            patterns.append(cache_key("movie", movie_id, "stats"))
+        
+        total_deleted = 0
+        for pattern in patterns:
+            total_deleted += await self.cache.delete_pattern(pattern)
+        return total_deleted
+
+
+# Cache service factory functions
+async def get_movie_cache_service() -> MovieCacheService:
+    """Get movie cache service instance"""
+    cache_service = await get_cache_service()
+    return MovieCacheService(cache_service)
+
+
+async def get_user_cache_service() -> UserCacheService:
+    """Get user cache service instance"""
+    cache_service = await get_cache_service()
+    return UserCacheService(cache_service)
+
+
+async def get_search_cache_service() -> SearchCacheService:
+    """Get search cache service instance"""
+    cache_service = await get_cache_service()
+    return SearchCacheService(cache_service)
+
+
+async def get_review_cache_service() -> ReviewCacheService:
+    """Get review cache service instance"""
+    cache_service = await get_cache_service()
+    return ReviewCacheService(cache_service)

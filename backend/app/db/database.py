@@ -31,16 +31,24 @@ async def init_db() -> None:
     global engine, async_session_maker
     
     try:
-        # Create async engine with connection pooling
+        # Create async engine with optimized connection pooling
         engine = create_async_engine(
             settings.DATABASE_URL,
             echo=settings.DEBUG,  # Log SQL queries in debug mode
             pool_size=settings.DATABASE_POOL_SIZE,
             max_overflow=settings.DATABASE_MAX_OVERFLOW,
+            pool_timeout=settings.DATABASE_POOL_TIMEOUT,
+            pool_recycle=settings.DATABASE_POOL_RECYCLE,
             pool_pre_ping=True,  # Validate connections before use
-            pool_recycle=3600,   # Recycle connections every hour
             # Use NullPool for testing to avoid connection issues
             poolclass=NullPool if "test" in settings.DATABASE_URL else None,
+            # Additional performance optimizations
+            connect_args={
+                "server_settings": {
+                    "jit": "off",  # Disable JIT for faster connection
+                    "application_name": "lemonnpie_backend",
+                }
+            } if "postgresql" in settings.DATABASE_URL else {},
         )
         
         # Create session maker

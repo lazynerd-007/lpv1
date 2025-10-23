@@ -15,9 +15,16 @@ from app.models.relationships import (
     MovieLanguage,
     MovieCast
 )
-from app.models.moderation import UserReport, Notification
+from app.models.moderation import UserReport, Notification, NotificationPreference
 from app.models.search import MovieSearchIndex
-from app.models.enums import UserRole, ContentType, ModerationStatus, VoteType, CastRole
+from app.models.analytics import (
+    UserActivity,
+    ContentMetrics,
+    SystemMetrics,
+    AnalyticsReport,
+    UserEngagementMetrics
+)
+from app.models.enums import UserRole, ContentType, ModerationStatus, VoteType, CastRole, NotificationType
 
 __all__ = [
     "User",
@@ -32,10 +39,17 @@ __all__ = [
     "MovieCast",
     "UserReport",
     "Notification",
+    "NotificationPreference",
     "MovieSearchIndex",
+    "UserActivity",
+    "ContentMetrics",
+    "SystemMetrics",
+    "AnalyticsReport",
+    "UserEngagementMetrics",
     "UserRole",
     "ContentType",
     "ModerationStatus",
     "VoteType",
-    "CastRole"
+    "CastRole",
+    "NotificationType"
 ]

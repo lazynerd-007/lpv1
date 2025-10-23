@@ -32,3 +32,12 @@ class CastRole(str, enum.Enum):
     DIRECTOR = "director"
     PRODUCER = "producer"
     WRITER = "writer"
+
+
+class NotificationType(str, enum.Enum):
+    REVIEW_VOTE = "review_vote"
+    NEW_FOLLOWER = "new_follower"
+    REVIEW_COMMENT = "review_comment"
+    MOVIE_ADDED = "movie_added"
+    SYSTEM_ANNOUNCEMENT = "system_announcement"
+    MODERATION_ACTION = "moderation_action"

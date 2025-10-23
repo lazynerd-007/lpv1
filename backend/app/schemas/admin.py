@@ -122,14 +122,14 @@ class ReviewModerationResponse(BaseModel):
 
 class ModerationAction(BaseModel):
     """Schema for moderation actions"""
-    action: str = Field(..., regex="^(approve|reject|flag)$")
+    action: str = Field(..., pattern="^(approve|reject|flag)$")
     reason: Optional[str] = Field(None, max_length=500)
 
 
 class BulkModerationAction(BaseModel):
     """Schema for bulk moderation actions"""
     review_ids: List[UUID] = Field(..., min_items=1, max_items=100)
-    action: str = Field(..., regex="^(approve|reject|flag)$")
+    action: str = Field(..., pattern="^(approve|reject|flag)$")
     reason: Optional[str] = Field(None, max_length=500)
 
 
@@ -161,7 +161,7 @@ class ReportListResponse(BaseModel):
 
 class ReportResolution(BaseModel):
     """Schema for resolving reports"""
-    action: str = Field(..., regex="^(dismiss|warn|suspend|ban)$")
+    action: str = Field(..., pattern="^(dismiss|warn|suspend|ban)$")
     reason: str = Field(..., min_length=10, max_length=500)
     notify_reporter: bool = True
     notify_reported: bool = True
@@ -172,7 +172,7 @@ class AnalyticsDateRange(BaseModel):
     """Date range for analytics queries"""
     start_date: date
     end_date: date
-    granularity: str = Field("day", regex="^(hour|day|week|month)$")
+    granularity: str = Field("day", pattern="^(hour|day|week|month)$")
 
 
 class AnalyticsFilter(BaseModel):
@@ -186,8 +186,8 @@ class AnalyticsFilter(BaseModel):
 # Export Schemas
 class ExportRequest(BaseModel):
     """Schema for data export requests"""
-    export_type: str = Field(..., regex="^(users|reviews|reports|analytics)$")
-    format: str = Field("csv", regex="^(csv|json|xlsx)$")
+    export_type: str = Field(..., pattern="^(users|reviews|reports|analytics)$")
+    format: str = Field("csv", pattern="^(csv|json|xlsx)$")
     filters: Optional[Dict[str, Any]] = None
     date_range: Optional[AnalyticsDateRange] = None
 

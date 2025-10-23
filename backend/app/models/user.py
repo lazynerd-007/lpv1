@@ -35,6 +35,7 @@ class User(Base):
     favorites = relationship("UserFavorite", back_populates="user", cascade="all, delete-orphan")
     review_votes = relationship("ReviewVote", back_populates="user", cascade="all, delete-orphan")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
+    notification_preferences = relationship("NotificationPreference", back_populates="user", cascade="all, delete-orphan")
     
     # Following relationships
     following = relationship(
@@ -67,6 +68,9 @@ class User(Base):
         foreign_keys="UserReport.resolved_by",
         back_populates="resolver"
     )
+    
+    # Analytics relationships
+    activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, role={self.role})>"

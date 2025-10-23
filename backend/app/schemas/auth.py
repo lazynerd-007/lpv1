@@ -11,11 +11,48 @@ from app.models.enums import UserRole
 
 class UserRegistration(BaseModel):
     """Schema for user registration"""
-    email: EmailStr
-    password: str = Field(..., min_length=8, max_length=100)
-    name: str = Field(..., min_length=2, max_length=255)
-    bio: Optional[str] = Field(None, max_length=1000)
-    location: Optional[str] = Field(None, max_length=255)
+    email: EmailStr = Field(
+        ..., 
+        description="Valid email address (must be unique)",
+        example="john.doe@example.com"
+    )
+    password: str = Field(
+        ..., 
+        min_length=8, 
+        max_length=100,
+        description="Strong password with uppercase, lowercase, digit, and special character",
+        example="SecurePass123!"
+    )
+    name: str = Field(
+        ..., 
+        min_length=2, 
+        max_length=255,
+        description="Full name (letters, spaces, hyphens, apostrophes only)",
+        example="John Doe"
+    )
+    bio: Optional[str] = Field(
+        None, 
+        max_length=1000,
+        description="Optional user biography or description",
+        example="Movie enthusiast and Nollywood fan from Lagos"
+    )
+    location: Optional[str] = Field(
+        None, 
+        max_length=255,
+        description="Optional user location",
+        example="Lagos, Nigeria"
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "john.doe@example.com",
+                "password": "SecurePass123!",
+                "name": "John Doe",
+                "bio": "Movie enthusiast and Nollywood fan",
+                "location": "Lagos, Nigeria"
+            }
+        }
     
     @validator('password')
     def validate_password(cls, v):
@@ -49,16 +86,58 @@ class UserRegistration(BaseModel):
 
 class UserLogin(BaseModel):
     """Schema for user login"""
-    email: EmailStr
-    password: str
+    email: EmailStr = Field(
+        ...,
+        description="Registered email address",
+        example="john.doe@example.com"
+    )
+    password: str = Field(
+        ...,
+        description="User password",
+        example="SecurePass123!"
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "email": "john.doe@example.com",
+                "password": "SecurePass123!"
+            }
+        }
 
 
 class TokenResponse(BaseModel):
     """Schema for token response"""
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int  # seconds
+    access_token: str = Field(
+        ...,
+        description="JWT access token for API authentication",
+        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+    )
+    refresh_token: str = Field(
+        ...,
+        description="JWT refresh token for obtaining new access tokens",
+        example="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ"
+    )
+    token_type: str = Field(
+        default="bearer",
+        description="Token type (always 'bearer')",
+        example="bearer"
+    )
+    expires_in: int = Field(
+        ...,
+        description="Access token expiration time in seconds",
+        example=1800
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                "token_type": "bearer",
+                "expires_in": 1800
+            }
+        }
 
 
 class TokenRefresh(BaseModel):
@@ -116,5 +195,34 @@ class UserResponse(BaseModel):
 
 class AuthResponse(BaseModel):
     """Schema for authentication response"""
-    user: UserResponse
-    tokens: TokenResponse
+    user: UserResponse = Field(
+        ...,
+        description="User information"
+    )
+    tokens: TokenResponse = Field(
+        ...,
+        description="Authentication tokens"
+    )
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "user": {
+                    "id": "123e4567-e89b-12d3-a456-426614174000",
+                    "email": "john.doe@example.com",
+                    "name": "John Doe",
+                    "bio": "Movie enthusiast and Nollywood fan",
+                    "location": "Lagos, Nigeria",
+                    "avatar_url": None,
+                    "role": "user",
+                    "is_verified": False,
+                    "created_at": "2024-01-01T00:00:00Z"
+                },
+                "tokens": {
+                    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                    "token_type": "bearer",
+                    "expires_in": 1800
+                }
+            }
+        }

@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     )
     DATABASE_POOL_SIZE: int = config("DATABASE_POOL_SIZE", default=20, cast=int)
     DATABASE_MAX_OVERFLOW: int = config("DATABASE_MAX_OVERFLOW", default=30, cast=int)
+    DATABASE_POOL_TIMEOUT: int = config("DATABASE_POOL_TIMEOUT", default=30, cast=int)
+    DATABASE_POOL_RECYCLE: int = config("DATABASE_POOL_RECYCLE", default=3600, cast=int)
+    DATABASE_QUERY_TIMEOUT: int = config("DATABASE_QUERY_TIMEOUT", default=30, cast=int)
     
     # Redis settings
     REDIS_URL: str = config("REDIS_URL", default="redis://localhost:6379/0")

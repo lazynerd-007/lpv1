@@ -13,6 +13,7 @@ from app.auth.dependencies import get_current_user, require_role
 from app.models.user import User
 from app.models.enums import UserRole, ModerationStatus
 from app.services.admin_service import AdminService
+from app.services.performance_service import PerformanceService
 from app.schemas.admin import (
     AdminDashboard, SystemMetrics, UserAnalytics, ContentAnalytics,
     UserListResponse, UserRoleUpdate, UserSuspension, UserActivation,
@@ -203,7 +204,7 @@ async def get_users_list(
     role: Optional[UserRole] = Query(None, description="Filter by user role"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     sort_by: str = Query("created_at", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
     db: AsyncSession = Depends(get_db)
 ):
@@ -409,7 +410,7 @@ async def get_reviews_for_moderation(
     status: Optional[ModerationStatus] = Query(None, description="Filter by moderation status"),
     is_flagged: Optional[bool] = Query(None, description="Filter by flagged status"),
     sort_by: str = Query("created_at", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
     db: AsyncSession = Depends(get_db)
 ):
@@ -549,7 +550,7 @@ async def get_reports_list(
     per_page: int = Query(20, ge=1, le=100, description="Items per page"),
     status: Optional[ModerationStatus] = Query(None, description="Filter by report status"),
     sort_by: str = Query("created_at", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
     current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
     db: AsyncSession = Depends(get_db)
 ):
@@ -634,4 +635,240 @@ async def resolve_report(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to resolve report"
+        )
+
+#
+ Performance and Optimization Endpoints
+
+@router.get("/performance/metrics")
+@limiter.limit("10/minute")
+async def get_performance_metrics(
+    request,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get comprehensive performance metrics for the application.
+    
+    Requires admin role.
+    """
+    try:
+        performance_service = PerformanceService()
+        metrics = await performance_service.get_performance_metrics()
+        
+        logger.info(
+            "Performance metrics accessed",
+            admin_id=str(current_user.id)
+        )
+        
+        return metrics
+    except Exception as e:
+        logger.error("Failed to get performance metrics", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve performance metrics"
+        )
+
+
+@router.post("/performance/optimize-database")
+@limiter.limit("2/hour")
+async def optimize_database(
+    request,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Run database optimization tasks including index creation and table analysis.
+    
+    Requires admin role. Limited to 2 requests per hour.
+    """
+    try:
+        performance_service = PerformanceService()
+        results = await performance_service.optimize_database()
+        
+        logger.info(
+            "Database optimization executed",
+            admin_id=str(current_user.id),
+            results=results
+        )
+        
+        return {
+            "message": "Database optimization completed",
+            "results": results
+        }
+    except Exception as e:
+        logger.error("Failed to optimize database", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to optimize database"
+        )
+
+
+@router.get("/performance/cache-stats")
+@limiter.limit("20/minute")
+async def get_cache_statistics(
+    request,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get detailed cache statistics and usage information.
+    
+    Requires admin role.
+    """
+    try:
+        performance_service = PerformanceService()
+        stats = await performance_service.get_cache_statistics()
+        
+        logger.info(
+            "Cache statistics accessed",
+            admin_id=str(current_user.id)
+        )
+        
+        return stats
+    except Exception as e:
+        logger.error("Failed to get cache statistics", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to retrieve cache statistics"
+        )
+
+
+@router.delete("/performance/cache/{pattern}")
+@limiter.limit("10/minute")
+async def clear_cache_pattern(
+    request,
+    pattern: str,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Clear cache entries matching a specific pattern.
+    
+    Requires admin role.
+    
+    Common patterns:
+    - movie:* - Clear all movie cache
+    - user:* - Clear all user cache
+    - search:* - Clear all search cache
+    """
+    try:
+        performance_service = PerformanceService()
+        deleted_count = await performance_service.clear_cache_by_pattern(pattern)
+        
+        logger.info(
+            "Cache pattern cleared",
+            admin_id=str(current_user.id),
+            pattern=pattern,
+            deleted_count=deleted_count
+        )
+        
+        return {
+            "message": f"Cleared {deleted_count} cache entries matching pattern: {pattern}",
+            "deleted_count": deleted_count
+        }
+    except Exception as e:
+        logger.error("Failed to clear cache pattern", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to clear cache pattern"
+        )
+
+
+@router.post("/performance/warm-cache")
+@limiter.limit("5/hour")
+async def warm_cache(
+    request,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Warm up cache with frequently accessed data.
+    
+    Requires admin role. Limited to 5 requests per hour.
+    """
+    try:
+        performance_service = PerformanceService()
+        results = await performance_service.warm_cache()
+        
+        logger.info(
+            "Cache warming executed",
+            admin_id=str(current_user.id),
+            results=results
+        )
+        
+        return {
+            "message": "Cache warming completed",
+            "results": results
+        }
+    except Exception as e:
+        logger.error("Failed to warm cache", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to warm cache"
+        )
+
+
+@router.get("/performance/slow-endpoints")
+@limiter.limit("10/minute")
+async def get_slow_endpoints(
+    request,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Analyze and return slow API endpoints based on database query performance.
+    
+    Requires admin role.
+    """
+    try:
+        performance_service = PerformanceService()
+        slow_endpoints = await performance_service.analyze_slow_endpoints(db)
+        
+        logger.info(
+            "Slow endpoints analysis accessed",
+            admin_id=str(current_user.id)
+        )
+        
+        return {
+            "slow_endpoints": slow_endpoints,
+            "analysis_timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error("Failed to analyze slow endpoints", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to analyze slow endpoints"
+        )
+
+
+@router.post("/performance/analyze-query")
+@limiter.limit("10/minute")
+async def analyze_query_performance(
+    request,
+    query: str,
+    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Analyze the performance of a specific SQL query and get optimization suggestions.
+    
+    Requires admin role.
+    """
+    try:
+        performance_service = PerformanceService()
+        analysis = await performance_service.optimize_query_plan(query, db)
+        
+        logger.info(
+            "Query analysis performed",
+            admin_id=str(current_user.id),
+            query_length=len(query)
+        )
+        
+        return analysis
+    except Exception as e:
+        logger.error("Failed to analyze query", error=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to analyze query performance"
         )

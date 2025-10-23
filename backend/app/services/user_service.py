@@ -3,6 +3,7 @@ User service for LemonNPie Backend API
 """
 from typing import Optional, Dict, Any
 from uuid import UUID
+import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_
 from sqlalchemy.orm import selectinload
@@ -14,6 +15,9 @@ from app.models.review import Review
 from app.models.movie import Movie
 from app.schemas.user import UserProfileUpdate, UserStats, UserProfileResponse, UserPublicProfile, UserListResponse, ActivityFeedResponse, ActivityItem, MovieListResponse, MovieListItem
 from app.core.exceptions import LemonPieException
+from app.cache.redis import get_user_cache_service
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -42,6 +46,13 @@ class UserService:
     
     async def get_user_stats(self, user_id: UUID, db: AsyncSession) -> UserStats:
         """Calculate user statistics"""
+        # Try to get from cache first
+        user_cache = await get_user_cache_service()
+        cached_stats = await user_cache.get_user_stats(str(user_id))
+        
+        if cached_stats:
+            return UserStats(**cached_stats)
+        
         # Get review count and average rating
         review_stats_query = select(
             func.count(Review.id).label('total_reviews'),
@@ -79,7 +90,7 @@ class UserService:
         favorites_result = await db.execute(favorites_query)
         favorites_count = favorites_result.scalar() or 0
         
-        return UserStats(
+        user_stats = UserStats(
             total_reviews=review_stats.total_reviews or 0,
             average_rating=float(review_stats.average_rating) if review_stats.average_rating else None,
             followers_count=followers_count,
@@ -87,6 +98,11 @@ class UserService:
             watchlist_count=watchlist_count,
             favorites_count=favorites_count
         )
+        
+        # Cache the result
+        await user_cache.set_user_stats(str(user_id), user_stats.dict())
+        
+        return user_stats
     
     async def update_user_profile(
         self, 
@@ -208,6 +224,25 @@ class UserService:
         follow = UserFollow(follower_id=follower_id, following_id=following_id)
         db.add(follow)
         await db.commit()
+        
+        # Send notification to the followed user
+        try:
+            from app.services.notification_trigger import NotificationTrigger
+            
+            # Get follower's name
+            follower_result = await db.execute(
+                select(User).where(User.id == follower_id)
+            )
+            follower = follower_result.scalar_one_or_none()
+            
+            if follower:
+                NotificationTrigger.send_new_follower_notification(
+                    followed_user_id=following_id,
+                    follower_name=follower.name,
+                    follower_id=follower_id
+                )
+        except Exception as e:
+            logger.warning(f"Failed to send follow notification: {e}")
     
     async def unfollow_user(
         self, 

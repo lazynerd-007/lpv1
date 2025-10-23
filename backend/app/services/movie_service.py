@@ -16,6 +16,9 @@ from app.schemas.movie import (
 )
 from app.models.enums import ModerationStatus
 from app.core.exceptions import NotFoundError, ValidationError
+from app.cache.redis import get_movie_cache_service, get_review_cache_service
+from app.db.optimization import OptimizedQueries
+from app.services.performance_service import monitor_performance
 
 
 class MovieService:
@@ -198,6 +201,14 @@ class MovieService:
     async def get_movie_by_id(self, movie_id: UUID) -> MovieResponse:
         """Get movie by ID with full details and statistics"""
         
+        # Try to get from cache first
+        movie_cache = await get_movie_cache_service()
+        cached_movie = await movie_cache.get_movie(str(movie_id))
+        
+        if cached_movie:
+            # Convert cached data back to MovieResponse
+            return MovieResponse(**cached_movie)
+        
         query = select(Movie).options(
             selectinload(Movie.genres),
             selectinload(Movie.languages),
@@ -224,7 +235,7 @@ class MovieService:
             for cast in movie.cast
         ]
         
-        return MovieResponse(
+        movie_response = MovieResponse(
             id=movie.id,
             title=movie.title,
             local_title=movie.local_title,
@@ -246,6 +257,11 @@ class MovieService:
             created_at=movie.created_at,
             updated_at=movie.updated_at
         )
+        
+        # Cache the result
+        await movie_cache.set_movie(str(movie_id), movie_response.dict())
+        
+        return movie_response
 
     async def create_movie(self, movie_data: MovieCreate) -> MovieResponse:
         """Create a new movie"""
@@ -292,6 +308,10 @@ class MovieService:
         
         await self.db.commit()
         await self.db.refresh(movie)
+        
+        # Invalidate movie lists cache since we added a new movie
+        movie_cache = await get_movie_cache_service()
+        await movie_cache.invalidate_movie_lists()
         
         return await self.get_movie_by_id(movie.id)
 
@@ -353,6 +373,11 @@ class MovieService:
         await self.db.commit()
         await self.db.refresh(movie)
         
+        # Invalidate caches for this movie and movie lists
+        movie_cache = await get_movie_cache_service()
+        await movie_cache.invalidate_movie(str(movie_id))
+        await movie_cache.invalidate_movie_lists()
+        
         return await self.get_movie_by_id(movie.id)
 
     async def delete_movie(self, movie_id: UUID) -> bool:
@@ -368,19 +393,36 @@ class MovieService:
         await self.db.delete(movie)
         await self.db.commit()
         
+        # Invalidate caches for this movie and movie lists
+        movie_cache = await get_movie_cache_service()
+        await movie_cache.invalidate_movie(str(movie_id))
+        await movie_cache.invalidate_movie_lists()
+        
         return True
 
+    @monitor_performance("calculate_movie_stats")
     async def _calculate_movie_stats(self, movie: Movie) -> MovieStats:
-        """Calculate statistics for a movie"""
+        """Calculate statistics for a movie with performance monitoring"""
+        
+        # Try to get from cache first
+        movie_cache = await get_movie_cache_service()
+        cached_stats = await movie_cache.get_movie_stats(str(movie.id))
+        
+        if cached_stats:
+            return MovieStats(**cached_stats)
         
         if not movie.reviews:
-            return MovieStats()
+            empty_stats = MovieStats()
+            await movie_cache.set_movie_stats(str(movie.id), empty_stats.dict())
+            return empty_stats
         
         reviews = movie.reviews
         review_count = len(reviews)
         
         if review_count == 0:
-            return MovieStats()
+            empty_stats = MovieStats()
+            await movie_cache.set_movie_stats(str(movie.id), empty_stats.dict())
+            return empty_stats
         
         # Calculate averages
         total_rating = sum(review.lemon_pie_rating for review in reviews)
@@ -459,7 +501,7 @@ class MovieService:
                 if review.lemon_pie_rating == i
             )
         
-        return MovieStats(
+        movie_stats = MovieStats(
             average_rating=round(average_rating, 2),
             review_count=review_count,
             rating_distribution=rating_distribution,
@@ -469,9 +511,22 @@ class MovieService:
             acting_rating_avg=round(acting_rating_avg, 2),
             cinematography_rating_avg=round(cinematography_rating_avg, 2)
         )
+        
+        # Cache the result
+        await movie_cache.set_movie_stats(str(movie.id), movie_stats.dict())
+        
+        return movie_stats
 
     async def get_trending_movies(self, limit: int = 10) -> List[MovieListResponse]:
         """Get trending movies based on recent review activity"""
+        
+        # Try to get from cache first
+        movie_cache = await get_movie_cache_service()
+        cached_trending = await movie_cache.get_trending_movies()
+        
+        if cached_trending:
+            # Convert cached data back to MovieListResponse objects
+            return [MovieListResponse(**movie_data) for movie_data in cached_trending[:limit]]
         
         # Get movies with recent reviews (last 30 days)
         from datetime import datetime, timedelta
@@ -506,10 +561,20 @@ class MovieService:
             )
             movie_responses.append(movie_response)
         
+        # Cache the result
+        await movie_cache.set_trending_movies([movie.dict() for movie in movie_responses])
+        
         return movie_responses
 
     async def get_movie_reviews(self, movie_id: UUID, page: int = 1, limit: int = 20):
         """Get paginated reviews for a specific movie"""
+        
+        # Try to get from cache first
+        movie_cache = await get_movie_cache_service()
+        cached_reviews = await movie_cache.get_movie_reviews(str(movie_id), page, limit)
+        
+        if cached_reviews:
+            return cached_reviews
         
         # Build query for reviews
         query = select(Review).options(
@@ -572,7 +637,7 @@ class MovieService:
         has_next = page < pages
         has_prev = page > 1
         
-        return {
+        result_data = {
             "items": review_responses,
             "total": total,
             "page": page,
@@ -581,9 +646,22 @@ class MovieService:
             "has_next": has_next,
             "has_prev": has_prev
         }
+        
+        # Cache the result
+        await movie_cache.set_movie_reviews(str(movie_id), page, limit, result_data)
+        
+        return result_data
 
     async def get_featured_movies(self, limit: int = 10) -> List[MovieListResponse]:
         """Get featured movies based on high ratings and review count"""
+        
+        # Try to get from cache first
+        movie_cache = await get_movie_cache_service()
+        cached_featured = await movie_cache.get_featured_movies()
+        
+        if cached_featured:
+            # Convert cached data back to MovieListResponse objects
+            return [MovieListResponse(**movie_data) for movie_data in cached_featured[:limit]]
         
         query = select(Movie).options(
             selectinload(Movie.genres),
@@ -613,5 +691,8 @@ class MovieService:
                 created_at=movie.created_at
             )
             movie_responses.append(movie_response)
+        
+        # Cache the result
+        await movie_cache.set_featured_movies([movie.dict() for movie in movie_responses])
         
         return movie_responses

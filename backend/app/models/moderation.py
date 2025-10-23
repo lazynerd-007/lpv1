@@ -8,7 +8,7 @@ from sqlalchemy.sql import func
 import uuid
 
 from app.db.database import Base
-from app.models.enums import ModerationStatus
+from app.models.enums import ModerationStatus, NotificationType
 
 
 class UserReport(Base):
@@ -40,11 +40,13 @@ class Notification(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    type = Column(String(50), nullable=False)
+    type = Column(Enum(NotificationType), nullable=False)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    data = Column(JSON)
+    data = Column(JSON)  # Additional data like movie_id, review_id, etc.
     is_read = Column(Boolean, default=False, nullable=False)
+    read_at = Column(DateTime(timezone=True))
+    expires_at = Column(DateTime(timezone=True))  # Optional expiration for notifications
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Relationships
@@ -52,3 +54,27 @@ class Notification(Base):
     
     def __repr__(self):
         return f"<Notification(id={self.id}, user_id={self.user_id}, type={self.type}, is_read={self.is_read})>"
+
+
+class NotificationPreference(Base):
+    __tablename__ = "notification_preferences"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    notification_type = Column(Enum(NotificationType), nullable=False)
+    email_enabled = Column(Boolean, default=True, nullable=False)
+    push_enabled = Column(Boolean, default=True, nullable=False)
+    in_app_enabled = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    
+    # Relationships
+    user = relationship("User", back_populates="notification_preferences")
+    
+    # Unique constraint to ensure one preference per user per notification type
+    __table_args__ = (
+        {"schema": None},
+    )
+    
+    def __repr__(self):
+        return f"<NotificationPreference(user_id={self.user_id}, type={self.notification_type})>"

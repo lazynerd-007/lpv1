@@ -12,7 +12,7 @@ from app.models.search import MovieSearchIndex
 from app.models.relationships import MovieGenre, MovieLanguage, MovieCast
 from app.schemas.movie import MovieListResponse, MovieStats
 from app.services.movie_service import MovieService
-from app.cache.redis import get_redis_client
+from app.cache.redis import get_search_cache_service
 import json
 import hashlib
 
@@ -33,10 +33,12 @@ class SearchService:
         Advanced movie search using PostgreSQL full-text search with fallback to LIKE search
         """
         # Try to get from cache first
-        cache_key = self._generate_cache_key(query, filters, limit, offset)
-        cached_result = await self._get_cached_result(cache_key)
+        query_hash = self._generate_query_hash(query, filters, limit, offset)
+        search_cache = await get_search_cache_service()
+        cached_result = await search_cache.get_search_results(query_hash)
+        
         if cached_result:
-            return cached_result
+            return [MovieListResponse(**movie_data) for movie_data in cached_result]
         
         # Build search query
         search_query = select(Movie).options(
@@ -118,7 +120,7 @@ class SearchService:
             movie_responses.append(movie_response)
         
         # Cache the result
-        await self._cache_result(cache_key, movie_responses)
+        await search_cache.set_search_results(query_hash, [movie.dict() for movie in movie_responses])
         
         return movie_responses
 
@@ -130,10 +132,10 @@ class SearchService:
             return []
         
         # Try to get from cache first
-        cache_key = f"suggestions:{hashlib.md5(partial_query.encode()).hexdigest()}:{limit}"
-        cached_result = await self._get_cached_result(cache_key)
+        search_cache = await get_search_cache_service()
+        cached_result = await search_cache.get_search_suggestions(partial_query.strip())
         if cached_result:
-            return cached_result
+            return cached_result[:limit]
         
         search_term = f"%{partial_query.strip()}%"
         
@@ -149,7 +151,7 @@ class SearchService:
         suggestions = [row[0] for row in result.fetchall()]
         
         # Cache the result
-        await self._cache_result(cache_key, suggestions, ttl=1800)  # 30 minutes
+        await search_cache.set_search_suggestions(partial_query.strip(), suggestions)
         
         return suggestions
 
@@ -157,10 +159,10 @@ class SearchService:
         """
         Get popular search terms (for now, return popular movie titles)
         """
-        cache_key = f"popular_searches:{limit}"
-        cached_result = await self._get_cached_result(cache_key)
+        search_cache = await get_search_cache_service()
+        cached_result = await search_cache.get_popular_searches()
         if cached_result:
-            return cached_result
+            return cached_result[:limit]
         
         # Get movies with most reviews as popular searches
         query = select(Movie.title).outerjoin(Movie.reviews).group_by(
@@ -173,7 +175,7 @@ class SearchService:
         popular_searches = [row[0] for row in result.fetchall()]
         
         # Cache the result
-        await self._cache_result(cache_key, popular_searches, ttl=3600)  # 1 hour
+        await search_cache.set_popular_searches(popular_searches)
         
         return popular_searches
 
@@ -181,10 +183,11 @@ class SearchService:
         """
         Search movies by cast member name
         """
-        cache_key = f"cast_search:{hashlib.md5(actor_name.encode()).hexdigest()}:{limit}"
-        cached_result = await self._get_cached_result(cache_key)
+        query_hash = f"cast:{hashlib.md5(actor_name.encode()).hexdigest()}:{limit}"
+        search_cache = await get_search_cache_service()
+        cached_result = await search_cache.get_search_results(query_hash)
         if cached_result:
-            return cached_result
+            return [MovieListResponse(**movie_data) for movie_data in cached_result]
         
         # Find movies with the specified actor
         cast_subquery = select(MovieCast.movie_id).where(
@@ -222,12 +225,12 @@ class SearchService:
             movie_responses.append(movie_response)
         
         # Cache the result
-        await self._cache_result(cache_key, movie_responses)
+        await search_cache.set_search_results(query_hash, [movie.dict() for movie in movie_responses])
         
         return movie_responses
 
-    def _generate_cache_key(self, query: str, filters: Optional[Dict], limit: int, offset: int) -> str:
-        """Generate cache key for search results"""
+    def _generate_query_hash(self, query: str, filters: Optional[Dict], limit: int, offset: int) -> str:
+        """Generate hash for search query parameters"""
         key_data = {
             "query": query,
             "filters": filters or {},
@@ -235,37 +238,4 @@ class SearchService:
             "offset": offset
         }
         key_string = json.dumps(key_data, sort_keys=True)
-        return f"search:{hashlib.md5(key_string.encode()).hexdigest()}"
-
-    async def _get_cached_result(self, cache_key: str):
-        """Get cached search result"""
-        try:
-            redis_client = await get_redis_client()
-            if redis_client:
-                cached_data = await redis_client.get(cache_key)
-                if cached_data:
-                    return json.loads(cached_data)
-        except Exception:
-            # If Redis is not available, continue without caching
-            pass
-        return None
-
-    async def _cache_result(self, cache_key: str, result: Any, ttl: int = 1800):
-        """Cache search result"""
-        try:
-            redis_client = await get_redis_client()
-            if redis_client:
-                # Convert Pydantic models to dict for JSON serialization
-                if isinstance(result, list) and result and hasattr(result[0], 'dict'):
-                    serializable_result = [item.dict() if hasattr(item, 'dict') else item for item in result]
-                else:
-                    serializable_result = result
-                
-                await redis_client.setex(
-                    cache_key, 
-                    ttl, 
-                    json.dumps(serializable_result, default=str)
-                )
-        except Exception:
-            # If Redis is not available, continue without caching
-            pass
+        return hashlib.md5(key_string.encode()).hexdigest()

@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any, Tuple
 from uuid import UUID
 from datetime import datetime
 import math
+import logging
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, desc, asc, update, delete
@@ -31,6 +32,8 @@ from app.schemas.review import (
     ReviewReportCreate
 )
 from app.schemas.user import UserPublicProfile
+
+logger = logging.getLogger(__name__)
 
 
 class ReviewService:
@@ -370,6 +373,34 @@ class ReviewService:
         
         await self.db.commit()
         await self.db.refresh(review)
+        
+        # Send notification to review author (only for new votes or vote changes)
+        if not existing_vote or existing_vote.vote_type != vote_data.vote_type:
+            try:
+                from app.services.notification_trigger import NotificationTrigger
+                
+                # Get voter's name
+                voter_result = await self.db.execute(
+                    select(User).where(User.id == user_id)
+                )
+                voter = voter_result.scalar_one_or_none()
+                
+                # Get movie title
+                movie_result = await self.db.execute(
+                    select(Movie).where(Movie.id == review.movie_id)
+                )
+                movie = movie_result.scalar_one_or_none()
+                
+                if voter and movie:
+                    NotificationTrigger.send_review_vote_notification(
+                        review_author_id=review.user_id,
+                        voter_name=voter.name,
+                        movie_title=movie.title,
+                        vote_type=vote_data.vote_type.value,
+                        review_id=review.id
+                    )
+            except Exception as e:
+                logger.warning(f"Failed to send vote notification: {e}")
         
         return await self._build_review_response(review, user_id)
     

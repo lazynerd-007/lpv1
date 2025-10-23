@@ -24,7 +24,52 @@ from app.models.user import User
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
-@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register", 
+    response_model=AuthResponse, 
+    status_code=status.HTTP_201_CREATED,
+    summary="Register new user account",
+    description="Create a new user account with email verification",
+    responses={
+        201: {
+            "description": "User successfully registered",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "user": {
+                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                            "email": "user@example.com",
+                            "name": "John Doe",
+                            "bio": "Movie enthusiast and Nollywood fan",
+                            "location": "Lagos, Nigeria",
+                            "role": "user",
+                            "is_verified": False,
+                            "created_at": "2024-01-01T00:00:00Z"
+                        },
+                        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "token_type": "bearer",
+                        "expires_in": 1800
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Validation error or email already exists",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "validation_error",
+                        "message": "Email already registered",
+                        "details": {"email": "This email is already in use"},
+                        "timestamp": "2024-01-01T00:00:00Z",
+                        "path": "/api/v1/auth/register"
+                    }
+                }
+            }
+        }
+    }
+)
 async def register(
     user_data: UserRegistration,
     db: AsyncSession = Depends(get_db)
@@ -32,18 +77,84 @@ async def register(
     """
     Register a new user account
     
-    - **email**: Valid email address (must be unique)
-    - **password**: Strong password (min 8 chars, uppercase, lowercase, digit)
-    - **name**: Full name (2-255 characters)
-    - **bio**: Optional user biography
-    - **location**: Optional user location
+    Creates a new user account with the provided information. The user will receive
+    an email verification link to activate their account.
     
-    Returns user information and authentication tokens.
+    **Password Requirements:**
+    - Minimum 8 characters
+    - At least one uppercase letter
+    - At least one lowercase letter  
+    - At least one digit
+    - At least one special character
+    
+    **Email Requirements:**
+    - Valid email format
+    - Must be unique (not already registered)
+    
+    **Name Requirements:**
+    - 2-255 characters
+    - No special characters except spaces, hyphens, and apostrophes
+    
+    **Rate Limiting:** 5 requests per minute per IP address
     """
     return await auth_service.register_user(user_data, db)
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post(
+    "/login", 
+    response_model=AuthResponse,
+    summary="Authenticate user",
+    description="Login with email and password to receive authentication tokens",
+    responses={
+        200: {
+            "description": "Successfully authenticated",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "user": {
+                            "id": "123e4567-e89b-12d3-a456-426614174000",
+                            "email": "user@example.com",
+                            "name": "John Doe",
+                            "role": "user",
+                            "is_verified": True
+                        },
+                        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "token_type": "bearer",
+                        "expires_in": 1800
+                    }
+                }
+            }
+        },
+        401: {
+            "description": "Invalid credentials",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "authentication_error",
+                        "message": "Invalid email or password",
+                        "timestamp": "2024-01-01T00:00:00Z",
+                        "path": "/api/v1/auth/login"
+                    }
+                }
+            }
+        },
+        423: {
+            "description": "Account locked due to too many failed attempts",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "error": "account_locked",
+                        "message": "Account locked due to too many failed login attempts. Try again in 30 minutes.",
+                        "details": {"locked_until": "2024-01-01T01:00:00Z"},
+                        "timestamp": "2024-01-01T00:00:00Z",
+                        "path": "/api/v1/auth/login"
+                    }
+                }
+            }
+        }
+    }
+)
 async def login(
     login_data: UserLogin,
     db: AsyncSession = Depends(get_db)
@@ -51,11 +162,23 @@ async def login(
     """
     Authenticate user and return access tokens
     
-    - **email**: User's email address
-    - **password**: User's password
+    Validates user credentials and returns JWT tokens for API access.
     
-    Returns user information and authentication tokens.
-    Account will be locked after 5 failed attempts for 30 minutes.
+    **Security Features:**
+    - Account lockout after 5 failed attempts (30 minutes)
+    - Rate limiting: 10 requests per minute per IP
+    - Secure password hashing with bcrypt
+    - JWT tokens with configurable expiration
+    
+    **Token Information:**
+    - **Access Token**: Used for API authentication (30 minutes default)
+    - **Refresh Token**: Used to obtain new access tokens (7 days default)
+    
+    **Usage:**
+    Include the access token in the Authorization header for subsequent requests:
+    ```
+    Authorization: Bearer <access_token>
+    ```
     """
     return await auth_service.authenticate_user(login_data, db)
 
