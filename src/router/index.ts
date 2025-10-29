@@ -24,14 +24,15 @@ const MovieCastAndCrewPage = () => import('@/pages/MovieCastAndCrewPage.vue')
 const SeriesCastAndCrewPage = () => import('@/pages/SeriesCastAndCrewPage.vue')
 // Admin components
 const AdminPage = () => import('@/pages/AdminPage.vue')
-const AdminDashboard = () => import('@/pages/admin/AdminDashboard.vue')
-const AdminUsers = () => import('@/pages/admin/AdminUsers.vue')
-const AdminModeration = () => import('@/pages/admin/AdminModeration.vue')
-const AdminContent = () => import('@/pages/admin/AdminContent.vue')
-const AdminAnalytics = () => import('@/pages/admin/AdminAnalytics.vue')
-const AdminSettings = () => import('@/pages/admin/AdminSettings.vue')
-const AdminCritics = () => import('@/pages/admin/AdminCritics.vue')
-const AdminReports = () => import('@/pages/admin/AdminReports.vue')
+// Using relative paths to fix TypeScript import errors
+const AdminDashboard = () => import('../pages/admin/AdminDashboard.vue')
+const AdminUsers = () => import('../pages/admin/AdminUsers.vue')
+const AdminModeration = () => import('../pages/admin/AdminModeration.vue')
+const AdminContent = () => import('../pages/admin/AdminContent.vue')
+const AdminAnalytics = () => import('../pages/admin/AdminAnalytics.vue')
+const AdminSettings = () => import('../pages/admin/AdminSettings.vue')
+const AdminCritics = () => import('../pages/admin/AdminCritics.vue')
+const AdminReports = () => import('../pages/admin/AdminReports.vue')
 
 // User components
 const SettingsPage = () => import('@/pages/SettingsPage.vue')
