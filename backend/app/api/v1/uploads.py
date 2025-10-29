@@ -14,7 +14,7 @@ from app.core.exceptions import LemonPieException
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/uploads", tags=["uploads"])
+router = APIRouter(tags=["uploads"])
 
 
 @router.post("/avatar", response_model=Dict[str, Any])

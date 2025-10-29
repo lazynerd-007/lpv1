@@ -22,7 +22,7 @@ from app.schemas.notification import (
 )
 from app.core.exceptions import NotFoundError, ValidationError
 
-router = APIRouter(prefix="/notifications", tags=["notifications"])
+router = APIRouter(tags=["notifications"])
 
 
 @router.get("/", response_model=NotificationListResponse)

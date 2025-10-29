@@ -26,7 +26,7 @@
           
           <!-- Profile Info -->
           <div class="text-center md:text-left text-white flex-1">
-            <div class="flex flex-col md:flex-row items-center md:items-start gap-3 mb-2">
+            <div v-if="user" class="flex flex-col md:flex-row items-center md:items-start gap-3 mb-2">
               <h1 class="text-4xl font-bold">{{ user.name }}</h1>
               <CriticBadge 
                 v-if="userStore.hasRole('critic')" 
@@ -35,8 +35,11 @@
                 class="mt-1"
               />
             </div>
-            <p class="text-xl text-yellow-100 mb-4">{{ user.bio || 'Nollywood Movie Enthusiast' }}</p>
-            <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm mb-4">
+            <div v-else class="flex flex-col md:flex-row items-center md:items-start gap-3 mb-2">
+              <h1 class="text-4xl font-bold">Loading...</h1>
+            </div>
+            <p class="text-xl text-yellow-100 mb-4">{{ user?.bio || 'Nollywood Movie Enthusiast' }}</p>
+            <div v-if="user" class="flex flex-wrap justify-center md:justify-start gap-4 text-sm mb-4">
               <div class="flex items-center gap-2">
                 <Calendar class="w-4 h-4" />
                 <span>Joined {{ formatDate(user.joinDate) }}</span>
@@ -76,7 +79,7 @@
           </div>
           
           <!-- Follow Button (for other users) -->
-          <div v-if="!isOwnProfile" class="flex flex-col items-center gap-4">
+          <div v-if="!isOwnProfile && user" class="flex flex-col items-center gap-4">
             <FollowButton :user-id="user.id" size="lg" />
             <div class="text-center text-white/80">
               <div class="text-sm">Member since</div>
@@ -118,7 +121,7 @@
       </div>
       
       <!-- Bio Section -->
-      <div v-if="user.bio && user.bio !== 'Nollywood Movie Enthusiast'" class="bg-theme-card rounded-lg p-6 mb-8">
+      <div v-if="user && user.bio && user.bio !== 'Nollywood Movie Enthusiast'" class="bg-theme-card rounded-lg p-6 mb-8">
         <h2 class="text-xl font-bold text-theme-text mb-3 flex items-center gap-2">
           <User class="w-5 h-5 text-orange-500" />
           About
@@ -442,6 +445,7 @@ import {
 import { useMovieStore } from '@/stores/movieStore'
 import { useUserStore } from '@/stores/userStore'
 import { useUIStore } from '@/stores/uiStore'
+import { useAuthStore } from '@/stores/authStore'
 import MovieCard from '@/components/MovieCard.vue'
 import LemonPieRating from '@/components/LemonPieRating.vue'
 import FollowButton from '@/components/FollowButton.vue'
@@ -632,7 +636,17 @@ onMounted(async () => {
   
   // Load user data if not already loaded
   if (!userStore.currentUser) {
-    userStore.initializeMockAuth()
+    const authStore = useAuthStore()
+    await authStore.initializeAuth()
+    
+    if (authStore.user) {
+      userStore.currentUser = authStore.user
+      userStore.isAuthenticated = true
+    } else {
+      // If no user is authenticated, redirect to login
+      router.push('/login')
+      return
+    }
   }
   
   // Initialize form with current user data

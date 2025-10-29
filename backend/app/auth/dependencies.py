@@ -17,6 +17,7 @@ from sqlalchemy import select
 
 # HTTP Bearer token scheme
 security = HTTPBearer()
+optional_security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
@@ -67,7 +68,7 @@ async def get_current_active_user(
 
 
 async def get_optional_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
     db: AsyncSession = Depends(get_db)
 ) -> Optional[User]:
     """
@@ -140,3 +141,10 @@ require_admin = require_role(UserRole.ADMIN)
 require_moderator = require_role(UserRole.MODERATOR)
 require_critic = require_role(UserRole.CRITIC)
 require_moderator_or_admin = require_roles(UserRole.MODERATOR, UserRole.ADMIN)
+
+# Convenience function for admin users
+async def get_current_admin_user(current_user: User = Depends(require_admin)) -> User:
+    """
+    Get current user and ensure they have admin role
+    """
+    return current_user

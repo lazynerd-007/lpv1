@@ -1,16 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { mockReviews, getMovieById, type Review } from '@/data/mockMovies'
-import { 
-  mockUsers, 
-  loginAttempts, 
-  AuthError, 
-  type AuthResponse, 
-  type MockUser,
-  type AuthAttempt,
-  RATE_LIMIT_CONFIG 
-} from '@/data/mockAuth'
 import { useSeriesStore } from '@/stores/seriesStore'
+import { useAuthStore } from '@/stores/authStore'
+
+const API_BASE_URL = 'http://localhost:8000/api/v1'
 
 interface User {
   id: string
@@ -65,16 +59,16 @@ export const useUserStore = defineStore('user', () => {
   const profileUpdateSuccess = ref(false)
   const profileUpdateError = ref<string | null>(null)
   
-  // Mock user data
-  const mockUser: User = {
-    id: '1',
-    name: 'Adebayo Johnson',
-    email: 'adebayo@example.com',
-    bio: 'Passionate Nollywood enthusiast and film critic',
-    location: 'Lagos, Nigeria',
-    joinDate: '2023-01-15',
-    avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square',
-    role: 'admin'
+  // Initialize authentication from authStore
+  const initializeAuth = () => {
+    const authStore = useAuthStore()
+    authStore.initializeAuth()
+    
+    if (authStore.user) {
+      currentUser.value = authStore.user
+      isAuthenticated.value = true
+      loadUserData()
+    }
   }
 
   // Getters
@@ -162,29 +156,25 @@ export const useUserStore = defineStore('user', () => {
   })
 
   const followingUsers = computed(() => {
-    return following.value.map(userId => {
-      const user = mockUsers.find(u => u.id === userId)
-      return user ? {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        bio: user.bio
-      } : null
-    }).filter(Boolean)
+    // TODO: Implement API call to fetch user details for following list
+    return following.value.map(userId => ({
+      id: userId,
+      name: `User ${userId}`,
+      email: `user${userId}@example.com`,
+      avatar: undefined,
+      bio: undefined
+    }))
   })
 
   const followerUsers = computed(() => {
-    return followers.value.map(userId => {
-      const user = mockUsers.find(u => u.id === userId)
-      return user ? {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        avatar: user.avatar,
-        bio: user.bio
-      } : null
-    }).filter(Boolean)
+    // TODO: Implement API call to fetch user details for followers list
+    return followers.value.map(userId => ({
+      id: userId,
+      name: `User ${userId}`,
+      email: `user${userId}@example.com`,
+      avatar: undefined,
+      bio: undefined
+    }))
   })
 
   const recentActivities = computed(() => {
@@ -194,196 +184,15 @@ export const useUserStore = defineStore('user', () => {
   })
 
   // Actions
-  const login = async (email: string, password: string): Promise<AuthResponse> => {
-    try {
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500))
-      
-      // Input validation
-      if (!email || !password) {
-        return {
-          success: false,
-          error: {
-            type: AuthError.VALIDATION_ERROR,
-            message: 'Email and password are required',
-            details: { missingFields: !email ? ['email'] : ['password'] }
-          }
-        }
-      }
-      
-      // Email format validation
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        return {
-          success: false,
-          error: {
-            type: AuthError.VALIDATION_ERROR,
-            message: 'Please enter a valid email address',
-            details: { field: 'email' }
-          }
-        }
-      }
-      
-      // Check rate limiting
-      const now = Date.now()
-      const recentAttempts = loginAttempts.filter(
-        attempt => attempt.email === email && 
-        now - attempt.timestamp < RATE_LIMIT_CONFIG.ATTEMPT_WINDOW
-      )
-      
-      if (recentAttempts.length >= RATE_LIMIT_CONFIG.MAX_ATTEMPTS) {
-        return {
-          success: false,
-          error: {
-            type: AuthError.TOO_MANY_ATTEMPTS,
-            message: `Too many login attempts. Please try again in ${Math.ceil(RATE_LIMIT_CONFIG.ATTEMPT_WINDOW / 60000)} minutes.`,
-            details: { 
-              attempts: recentAttempts.length,
-              resetTime: new Date(recentAttempts[0].timestamp + RATE_LIMIT_CONFIG.ATTEMPT_WINDOW)
-            }
-          }
-        }
-      }
-      
-      // Find user in mock database
-      const user = mockUsers.find(u => u.email.toLowerCase() === email.toLowerCase())
-      
-      // Record login attempt
-      const attempt: AuthAttempt = {
-        email,
-        timestamp: now,
-        success: false,
-        ip: '127.0.0.1' // Mock IP
-      }
-      
-      if (!user) {
-        loginAttempts.push(attempt)
-        return {
-          success: false,
-          error: {
-            type: AuthError.INVALID_CREDENTIALS,
-            message: 'Invalid email or password',
-            details: { field: 'email' }
-          }
-        }
-      }
-      
-      // Check if account is locked
-      if (user.lockedUntil && new Date(user.lockedUntil) > new Date()) {
-        loginAttempts.push(attempt)
-        const unlockTime = new Date(user.lockedUntil)
-        return {
-          success: false,
-          error: {
-            type: AuthError.ACCOUNT_LOCKED,
-            message: `Account is temporarily locked. Try again after ${unlockTime.toLocaleTimeString()}.`,
-            details: { 
-              unlockTime,
-              reason: 'Multiple failed login attempts'
-            }
-          }
-        }
-      }
-      
-      // Check if account is active
-      if (!user.isActive) {
-        loginAttempts.push(attempt)
-        return {
-          success: false,
-          error: {
-            type: AuthError.ACCOUNT_INACTIVE,
-            message: 'Your account has been deactivated. Please contact support.',
-            details: { 
-              contactEmail: 'support@lemonpie.com',
-              userId: user.id
-            }
-          }
-        }
-      }
-      
-      // Verify password (in real app, this would be hashed comparison)
-      if (user.password !== password) {
-        loginAttempts.push(attempt)
-        
-        // Increment failed attempts
-        user.loginAttempts += 1
-        
-        // Lock account after max attempts
-        if (user.loginAttempts >= RATE_LIMIT_CONFIG.MAX_ATTEMPTS) {
-          user.lockedUntil = new Date(now + RATE_LIMIT_CONFIG.LOCKOUT_DURATION).toISOString()
-          return {
-            success: false,
-            error: {
-              type: AuthError.ACCOUNT_LOCKED,
-              message: `Account locked due to multiple failed attempts. Try again in ${RATE_LIMIT_CONFIG.LOCKOUT_DURATION / 60000} minutes.`,
-              details: { 
-                attempts: user.loginAttempts,
-                lockoutDuration: RATE_LIMIT_CONFIG.LOCKOUT_DURATION
-              }
-            }
-          }
-        }
-        
-        return {
-          success: false,
-          error: {
-            type: AuthError.INVALID_CREDENTIALS,
-            message: 'Invalid email or password',
-            details: { 
-              field: 'password',
-              attemptsRemaining: RATE_LIMIT_CONFIG.MAX_ATTEMPTS - user.loginAttempts
-            }
-          }
-        }
-      }
-      
-      // Successful login
-      attempt.success = true
-      loginAttempts.push(attempt)
-      
-      // Reset failed attempts
-      user.loginAttempts = 0
-      user.lockedUntil = undefined
-      user.lastLogin = new Date().toISOString()
-      
-      // Set authentication state
+  const login = async (email: string, password: string) => {
+    const authStore = useAuthStore()
+    await authStore.login(email, password)
+    
+    // Sync user data from authStore
+    if (authStore.user) {
+      currentUser.value = authStore.user
       isAuthenticated.value = true
-      currentUser.value = {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        bio: user.bio || '',
-        location: user.location || '',
-        joinDate: user.joinDate,
-        avatar: user.avatar,
-        role: user.role
-      }
-      
-      // Generate mock JWT token
-      const token = `mock_jwt_${user.id}_${Date.now()}`
-      
-      // Store token securely (in real app, use httpOnly cookies)
-      localStorage.setItem('auth_token', token)
-      localStorage.setItem('user_data', JSON.stringify(currentUser.value))
-      
-      // Note: loadUserData() removed as it was overwriting the correctly set currentUser
-      
-      return {
-        success: true,
-        user: user,
-        token
-      }
-      
-    } catch (error) {
-      console.error('Login error:', error)
-      return {
-        success: false,
-        error: {
-          type: AuthError.SERVER_ERROR,
-          message: 'An unexpected error occurred. Please try again.',
-          details: { error: error instanceof Error ? error.message : 'Unknown error' }
-        }
-      }
+      loadUserData()
     }
   }
 
@@ -454,11 +263,14 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const loadUserData = async () => {
-    // In a real app, this would load user data from an API
-    // For this mock, we'll just set the mock user data
-    currentUser.value = mockUser as any
-    isAuthenticated.value = true
-    return true
+    // Load user data from authStore
+    const authStore = useAuthStore()
+    if (authStore.user) {
+      currentUser.value = authStore.user
+      isAuthenticated.value = true
+      return true
+    }
+    return false
   }
 
   const updateProfile = async (updates: Partial<User>) => {
@@ -468,14 +280,39 @@ export const useUserStore = defineStore('user', () => {
     error.value = null
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Get auth token
+      const authStore = useAuthStore()
+      const token = authStore.accessToken
       
-      currentUser.value = { ...currentUser.value, ...updates }
+      if (!token) {
+        throw new Error('No authentication token available')
+      }
+
+      // Make API call to update profile
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updates)
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`)
+      }
+
+      const updatedProfile = await response.json()
+      
+      // Update local state with the response from the server
+      currentUser.value = { ...currentUser.value, ...updatedProfile }
+      
       return { success: true }
     } catch (err) {
-      error.value = 'Failed to update profile'
-      return { success: false, error: error.value }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to update profile'
+      error.value = errorMessage
+      return { success: false, error: errorMessage }
     } finally {
       isLoading.value = false
     }
@@ -574,12 +411,8 @@ export const useUserStore = defineStore('user', () => {
       })
       
       // In a real app, this would also update the target user's followers list
-      // For mock purposes, we'll simulate this
-      const targetUser = mockUsers.find(u => u.id === userId)
-      if (targetUser) {
-        // This would be handled by the backend in a real app
-        console.log(`User ${currentUser.value.name} followed ${targetUser.name}`)
-      }
+      // This would be handled by the backend in a real app
+      console.log(`User ${currentUser.value.name} followed user ${userId}`)
       
       return { success: true }
     } catch (error) {
@@ -683,11 +516,9 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  // Initialize with mock authentication for demo
+  // Initialize with mock authentication for demo (deprecated - use initializeAuth instead)
   const initializeMockAuth = () => {
-    currentUser.value = mockUser
-    isAuthenticated.value = true
-    loadUserData()
+    initializeAuth()
   }
 
   // Role check methods
@@ -708,12 +539,14 @@ export const useUserStore = defineStore('user', () => {
   }
   
   const assignRole = (userId: string, role: 'user' | 'admin' | 'moderator' | 'critic') => {
-    // Find user in mock database
-    const userIndex = mockUsers.findIndex(user => user.id === userId)
-    if (userIndex === -1) return false
+    // TODO: Implement API call to update user role
+    console.log(`Assigning role ${role} to user ${userId}`)
     
-    // Update role
-    mockUsers[userIndex].role = role
+    // Update current user role if it's the same user
+    if (currentUser.value?.id === userId) {
+      currentUser.value.role = role
+    }
+    
     return true
   }
   

@@ -32,6 +32,11 @@ const userMenuItems = computed(() => {
     { name: 'Settings', path: '/settings', icon: Settings }
   ];
   
+  // Add admin panel for admin users
+  if (userStore.isAdmin()) {
+    baseItems.splice(2, 0, { name: 'Admin Panel', path: '/admin', icon: Shield });
+  }
+  
   return baseItems;
 });
 

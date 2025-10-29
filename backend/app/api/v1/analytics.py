@@ -33,7 +33,7 @@ from app.schemas.analytics import (
     AnalyticsFilters
 )
 
-router = APIRouter(prefix="/analytics", tags=["analytics"])
+router = APIRouter(tags=["analytics"])
 
 
 # User Activity Endpoints

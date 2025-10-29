@@ -4,7 +4,7 @@ Analytics models for tracking user behavior and system performance
 from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
-from sqlalchemy import Column, String, Integer, DateTime, Float, Text, Boolean, ForeignKey, Index
+from sqlalchemy import Column, String, Integer, DateTime, Float, Text, Boolean, ForeignKey, Index, JSON
 from sqlalchemy.dialects.postgresql import UUID as PostgresUUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -16,13 +16,13 @@ class UserActivity(Base):
     """Track user activities for analytics"""
     __tablename__ = "user_activities"
     
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(PostgresUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=True)
     session_id = Column(String(255), nullable=True)
     activity_type = Column(String(100), nullable=False)  # login, logout, view_movie, write_review, etc.
     resource_type = Column(String(50), nullable=True)  # movie, review, user
-    resource_id = Column(PostgresUUID(as_uuid=True), nullable=True)
-    extra_data = Column(JSONB, nullable=True)  # Additional context data
+    resource_id = Column(String(36), nullable=True)
+    extra_data = Column(JSON, nullable=True)  # Additional context data (JSON for SQLite compatibility)
     ip_address = Column(String(45), nullable=True)
     user_agent = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -43,13 +43,13 @@ class ContentMetrics(Base):
     """Track content performance metrics"""
     __tablename__ = "content_metrics"
     
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     content_type = Column(String(50), nullable=False)  # movie, review
-    content_id = Column(PostgresUUID(as_uuid=True), nullable=False)
+    content_id = Column(String(36), nullable=False)
     metric_type = Column(String(100), nullable=False)  # views, likes, shares, etc.
     metric_value = Column(Float, nullable=False, default=0.0)
     date = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    extra_data = Column(JSONB, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     
     # Indexes for performance
     __table_args__ = (
@@ -63,12 +63,12 @@ class SystemMetrics(Base):
     """Track system performance metrics"""
     __tablename__ = "system_metrics"
     
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     metric_name = Column(String(100), nullable=False)
     metric_value = Column(Float, nullable=False)
     metric_unit = Column(String(50), nullable=True)  # ms, bytes, count, etc.
     component = Column(String(100), nullable=True)  # api, database, cache, etc.
-    extra_data = Column(JSONB, nullable=True)
+    extra_data = Column(JSON, nullable=True)
     timestamp = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     
     # Indexes for performance
@@ -83,15 +83,15 @@ class AnalyticsReport(Base):
     """Store generated analytics reports"""
     __tablename__ = "analytics_reports"
     
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
     report_type = Column(String(100), nullable=False)  # user_engagement, content_performance, etc.
     report_name = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
-    parameters = Column(JSONB, nullable=True)  # Report generation parameters
-    data = Column(JSONB, nullable=False)  # Report data
+    parameters = Column(JSON, nullable=True)  # Report generation parameters
+    data = Column(JSON, nullable=False)  # Report data
     format = Column(String(20), nullable=False, default="json")  # json, csv, pdf
     file_url = Column(String(500), nullable=True)  # URL if exported to file
-    generated_by = Column(PostgresUUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    generated_by = Column(String(36), ForeignKey("users.id"), nullable=False)
     generated_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     expires_at = Column(DateTime(timezone=True), nullable=True)
     is_public = Column(Boolean, default=False)
@@ -111,8 +111,8 @@ class UserEngagementMetrics(Base):
     """Aggregated user engagement metrics"""
     __tablename__ = "user_engagement_metrics"
     
-    id = Column(PostgresUUID(as_uuid=True), primary_key=True, default=uuid4)
-    user_id = Column(PostgresUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid4()))
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     date = Column(DateTime(timezone=True), nullable=False)
     session_count = Column(Integer, default=0)
     session_duration_minutes = Column(Float, default=0.0)

@@ -98,6 +98,22 @@ class AuthService:
         )
         user = result.scalar_one_or_none()
         
+        # Debug logging with print statements to ensure visibility
+        print(f"=== AUTHENTICATION DEBUG START ===")
+        print(f"DEBUG: User email: {login_data.email}")
+        print(f"DEBUG: User found: {user is not None}")
+        if user:
+            print(f"DEBUG: User ID: {user.id}")
+            print(f"DEBUG: User is_active: {user.is_active}")
+            print(f"DEBUG: User login_attempts: {user.login_attempts}")
+            print(f"DEBUG: User locked_until: {user.locked_until}")
+            print(f"DEBUG: Provided password: '{login_data.password}'")
+            print(f"DEBUG: Stored password hash: '{user.password_hash}'")
+            print(f"DEBUG: Password hash length: {len(user.password_hash) if user.password_hash else 'None'}")
+        else:
+            print(f"DEBUG: No user found with email: {login_data.email}")
+        print(f"=== AUTHENTICATION DEBUG END ===")
+        
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -113,7 +129,12 @@ class AuthService:
             )
         
         # Verify password
-        if not jwt_service.verify_password(login_data.password, user.password_hash):
+        print(f"=== PASSWORD VERIFICATION DEBUG START ===")
+        password_valid = jwt_service.verify_password(login_data.password, user.password_hash)
+        print(f"DEBUG: Password verification result: {password_valid}")
+        print(f"=== PASSWORD VERIFICATION DEBUG END ===")
+        
+        if not password_valid:
             # Increment login attempts
             await self._handle_failed_login(user, db)
             raise HTTPException(

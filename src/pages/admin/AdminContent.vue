@@ -357,6 +357,100 @@
             </table>
           </div>
 
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="bg-white px-4 py-3 flex items-center justify-between border-t border-slate-200 sm:px-6">
+            <div class="flex-1 flex justify-between sm:hidden">
+              <button
+                @click="prevPage"
+                :disabled="!hasPrevPage"
+                class="relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <button
+                @click="nextPage"
+                :disabled="!hasNextPage"
+                class="ml-3 relative inline-flex items-center px-4 py-2 border border-slate-300 text-sm font-medium rounded-md text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div class="flex items-center space-x-4">
+                <p class="text-sm text-slate-700">
+                  Showing
+                  <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+                  to
+                  <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, totalItems) }}</span>
+                  of
+                  <span class="font-medium">{{ totalItems }}</span>
+                  results
+                </p>
+                <div class="flex items-center space-x-2">
+                  <label for="itemsPerPage" class="text-sm text-slate-700">Items per page:</label>
+                  <select
+                    id="itemsPerPage"
+                    :value="itemsPerPage"
+                    @change="changeItemsPerPage(parseInt(($event.target as HTMLSelectElement).value))"
+                    class="border border-slate-300 rounded-md px-2 py-1 text-sm"
+                  >
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                  <button
+                    @click="prevPage"
+                    :disabled="!hasPrevPage"
+                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span class="sr-only">Previous</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                  
+                  <!-- Page numbers -->
+                  <template v-for="page in Math.min(totalPages, 7)" :key="page">
+                    <button
+                      v-if="page === 1 || page === totalPages || (page >= currentPage - 2 && page <= currentPage + 2)"
+                      @click="goToPage(page)"
+                      :class="[
+                        'relative inline-flex items-center px-4 py-2 border text-sm font-medium',
+                        page === currentPage
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50'
+                      ]"
+                    >
+                      {{ page }}
+                    </button>
+                    <span
+                      v-else-if="page === currentPage - 3 || page === currentPage + 3"
+                      class="relative inline-flex items-center px-4 py-2 border border-slate-300 bg-white text-sm font-medium text-slate-700"
+                    >
+                      ...
+                    </span>
+                  </template>
+                  
+                  <button
+                    @click="nextPage"
+                    :disabled="!hasNextPage"
+                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-slate-300 bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span class="sr-only">Next</span>
+                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                      <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+
           <!-- Empty State -->
           <div v-if="contentItems.length === 0 && !isLoading" class="text-center py-8">
             <Film class="mx-auto h-12 w-12 text-slate-400" />
@@ -396,6 +490,10 @@ import {
   Edit,
   Trash2
 } from 'lucide-vue-next'
+import { useMovieStore } from '@/stores/movieStore'
+import type { Movie } from '@/data/mockMovies'
+
+const movieStore = useMovieStore()
 
 // State
 const searchTerm = ref('')
@@ -405,57 +503,83 @@ const selectedStatus = ref('')
 const viewMode = ref<'grid' | 'list'>('grid')
 const isLoading = ref(false)
 
-// Mock data
-const contentItems = ref([
-  {
-    id: '1',
-    title: 'The Dark Knight',
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+// Transform movies to match the admin content format
+const allContentItems = computed(() => {
+  return movieStore.movies.map((movie: Movie) => ({
+    id: movie.id,
+    title: movie.title,
     type: 'movie',
-    genre: 'Action',
-    year: 2008,
-    rating: 9.0,
-    status: 'published',
-    poster: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=dark%20knight%20movie%20poster&image_size=portrait_4_3',
-    description: 'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham...',
-    createdAt: '2024-01-10T10:00:00Z'
-  },
-  {
-    id: '2',
-    title: 'Breaking Bad',
-    type: 'series',
-    genre: 'Drama',
-    year: 2008,
-    rating: 9.5,
-    status: 'published',
-    poster: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=breaking%20bad%20tv%20series%20poster&image_size=portrait_4_3',
-    description: 'A high school chemistry teacher diagnosed with inoperable lung cancer...',
-    createdAt: '2024-01-08T14:30:00Z'
-  },
-  {
-    id: '3',
-    title: 'Inception',
-    type: 'movie',
-    genre: 'Sci-Fi',
-    year: 2010,
-    rating: 8.8,
-    status: 'draft',
-    poster: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=inception%20movie%20poster%20dream%20layers&image_size=portrait_4_3',
-    description: 'A thief who steals corporate secrets through the use of dream-sharing technology...',
-    createdAt: '2024-01-12T09:15:00Z'
+    genre: movie.genre.join(', '),
+    rating: movie.lemonPieRating,
+    status: 'published', // All movies are published for now
+    createdAt: movie.releaseDate,
+    poster: movie.poster,
+    description: movie.plot,
+    director: movie.director,
+    year: new Date(movie.releaseDate).getFullYear()
+  }))
+})
+
+// Filtered content items based on current filters (without pagination)
+const filteredContentItems = computed(() => {
+  let filteredMovies = movieStore.movies
+
+  // Apply search filter
+  if (searchTerm.value.trim()) {
+    filteredMovies = movieStore.searchMovies(searchTerm.value)
   }
-])
+
+  // Apply genre filter
+  if (selectedGenre.value && selectedGenre.value !== 'all') {
+    filteredMovies = filteredMovies.filter(movie => 
+      movie.genre.some(g => g.toLowerCase() === selectedGenre.value.toLowerCase())
+    )
+  }
+
+  // Transform filtered movies to admin content format
+  return filteredMovies.map((movie: Movie) => ({
+    id: movie.id,
+    title: movie.title,
+    type: 'movie',
+    genre: movie.genre.join(', '),
+    rating: movie.lemonPieRating,
+    status: 'published',
+    createdAt: movie.releaseDate,
+    poster: movie.poster,
+    description: movie.plot,
+    director: movie.director,
+    year: new Date(movie.releaseDate).getFullYear()
+  }))
+})
+
+// Paginated content items
+const contentItems = computed(() => {
+  const startIndex = (currentPage.value - 1) * itemsPerPage.value
+  const endIndex = startIndex + itemsPerPage.value
+  return filteredContentItems.value.slice(startIndex, endIndex)
+})
+
+// Pagination computed properties
+const totalItems = computed(() => filteredContentItems.value.length)
+const totalPages = computed(() => Math.ceil(totalItems.value / itemsPerPage.value))
+const hasNextPage = computed(() => currentPage.value < totalPages.value)
+const hasPrevPage = computed(() => currentPage.value > 1)
 
 // Computed
 const totalMovies = computed(() => 
-  contentItems.value.filter(item => item.type === 'movie').length
+  allContentItems.value.filter(item => item.type === 'movie').length
 )
 
 const totalSeries = computed(() => 
-  contentItems.value.filter(item => item.type === 'series').length
+  allContentItems.value.filter(item => item.type === 'series').length
 )
 
 const pendingApproval = computed(() => 
-  contentItems.value.filter(item => item.status === 'pending').length
+  allContentItems.value.filter(item => item.status === 'pending').length
 )
 
 const addedThisMonth = computed(() => 15) // Mock data
@@ -472,20 +596,51 @@ const debouncedSearch = (() => {
 })()
 
 const applyFilters = () => {
-  // TODO: Implement filtering logic
-  console.log('Applying filters:', {
+  // Reset to first page when filters change
+  currentPage.value = 1
+  // Filtering is now handled by the computed property
+  // This function is kept for compatibility and logging
+  console.log('Applied filters:', {
     search: searchTerm.value,
     type: selectedType.value,
     genre: selectedGenre.value,
-    status: selectedStatus.value
+    status: selectedStatus.value,
+    resultCount: filteredContentItems.value.length,
+    totalPages: totalPages.value
   })
+}
+
+// Pagination methods
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+  }
+}
+
+const nextPage = () => {
+  if (hasNextPage.value) {
+    currentPage.value++
+  }
+}
+
+const prevPage = () => {
+  if (hasPrevPage.value) {
+    currentPage.value--
+  }
+}
+
+const changeItemsPerPage = (newItemsPerPage: number) => {
+  itemsPerPage.value = newItemsPerPage
+  currentPage.value = 1 // Reset to first page
 }
 
 const deleteContent = (item: any) => {
   if (confirm(`Are you sure you want to delete "${item.title}"?`)) {
-    const index = contentItems.value.findIndex(i => i.id === item.id)
-    if (index !== -1) {
-      contentItems.value.splice(index, 1)
+    // Find the movie in the store and remove it
+    const movieIndex = movieStore.movies.findIndex(m => m.id === item.id)
+    if (movieIndex !== -1) {
+      movieStore.movies.splice(movieIndex, 1)
+      console.log(`Deleted movie: ${item.title}`)
     }
   }
 }

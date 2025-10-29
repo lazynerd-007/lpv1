@@ -96,8 +96,8 @@ def create_app() -> FastAPI:
     # Set up templates
     templates = Jinja2Templates(directory="app/templates")
     
-    # Custom OpenAPI schema
-    app.openapi = lambda: get_custom_openapi(app)
+    # Custom OpenAPI schema - TEMPORARILY DISABLED due to route registration issue
+    # app.openapi = lambda: get_custom_openapi(app)
     
     # Add security middleware (order matters)
     app.add_middleware(SecurityMiddleware)

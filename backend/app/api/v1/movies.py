@@ -17,7 +17,7 @@ from app.schemas.movie import (
 )
 from app.core.exceptions import NotFoundError, ValidationError
 
-router = APIRouter(prefix="/movies", tags=["movies"])
+router = APIRouter(tags=["movies"])
 
 
 @router.get("/", response_model=PaginatedMovieResponse)

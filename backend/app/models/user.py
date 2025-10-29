@@ -72,5 +72,8 @@ class User(Base):
     # Analytics relationships
     activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")
     
+    # Privacy settings relationship
+    privacy_settings = relationship("UserPrivacySettings", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    
     def __repr__(self):
         return f"<User(id={self.id}, email={self.email}, role={self.role})>"

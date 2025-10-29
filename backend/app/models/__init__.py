@@ -16,6 +16,7 @@ from app.models.relationships import (
     MovieCast
 )
 from app.models.moderation import UserReport, Notification, NotificationPreference
+from app.models.privacy import UserPrivacySettings
 from app.models.search import MovieSearchIndex
 from app.models.analytics import (
     UserActivity,
@@ -40,6 +41,7 @@ __all__ = [
     "UserReport",
     "Notification",
     "NotificationPreference",
+    "UserPrivacySettings",
     "MovieSearchIndex",
     "UserActivity",
     "ContentMetrics",

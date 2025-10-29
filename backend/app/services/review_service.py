@@ -10,7 +10,7 @@ import logging
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, and_, or_, desc, asc, update, delete
 from sqlalchemy.orm import selectinload
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 
 from app.models.review import Review
 from app.models.user import User
@@ -32,6 +32,7 @@ from app.schemas.review import (
     ReviewReportCreate
 )
 from app.schemas.user import UserPublicProfile
+from app.db.database import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -811,6 +812,6 @@ class ReviewService:
 
 
 # Service instance
-def get_review_service(db: AsyncSession) -> ReviewService:
+def get_review_service(db: AsyncSession = Depends(get_db)) -> ReviewService:
     """Get review service instance"""
     return ReviewService(db)

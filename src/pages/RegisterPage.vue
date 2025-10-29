@@ -7,8 +7,27 @@
           <h1 class="text-theme-primary text-xl font-medium mb-2">Create a new account</h1>
         </div>
 
+        <!-- Error Message -->
+        <div v-if="errorMessage" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+          {{ errorMessage }}
+        </div>
+
         <!-- Registration Form -->
         <form @submit.prevent="handleRegister" class="space-y-4">
+          <!-- Name -->
+          <div>
+            <label class="block text-theme-secondary text-sm font-medium mb-2">
+              Full Name
+            </label>
+            <input
+              v-model="form.name"
+              type="text"
+              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+              placeholder="John Doe"
+              required
+            />
+          </div>
+
           <!-- Email -->
           <div>
             <label class="block text-theme-secondary text-sm font-medium mb-2">
@@ -18,7 +37,7 @@
               v-model="form.email"
               type="email"
               class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
-              placeholder="admin@admin.com"
+              placeholder="john@example.com"
               required
             />
           </div>
@@ -35,6 +54,9 @@
               placeholder="••••••"
               required
             />
+            <p class="text-xs text-theme-secondary mt-1">
+              Password must contain uppercase, lowercase, and a digit
+            </p>
           </div>
 
           <!-- Confirm Password -->
@@ -48,6 +70,32 @@
               class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
               placeholder="••••••"
               required
+            />
+          </div>
+
+          <!-- Bio (Optional) -->
+          <div>
+            <label class="block text-theme-secondary text-sm font-medium mb-2">
+              Bio (Optional)
+            </label>
+            <textarea
+              v-model="form.bio"
+              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+              placeholder="Tell us about yourself..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Location (Optional) -->
+          <div>
+            <label class="block text-theme-secondary text-sm font-medium mb-2">
+              Location (Optional)
+            </label>
+            <input
+              v-model="form.location"
+              type="text"
+              class="w-full bg-theme-surface border border-theme-border rounded-lg px-4 py-3 text-theme-primary placeholder-theme-secondary focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-colors"
+              placeholder="New York, NY"
             />
           </div>
 
@@ -110,38 +158,53 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 import LemonPieLogo from '@/components/LemonPieLogo.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
+// Form data
 const form = ref({
+  name: '',
   email: '',
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
+  bio: '',
+  location: ''
 })
 
 const isLoading = ref(false)
+const errorMessage = ref('')
 
+// Handle registration
 const handleRegister = async () => {
+  errorMessage.value = ''
+  
+  // Check if passwords match
   if (form.value.password !== form.value.confirmPassword) {
-    alert('Passwords do not match!')
+    errorMessage.value = 'Passwords do not match!'
     return
   }
 
   isLoading.value = true
-  
+
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await authStore.register(
+      form.value.email,
+      form.value.password,
+      form.value.name,
+      form.value.bio || undefined,
+      form.value.location || undefined
+    )
     
-    // Mock successful registration
-    console.log('Registration successful:', form.value)
+    console.log('Registration successful')
     
-    // Redirect to login or dashboard
-    router.push('/login')
+    // Redirect to dashboard or home page since user is now logged in
+    router.push('/')
   } catch (error) {
     console.error('Registration failed:', error)
-    alert('Registration failed. Please try again.')
+    errorMessage.value = authStore.error || 'Registration failed. Please try again.'
   } finally {
     isLoading.value = false
   }

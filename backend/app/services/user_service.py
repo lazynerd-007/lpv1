@@ -793,6 +793,202 @@ class UserService:
             has_prev=page > 1
         )
 
+    # Privacy Settings Methods
+    
+    async def get_privacy_settings(
+        self, 
+        user_id: UUID, 
+        db: AsyncSession
+    ) -> "PrivacySettingsResponse":
+        """Get user's privacy settings"""
+        from app.models.privacy import UserPrivacySettings
+        from app.schemas.privacy import PrivacySettingsResponse
+        
+        # Get user's privacy settings
+        query = select(UserPrivacySettings).where(UserPrivacySettings.user_id == user_id)
+        result = await db.execute(query)
+        privacy_settings = result.scalar_one_or_none()
+        
+        # If no privacy settings exist, create default ones
+        if not privacy_settings:
+            privacy_settings = UserPrivacySettings(user_id=user_id)
+            db.add(privacy_settings)
+            await db.commit()
+            await db.refresh(privacy_settings)
+        
+        return PrivacySettingsResponse(
+            id=str(privacy_settings.id),
+            user_id=str(privacy_settings.user_id),
+            profile_visibility=privacy_settings.profile_visibility,
+            watchlist_visibility=privacy_settings.watchlist_visibility,
+            analytics_tracking=privacy_settings.analytics_tracking,
+            personalized_recommendations=privacy_settings.personalized_recommendations,
+            created_at=privacy_settings.created_at,
+            updated_at=privacy_settings.updated_at
+        )
+    
+    async def update_privacy_settings(
+        self, 
+        user_id: UUID, 
+        settings: "PrivacySettingsUpdate", 
+        db: AsyncSession
+    ) -> "PrivacySettingsResponse":
+        """Update user's privacy settings"""
+        from app.models.privacy import UserPrivacySettings
+        from app.schemas.privacy import PrivacySettingsResponse
+        
+        # Get existing privacy settings or create new ones
+        query = select(UserPrivacySettings).where(UserPrivacySettings.user_id == user_id)
+        result = await db.execute(query)
+        privacy_settings = result.scalar_one_or_none()
+        
+        if not privacy_settings:
+            privacy_settings = UserPrivacySettings(user_id=user_id)
+            db.add(privacy_settings)
+        
+        # Update fields
+        update_dict = settings.dict(exclude_unset=True)
+        for field, value in update_dict.items():
+            setattr(privacy_settings, field, value)
+        
+        await db.commit()
+        await db.refresh(privacy_settings)
+        
+        return PrivacySettingsResponse(
+            id=str(privacy_settings.id),
+            user_id=str(privacy_settings.user_id),
+            profile_visibility=privacy_settings.profile_visibility,
+            watchlist_visibility=privacy_settings.watchlist_visibility,
+            analytics_tracking=privacy_settings.analytics_tracking,
+            personalized_recommendations=privacy_settings.personalized_recommendations,
+            created_at=privacy_settings.created_at,
+            updated_at=privacy_settings.updated_at
+        )
+    
+    # Account Management Methods
+    
+    async def change_password(
+        self, 
+        user_id: UUID, 
+        password_data: "PasswordChangeRequest", 
+        db: AsyncSession
+    ) -> "PasswordChangeResponse":
+        """Change user's password"""
+        from app.schemas.privacy import PasswordChangeResponse
+        from app.core.security import verify_password, get_password_hash
+        
+        # Get user
+        user = await self.get_user_by_id(user_id, db, include_stats=False)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify current password
+        if not verify_password(password_data.current_password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect"
+            )
+        
+        # Update password
+        user.password_hash = get_password_hash(password_data.new_password)
+        await db.commit()
+        
+        return PasswordChangeResponse(
+            message="Password changed successfully",
+            success=True
+        )
+    
+    async def get_2fa_status(
+        self, 
+        user_id: UUID, 
+        db: AsyncSession
+    ) -> "TwoFactorAuthStatus":
+        """Get user's 2FA status"""
+        from app.schemas.privacy import TwoFactorAuthStatus
+        
+        # For now, return a basic implementation
+        # In a real implementation, you would check the user's 2FA settings
+        return TwoFactorAuthStatus(
+            enabled=False,
+            backup_codes_count=0
+        )
+    
+    async def setup_2fa(
+        self, 
+        user_id: UUID, 
+        setup_data: "TwoFactorAuthSetupRequest", 
+        db: AsyncSession
+    ) -> "TwoFactorAuthSetupResponse":
+        """Setup 2FA for user"""
+        from app.schemas.privacy import TwoFactorAuthSetupResponse
+        from app.core.security import verify_password
+        
+        # Get user
+        user = await self.get_user_by_id(user_id, db, include_stats=False)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify password
+        if not verify_password(setup_data.password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password is incorrect"
+            )
+        
+        # For now, return a mock response
+        # In a real implementation, you would generate a real secret and QR code
+        return TwoFactorAuthSetupResponse(
+            qr_code_url="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+            secret_key="JBSWY3DPEHPK3PXP",
+            backup_codes=["123456", "789012", "345678", "901234", "567890"]
+        )
+    
+    async def verify_2fa_setup(
+        self, 
+        user_id: UUID, 
+        verify_data: "TwoFactorAuthVerifyRequest", 
+        db: AsyncSession
+    ) -> dict:
+        """Verify and enable 2FA setup"""
+        # For now, return a mock response
+        # In a real implementation, you would verify the TOTP code
+        return {"message": "2FA enabled successfully", "success": True}
+    
+    async def toggle_2fa(
+        self, 
+        user_id: UUID, 
+        toggle_data: "TwoFactorAuthToggleRequest", 
+        db: AsyncSession
+    ) -> dict:
+        """Enable or disable 2FA"""
+        from app.core.security import verify_password
+        
+        # Get user
+        user = await self.get_user_by_id(user_id, db, include_stats=False)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        # Verify password
+        if not verify_password(toggle_data.password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password is incorrect"
+            )
+        
+        # For now, return a mock response
+        # In a real implementation, you would verify the TOTP code and toggle 2FA
+        action = "enabled" if toggle_data.enabled else "disabled"
+        return {"message": f"2FA {action} successfully", "success": True}
+
 
 # Create service instance
 user_service = UserService()

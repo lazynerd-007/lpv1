@@ -21,7 +21,7 @@ from app.schemas.auth import (
 from app.models.user import User
 
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(tags=["Authentication"])
 
 
 @router.post(
@@ -292,4 +292,4 @@ async def get_current_user_info(
     
     Returns the authenticated user's profile information.
     """
-    return UserResponse.from_orm(current_user)
+    return UserResponse.model_validate(current_user)

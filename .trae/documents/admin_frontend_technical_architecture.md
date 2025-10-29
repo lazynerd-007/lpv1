@@ -40,92 +40,108 @@ graph TD
 
 ## 2. Technology Description
 
-- Frontend: Vue.js@3 + TypeScript + Vite + Vue Router + Pinia
-- UI Framework: Tailwind CSS@3 + DaisyUI + Lucide Vue Icons
-- Charts & Analytics: Chart.js + Vue-Chartjs
-- Backend: Supabase (Authentication, Database, Real-time, Storage)
-- Database: PostgreSQL (via Supabase)
+* Frontend: Vue.js\@3 + TypeScript + Vite + Vue Router + Pinia
+
+* UI Framework: Tailwind CSS\@3 + DaisyUI + Lucide Vue Icons
+
+* Charts & Analytics: Chart.js + Vue-Chartjs
+
+* Backend: Supabase (Authentication, Database, Real-time, Storage)
+
+* Database: PostgreSQL (via Supabase)
 
 ## 3. Route Definitions
 
-| Route | Purpose |
-|-------|---------|
-| /admin | Admin dashboard overview with key metrics and system health |
-| /admin/users | User management interface with search, filter, and account actions |
-| /admin/users/:id | Individual user profile view and editing interface |
-| /admin/moderation | Content moderation dashboard for reviewing flagged content |
-| /admin/moderation/reviews | Specific review moderation with bulk actions |
-| /admin/content | Movie/series database management interface |
-| /admin/content/add | Add new movie or series content form |
-| /admin/content/:id/edit | Edit existing movie/series content and metadata |
-| /admin/analytics | Analytics dashboard with charts and performance metrics |
-| /admin/analytics/reports | Custom report generation and export interface |
-| /admin/settings | System configuration and platform settings |
-| /admin/settings/security | Security parameters and authentication settings |
-| /admin/critics | Critic verification and badge management interface |
-| /admin/critics/applications | Review pending critic applications |
-| /admin/reports | User reports and violation management |
-| /admin/logs | System logs and audit trail viewer |
+| Route                       | Purpose                                                            |
+| --------------------------- | ------------------------------------------------------------------ |
+| /admin                      | Admin dashboard overview with key metrics and system health        |
+| /admin/users                | User management interface with search, filter, and account actions |
+| /admin/users/:id            | Individual user profile view and editing interface                 |
+| /admin/moderation           | Content moderation dashboard for reviewing flagged content         |
+| /admin/moderation/reviews   | Specific review moderation with bulk actions                       |
+| /admin/content              | Movie/series database management interface                         |
+| /admin/content/add          | Add new movie or series content form                               |
+| /admin/content/:id/edit     | Edit existing movie/series content and metadata                    |
+| /admin/analytics            | Analytics dashboard with charts and performance metrics            |
+| /admin/analytics/reports    | Custom report generation and export interface                      |
+| /admin/settings             | System configuration and platform settings                         |
+| /admin/settings/security    | Security parameters and authentication settings                    |
+| /admin/critics              | Critic verification and badge management interface                 |
+| /admin/critics/applications | Review pending critic applications                                 |
+| /admin/reports              | User reports and violation management                              |
+| /admin/logs                 | System logs and audit trail viewer                                 |
 
 ## 4. API Definitions
 
 ### 4.1 Core Admin APIs
 
 **User Management**
+
 ```
 GET /api/admin/users
 ```
+
 Request:
-| Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| page | number | false | Page number for pagination |
-| limit | number | false | Number of users per page |
-| search | string | false | Search term for user name/email |
-| role | string | false | Filter by user role |
-| status | string | false | Filter by account status |
+
+| Param Name | Param Type | isRequired | Description                     |
+| ---------- | ---------- | ---------- | ------------------------------- |
+| page       | number     | false      | Page number for pagination      |
+| limit      | number     | false      | Number of users per page        |
+| search     | string     | false      | Search term for user name/email |
+| role       | string     | false      | Filter by user role             |
+| status     | string     | false      | Filter by account status        |
 
 Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| users | User[] | Array of user objects |
-| total | number | Total number of users |
-| page | number | Current page number |
-| totalPages | number | Total number of pages |
+
+| Param Name | Param Type | Description           |
+| ---------- | ---------- | --------------------- |
+| users      | User\[]    | Array of user objects |
+| total      | number     | Total number of users |
+| page       | number     | Current page number   |
+| totalPages | number     | Total number of pages |
 
 **Content Moderation**
+
 ```
 POST /api/admin/moderation/review
 ```
+
 Request:
-| Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| reviewId | string | true | ID of the review to moderate |
-| action | string | true | Moderation action (approve/reject/flag) |
-| reason | string | false | Reason for moderation action |
-| notes | string | false | Additional moderator notes |
+
+| Param Name | Param Type | isRequired | Description                             |
+| ---------- | ---------- | ---------- | --------------------------------------- |
+| reviewId   | string     | true       | ID of the review to moderate            |
+| action     | string     | true       | Moderation action (approve/reject/flag) |
+| reason     | string     | false      | Reason for moderation action            |
+| notes      | string     | false      | Additional moderator notes              |
 
 Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| success | boolean | Whether the action was successful |
-| message | string | Status message |
+
+| Param Name | Param Type | Description                       |
+| ---------- | ---------- | --------------------------------- |
+| success    | boolean    | Whether the action was successful |
+| message    | string     | Status message                    |
 
 **Analytics Data**
+
 ```
 GET /api/admin/analytics/metrics
 ```
+
 Request:
-| Param Name | Param Type | isRequired | Description |
-|------------|------------|------------|-------------|
-| startDate | string | true | Start date for analytics period |
-| endDate | string | true | End date for analytics period |
-| metric | string | false | Specific metric to retrieve |
+
+| Param Name | Param Type | isRequired | Description                     |
+| ---------- | ---------- | ---------- | ------------------------------- |
+| startDate  | string     | true       | Start date for analytics period |
+| endDate    | string     | true       | End date for analytics period   |
+| metric     | string     | false      | Specific metric to retrieve     |
 
 Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| metrics | object | Analytics data object |
-| period | object | Date range information |
+
+| Param Name | Param Type | Description            |
+| ---------- | ---------- | ---------------------- |
+| metrics    | object     | Analytics data object  |
+| period     | object     | Date range information |
 
 ## 5. Server Architecture Diagram
 
@@ -236,6 +252,7 @@ erDiagram
 ### 6.2 Data Definition Language
 
 **Admin Users Table**
+
 ```sql
 -- Create admin users table
 CREATE TABLE admin_users (
@@ -332,3 +349,4 @@ INSERT INTO admin_users (email, name, role) VALUES
 ('admin@lemonpie.com', 'System Administrator', 'super_admin'),
 ('moderator@lemonpie.com', 'Content Moderator', 'moderator');
 ```
+

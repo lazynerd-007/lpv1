@@ -5,21 +5,33 @@ export interface User {
   id: string
   email: string
   name: string
-  avatar?: string
-  role: 'user' | 'critic' | 'admin'
-  isVerified: boolean
+  bio?: string
+  location?: string
+  role: 'user' | 'critic' | 'admin' | 'moderator'
+  isActive: boolean
 }
+
+interface LoginResponse {
+  access_token: string
+  token_type: string
+  user: User
+}
+
+const API_BASE_URL = 'http://localhost:8000/api/v1'
 
 export const useAuthStore = defineStore('auth', () => {
   // State
   const user = ref<User | null>(null)
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const accessToken = ref<string | null>(null)
+  const refreshToken = ref<string | null>(null)
 
   // Getters
-  const isAuthenticated = computed(() => !!user.value)
+  const isAuthenticated = computed(() => !!user.value && !!accessToken.value)
   const currentUserId = computed(() => user.value?.id || null)
-  const isVerifiedCritic = computed(() => user.value?.role === 'critic' && user.value?.isVerified)
+  const isVerifiedCritic = computed(() => user.value?.role === 'critic')
+  const isAdmin = computed(() => user.value?.role === 'admin')
 
   // Actions
   const login = async (email: string, password: string) => {
@@ -27,39 +39,143 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      // Mock login - in real app this would call an API
-      const mockUser: User = {
-        id: 'user-123',
-        email,
-        name: email.split('@')[0],
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
-        role: 'user',
-        isVerified: false
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Login failed')
       }
+
+      const data: LoginResponse = await response.json()
       
-      user.value = mockUser
-      localStorage.setItem('auth-user', JSON.stringify(mockUser))
+      user.value = data.user
+      accessToken.value = data.access_token
+      refreshToken.value = null // Backend doesn't provide refresh token
+      
+      // Store tokens in localStorage
+      localStorage.setItem('auth-user', JSON.stringify(data.user))
+      localStorage.setItem('access-token', data.access_token)
+      if (refreshToken.value) {
+        localStorage.setItem('refresh-token', refreshToken.value)
+      }
     } catch (err) {
-      error.value = 'Login failed'
-      console.error(err)
+      error.value = err instanceof Error ? err.message : 'Login failed'
+      console.error('Login error:', err)
     } finally {
       isLoading.value = false
     }
   }
 
-  const logout = () => {
-    user.value = null
-    localStorage.removeItem('auth-user')
+  const logout = async () => {
+    try {
+      if (accessToken.value) {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken.value}`,
+            'Content-Type': 'application/json',
+          },
+        })
+      }
+    } catch (err) {
+      console.error('Logout error:', err)
+    } finally {
+      // Clear local state regardless of API call success
+      user.value = null
+      accessToken.value = null
+      refreshToken.value = null
+      localStorage.removeItem('auth-user')
+      localStorage.removeItem('access-token')
+      localStorage.removeItem('refresh-token')
+    }
+  }
+
+  const register = async (email: string, password: string, name: string, bio?: string, location?: string) => {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password, name, bio, location }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Registration failed')
+      }
+
+      const data: LoginResponse = await response.json()
+      
+      user.value = data.user
+      accessToken.value = data.access_token
+      refreshToken.value = null // Backend doesn't provide refresh token
+      
+      // Store tokens in localStorage
+      localStorage.setItem('auth-user', JSON.stringify(data.user))
+      localStorage.setItem('access-token', data.access_token)
+      if (refreshToken.value) {
+        localStorage.setItem('refresh-token', refreshToken.value)
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Registration failed'
+      console.error('Registration error:', err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const getCurrentUser = async () => {
+    if (!accessToken.value) return null
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken.value}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get current user')
+      }
+
+      const userData = await response.json()
+      user.value = userData
+      return userData
+    } catch (err) {
+      console.error('Get current user error:', err)
+      // If token is invalid, clear auth state
+      logout()
+      return null
+    }
   }
 
   const initializeAuth = () => {
     const savedUser = localStorage.getItem('auth-user')
-    if (savedUser) {
+    const savedAccessToken = localStorage.getItem('access-token')
+    const savedRefreshToken = localStorage.getItem('refresh-token')
+
+    if (savedUser && savedAccessToken) {
       try {
         user.value = JSON.parse(savedUser)
+        accessToken.value = savedAccessToken
+        refreshToken.value = savedRefreshToken
+        
+        // Verify token is still valid
+        getCurrentUser()
       } catch (err) {
-        console.error('Failed to parse saved user:', err)
-        localStorage.removeItem('auth-user')
+        console.error('Failed to parse saved auth data:', err)
+        logout()
       }
     }
   }
@@ -72,15 +188,20 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     isLoading,
     error,
+    accessToken,
+    refreshToken,
     
     // Getters
     isAuthenticated,
     currentUserId,
     isVerifiedCritic,
+    isAdmin,
     
     // Actions
     login,
+    register,
     logout,
+    getCurrentUser,
     initializeAuth
   }
 })

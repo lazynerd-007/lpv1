@@ -26,7 +26,7 @@ from app.core.exceptions import LemonPieException
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/admin", tags=["admin"])
+router = APIRouter(tags=["admin"])
 
 
 @router.get("/dashboard", response_model=AdminDashboard)
@@ -637,8 +637,7 @@ async def resolve_report(
             detail="Failed to resolve report"
         )
 
-#
- Performance and Optimization Endpoints
+# Performance and Optimization Endpoints
 
 @router.get("/performance/metrics")
 @limiter.limit("10/minute")

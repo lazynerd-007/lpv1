@@ -14,7 +14,7 @@ def setup_cors(app: FastAPI) -> None:
     """
     
     # Development origins (should be configured via environment variables)
-    allowed_origins = settings.ALLOWED_ORIGINS
+    allowed_origins = settings.allowed_origins_list
     
     # Add CORS middleware
     app.add_middleware(
@@ -59,7 +59,7 @@ def get_cors_origins() -> List[str]:
         ]
     else:
         # Production origins (should be configured via environment variables)
-        return settings.ALLOWED_ORIGINS
+        return settings.allowed_origins_list
 
 
 def validate_origin(origin: str) -> bool:

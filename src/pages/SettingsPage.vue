@@ -217,9 +217,14 @@
             <div class="flex justify-end">
               <button
                 @click="savePrivacy"
-                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-md font-medium transition-colors"
+                :disabled="isLoadingPrivacy"
+                class="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center"
               >
-                Save Settings
+                <svg v-if="isLoadingPrivacy" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {{ isLoadingPrivacy ? 'Saving...' : 'Save Settings' }}
               </button>
             </div>
           </div>
@@ -277,14 +282,21 @@
                 </div>
                 <button
                   @click="toggle2FA"
+                  :disabled="isLoading2FA"
                   :class="[
-                    'px-4 py-2 rounded-md font-medium transition-colors',
-                    accountSettings.twoFactorEnabled
-                      ? 'bg-red-500 hover:bg-red-600 text-white'
-                      : 'bg-green-500 hover:bg-green-600 text-white'
+                    'px-4 py-2 rounded-md font-medium transition-colors flex items-center',
+                    isLoading2FA
+                      ? 'bg-gray-400 cursor-not-allowed text-white'
+                      : accountSettings.twoFactorEnabled
+                        ? 'bg-red-500 hover:bg-red-600 text-white'
+                        : 'bg-green-500 hover:bg-green-600 text-white'
                   ]"
                 >
-                  {{ accountSettings.twoFactorEnabled ? 'Disable' : 'Enable' }}
+                  <svg v-if="isLoading2FA" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  {{ isLoading2FA ? 'Processing...' : (accountSettings.twoFactorEnabled ? 'Disable' : 'Enable') }}
                 </button>
               </div>
             </div>
@@ -339,10 +351,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/userStore'
 import { useNotificationStore } from '../stores/notificationStore'
+import { useAuthStore } from '../stores/authStore'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -421,41 +434,217 @@ const passwordData = reactive({
 // Modal state
 const showDeleteConfirmation = ref(false)
 
+// Loading states
+const isLoadingPrivacy = ref(false)
+const isLoading2FA = ref(false)
 
+// Initialization functions
+const loadPrivacySettings = async () => {
+  try {
+    isLoadingPrivacy.value = true
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      console.log('No auth token available for loading privacy settings')
+      return
+    }
+
+    const response = await fetch('http://localhost:8000/api/v1/users/privacy-settings', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      privacySettings.profileVisibility = data.profile_visibility || 'public'
+      privacySettings.watchlistVisibility = data.watchlist_visibility || 'friends'
+      privacySettings.analyticsTracking = data.analytics_tracking ?? true
+      privacySettings.personalizedRecommendations = data.personalized_recommendations ?? true
+    } else {
+      console.log('Failed to load privacy settings:', response.status)
+    }
+  } catch (error) {
+    console.error('Error loading privacy settings:', error)
+  } finally {
+    isLoadingPrivacy.value = false
+  }
+}
+
+const load2FAStatus = async () => {
+  try {
+    isLoading2FA.value = true
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      console.log('No auth token available for loading 2FA status')
+      return
+    }
+
+    const response = await fetch('http://localhost:8000/api/v1/users/2fa/status', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      accountSettings.twoFactorEnabled = data.enabled || false
+    } else {
+      console.log('Failed to load 2FA status:', response.status)
+    }
+  } catch (error) {
+    console.error('Error loading 2FA status:', error)
+  } finally {
+    isLoading2FA.value = false
+  }
+}
 
 // Methods
-const saveProfile = () => {
-  // Update user store with new profile data
-  userStore.updateProfile(profileData)
-  notificationStore.addNotification({
-    type: 'success',
-    title: 'Profile Updated',
-    message: 'Profile updated successfully!',
-    isRead: false
-  })
+const saveProfile = async () => {
+  try {
+    // Update user store with new profile data
+    const result = await userStore.updateProfile(profileData)
+    
+    if (result.success) {
+      notificationStore.addNotification({
+        type: 'success',
+        title: 'Profile Updated',
+        message: 'Profile updated successfully!',
+        isRead: false
+      })
+    } else {
+      notificationStore.addNotification({
+        type: 'error',
+        title: 'Update Failed',
+        message: result.error || 'Failed to update profile',
+        isRead: false
+      })
+    }
+  } catch (error) {
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Update Failed',
+      message: 'An error occurred while updating your profile',
+      isRead: false
+    })
+  }
 }
 
-const saveNotifications = () => {
-  // Save notification preferences
-  notificationStore.addNotification({
-    type: 'success',
-    title: 'Settings Saved',
-    message: 'Notification preferences saved!',
-    isRead: false
-  })
+const saveNotifications = async () => {
+  try {
+    // Get auth token from userStore or authStore
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      notificationStore.addNotification({
+        type: 'error',
+        title: 'Authentication Error',
+        message: 'Please log in to save preferences',
+        isRead: false
+      })
+      return
+    }
+
+    // Save each notification preference to backend
+    for (const notification of emailNotifications) {
+      const response = await fetch(`http://localhost:8000/api/v1/notifications/preferences/${notification.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          enabled: notification.enabled
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || `Failed to save ${notification.title} preference`)
+      }
+    }
+
+    // Show success notification
+    notificationStore.addNotification({
+      type: 'success',
+      title: 'Settings Saved',
+      message: 'Notification preferences saved successfully!',
+      isRead: false
+    })
+  } catch (error) {
+    console.error('Error saving notification preferences:', error)
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Save Failed',
+      message: error instanceof Error ? error.message : 'Failed to save notification preferences',
+      isRead: false
+    })
+  }
 }
 
-const savePrivacy = () => {
-  // Save privacy settings
-  notificationStore.addNotification({
-    type: 'success',
-    title: 'Privacy Updated',
-    message: 'Privacy settings updated!',
-    isRead: false
-  })
+const savePrivacy = async () => {
+  try {
+    isLoadingPrivacy.value = true
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      notificationStore.addNotification({
+        type: 'error',
+        title: 'Authentication Error',
+        message: 'Please log in to save privacy settings',
+        isRead: false
+      })
+      return
+    }
+
+    const response = await fetch('http://localhost:8000/api/v1/users/privacy-settings', {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        profile_visibility: privacySettings.profileVisibility,
+        watchlist_visibility: privacySettings.watchlistVisibility,
+        analytics_tracking: privacySettings.analyticsTracking,
+        personalized_recommendations: privacySettings.personalizedRecommendations
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || 'Failed to save privacy settings')
+    }
+
+    notificationStore.addNotification({
+      type: 'success',
+      title: 'Privacy Updated',
+      message: 'Privacy settings updated successfully!',
+      isRead: false
+    })
+  } catch (error) {
+    console.error('Error saving privacy settings:', error)
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Save Failed',
+      message: error instanceof Error ? error.message : 'Failed to save privacy settings',
+      isRead: false
+    })
+  } finally {
+    isLoadingPrivacy.value = false
+  }
 }
 
-const changePassword = () => {
+const changePassword = async () => {
   if (passwordData.new !== passwordData.confirm) {
     notificationStore.addNotification({
       type: 'error',
@@ -475,29 +664,113 @@ const changePassword = () => {
     })
     return
   }
-  
-  // Update password
-  notificationStore.addNotification({
-    type: 'success',
-    title: 'Password Updated',
-    message: 'Password updated successfully!',
-    isRead: false
-  })
-  
-  // Clear form
-  passwordData.current = ''
-  passwordData.new = ''
-  passwordData.confirm = ''
+
+  try {
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      notificationStore.addNotification({
+        type: 'error',
+        title: 'Authentication Error',
+        message: 'Please log in to change password',
+        isRead: false
+      })
+      return
+    }
+
+    const response = await fetch('http://localhost:8000/api/v1/users/change-password', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        current_password: passwordData.current,
+        new_password: passwordData.new
+      }),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || 'Failed to change password')
+    }
+
+    notificationStore.addNotification({
+      type: 'success',
+      title: 'Password Updated',
+      message: 'Password updated successfully!',
+      isRead: false
+    })
+    
+    // Clear form
+    passwordData.current = ''
+    passwordData.new = ''
+    passwordData.confirm = ''
+  } catch (error) {
+    console.error('Error changing password:', error)
+    notificationStore.addNotification({
+      type: 'error',
+      title: 'Password Change Failed',
+      message: error instanceof Error ? error.message : 'Failed to change password',
+      isRead: false
+    })
+  }
 }
 
-const toggle2FA = () => {
-  accountSettings.twoFactorEnabled = !accountSettings.twoFactorEnabled
-  notificationStore.addNotification({
-    type: 'success',
-    title: '2FA Updated',
-    message: `Two-factor authentication ${accountSettings.twoFactorEnabled ? 'enabled' : 'disabled'}!`,
-    isRead: false
-  })
+const toggle2FA = async () => {
+  try {
+    isLoading2FA.value = true
+    const authStore = useAuthStore()
+    const token = authStore.accessToken
+    
+    if (!token) {
+      notificationStore.addNotification({
+        type: 'error',
+        title: 'Authentication Error',
+        message: 'Please log in to manage 2FA settings',
+        isRead: false
+      })
+      return
+    }
+
+    const endpoint = accountSettings.twoFactorEnabled 
+      ? 'http://localhost:8000/api/v1/users/2fa/disable'
+      : 'http://localhost:8000/api/v1/users/2fa/enable'
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.detail || 'Failed to update 2FA settings')
+    }
+
+    // Toggle the state
+    accountSettings.twoFactorEnabled = !accountSettings.twoFactorEnabled
+
+    notificationStore.addNotification({
+      type: 'success',
+      title: '2FA Updated',
+      message: `Two-factor authentication ${accountSettings.twoFactorEnabled ? 'enabled' : 'disabled'} successfully!`,
+      isRead: false
+    })
+  } catch (error) {
+    console.error('Error toggling 2FA:', error)
+    notificationStore.addNotification({
+      type: 'error',
+      title: '2FA Update Failed',
+      message: error instanceof Error ? error.message : 'Failed to update 2FA settings',
+      isRead: false
+    })
+  } finally {
+    isLoading2FA.value = false
+  }
 }
 
 
@@ -520,6 +793,12 @@ const deleteAccount = () => {
     router.push('/login')
   }, 2000)
 }
+
+// Initialize data when component mounts
+onMounted(() => {
+  loadPrivacySettings()
+  load2FAStatus()
+})
 </script>
 
 <style scoped>

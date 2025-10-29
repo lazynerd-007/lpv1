@@ -26,7 +26,7 @@ from app.schemas.review import (
 from app.models.user import User
 
 
-router = APIRouter(prefix="/reviews", tags=["Reviews"])
+router = APIRouter(tags=["Reviews"])
 
 
 @router.post("/", response_model=ReviewResponse, status_code=status.HTTP_201_CREATED)
@@ -65,9 +65,9 @@ async def get_reviews(
     rating_min: Optional[int] = Query(None, ge=1, le=10, description="Minimum rating filter"),
     rating_max: Optional[int] = Query(None, ge=1, le=10, description="Maximum rating filter"),
     spoiler_warning: Optional[bool] = Query(None, description="Filter by spoiler warning"),
-    sort_field: str = Query("created_at", regex="^(created_at|updated_at|lemon_pie_rating|helpful_votes|helpfulness_score)$", description="Sort field"),
-    sort_order: str = Query("desc", regex="^(asc|desc)$", description="Sort order"),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    sort_field: str = Query("created_at", pattern="^(created_at|updated_at|lemon_pie_rating|helpful_votes|helpfulness_score)$", description="Sort field"),
+    sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db),
     review_service: ReviewService = Depends(get_review_service)
 ):
@@ -114,7 +114,7 @@ async def get_reviews(
 @router.get("/{review_id}", response_model=ReviewResponse)
 async def get_review(
     review_id: UUID,
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db),
     review_service: ReviewService = Depends(get_review_service)
 ):
@@ -241,7 +241,7 @@ async def get_overall_review_stats(
 async def get_trending_reviews(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=50, description="Items per page"),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db),
     review_service: ReviewService = Depends(get_review_service)
 ):
@@ -267,7 +267,7 @@ async def get_trending_reviews(
 async def get_recent_reviews(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(20, ge=1, le=50, description="Items per page"),
-    current_user: Optional[User] = Depends(get_current_user_optional),
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db),
     review_service: ReviewService = Depends(get_review_service)
 ):

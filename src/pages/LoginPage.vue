@@ -233,14 +233,13 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
-import { AuthError } from '@/data/mockAuth'
 import LemonPieLogo from '@/components/LemonPieLogo.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const email = ref('admin@admin.com')
-const password = ref('')
+const password = ref('admin123')
 const rememberMe = ref(true)
 const isLoading = ref(false)
 const error = ref('')
@@ -256,29 +255,6 @@ const isFormValid = computed(() => {
   return email.value.trim() !== '' && password.value.trim() !== '' && isEmailValid.value
 })
 
-// Error message formatting
-const getErrorMessage = (authError: any) => {
-  if (!authError) return ''
-  
-  switch (authError.type) {
-    case AuthError.INVALID_CREDENTIALS:
-      return authError.message + (authError.details?.attemptsRemaining ? 
-        ` (${authError.details.attemptsRemaining} attempts remaining)` : '')
-    case AuthError.ACCOUNT_LOCKED:
-      return authError.message
-    case AuthError.ACCOUNT_INACTIVE:
-      return authError.message + ' Contact: ' + authError.details?.contactEmail
-    case AuthError.TOO_MANY_ATTEMPTS:
-      return authError.message
-    case AuthError.VALIDATION_ERROR:
-      return authError.message
-    case AuthError.SERVER_ERROR:
-      return authError.message
-    default:
-      return 'An unexpected error occurred. Please try again.'
-  }
-}
-
 const handleLogin = async () => {
   if (!isFormValid.value) {
     error.value = 'Please fill in all fields correctly'
@@ -289,37 +265,28 @@ const handleLogin = async () => {
   error.value = ''
   
   try {
-    const result = await userStore.login(email.value.trim(), password.value)
+    await userStore.login(email.value.trim(), password.value)
     
-    if (result.success) {
-      console.log('Login successful:', {
-        user: result.user?.name,
-        email: email.value,
-        rememberMe: rememberMe.value
-      })
-      
-      // Store remember me preference
-      if (rememberMe.value) {
-        localStorage.setItem('remember_email', email.value)
-      } else {
-        localStorage.removeItem('remember_email')
-      }
-      
-      // Redirect to home or intended page
-      const redirectTo = router.currentRoute.value.query.redirect as string || '/'
-      router.push(redirectTo)
+    console.log('Login successful:', {
+      user: userStore.currentUser?.name,
+      email: email.value,
+      rememberMe: rememberMe.value
+    })
+    
+    // Store remember me preference
+    if (rememberMe.value) {
+      localStorage.setItem('remember_email', email.value)
     } else {
-      error.value = getErrorMessage(result.error)
-      
-      // Clear password on certain errors
-      if (result.error?.type === AuthError.INVALID_CREDENTIALS || 
-          result.error?.type === AuthError.ACCOUNT_LOCKED) {
-        password.value = ''
-      }
+      localStorage.removeItem('remember_email')
     }
-  } catch (err) {
+    
+    // Redirect to home or intended page
+    const redirectTo = router.currentRoute.value.query.redirect as string || '/'
+    router.push(redirectTo)
+  } catch (err: any) {
     console.error('Login error:', err)
-    error.value = 'Network error. Please check your connection and try again.'
+    error.value = err.message || 'Login failed. Please check your credentials and try again.'
+    password.value = ''
   } finally {
     isLoading.value = false
   }
