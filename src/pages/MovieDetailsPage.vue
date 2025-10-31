@@ -367,6 +367,14 @@ const handleReviewAction = async (action: string, reviewId: string) => {
 }
 
 onMounted(async () => {
+  // Load movies first if not already loaded
+  if (!movieStore.hasLoadedMovies) {
+    await movieStore.loadMovies()
+  }
+  
+  // Try to fetch the specific movie
+  await movieStore.fetchMovie(movieId.value)
+  
   // Set current movie for detailed view
   if (movie.value) {
     // Set current movie in store for reviews

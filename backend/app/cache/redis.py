@@ -42,8 +42,19 @@ async def init_redis() -> None:
         logger.info("Redis connection initialized successfully")
         
     except Exception as e:
-        logger.error("Failed to initialize Redis", error=str(e))
-        raise
+        logger.warning("Failed to initialize Redis - falling back to mock Redis", error=str(e))
+        # Don't raise the exception, just log the warning and continue without Redis
+        redis_pool = None
+        redis_client = None
+        
+        # Initialize mock Redis as fallback
+        try:
+            from app.cache.mock_redis import init_mock_redis
+            await init_mock_redis()
+            logger.info("Mock Redis initialized successfully as fallback")
+        except Exception as mock_error:
+            logger.error("Failed to initialize mock Redis fallback", error=str(mock_error))
+            # Continue without any Redis - the application should handle this gracefully
 
 
 async def close_redis() -> None:
@@ -64,12 +75,24 @@ async def get_redis() -> redis.Redis:
     Get Redis client instance
     
     Returns:
-        redis.Redis: Redis client
+        redis.Redis: Redis client or mock Redis client
     """
-    if not redis_client:
-        raise RuntimeError("Redis not initialized. Call init_redis() first.")
+    # If Redis client is available, use it
+    if redis_client:
+        return redis_client
     
-    return redis_client
+    # Check if mock Redis is available (for testing or when Redis is not available)
+    try:
+        from app.cache.mock_redis import get_mock_redis_client
+        mock_client = get_mock_redis_client()
+        if mock_client:
+            logger.info("Using mock Redis client")
+            return mock_client
+    except ImportError:
+        pass
+    
+    # If neither real nor mock Redis is available, raise an error
+    raise RuntimeError("Redis not initialized and mock Redis not available. Call init_redis() first.")
 
 
 class CacheService:

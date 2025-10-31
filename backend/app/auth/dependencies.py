@@ -148,3 +148,55 @@ async def get_current_admin_user(current_user: User = Depends(require_admin)) ->
     Get current user and ensure they have admin role
     """
     return current_user
+
+
+# Middleware-compatible dependencies (use request.state set by AuthMiddleware)
+from fastapi import Request
+
+async def get_middleware_user(request: Request, db: AsyncSession = Depends(get_db)) -> User:
+    """
+    Get current user from middleware state (set by AuthMiddleware)
+    This avoids re-authentication when middleware already processed the request
+    """
+    user_id = getattr(request.state, 'user_id', None)
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Fetch user from database
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User not found",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Inactive user",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    return user
+
+
+async def get_middleware_admin_user(request: Request, db: AsyncSession = Depends(get_db)) -> User:
+    """
+    Get current admin user from middleware state
+    This avoids re-authentication when middleware already processed the request
+    """
+    user_role = getattr(request.state, 'user_role', None)
+    if user_role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+    
+    return await get_middleware_user(request, db)

@@ -264,7 +264,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminStore } from '@/stores/adminStore'
 import {
@@ -300,8 +300,8 @@ const navigation = [
   { name: 'admin-settings', label: 'Settings', to: '/admin/settings', icon: Settings }
 ]
 
-// Key metrics computed from store
-const keyMetrics = [
+// Key metrics computed from store - made reactive
+const keyMetrics = computed(() => [
   {
     name: 'Total Users',
     value: adminStore.systemMetrics.totalUsers.toLocaleString(),
@@ -326,7 +326,7 @@ const keyMetrics = [
     change: 5.1,
     icon: Film
   }
-]
+])
 
 // Quick actions
 const quickActions = [

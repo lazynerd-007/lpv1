@@ -1029,10 +1029,19 @@ class AdminService:
         
         result = await self.db.execute(recent_reviews_query, {"limit": limit // 2})
         for row in result.fetchall():
+            # Handle datetime conversion - created_at might be string or datetime
+            timestamp = row.created_at
+            if isinstance(timestamp, str):
+                # If it's a string, use it directly (assuming ISO format)
+                timestamp_str = timestamp
+            else:
+                # If it's a datetime object, convert to ISO format
+                timestamp_str = timestamp.isoformat()
+                
             activities.append({
                 "type": row.type,
                 "id": str(row.id),
-                "timestamp": row.created_at.isoformat(),
+                "timestamp": timestamp_str,
                 "description": f"{row.user_name} reviewed {row.movie_title}"
             })
         
@@ -1046,10 +1055,19 @@ class AdminService:
         
         result = await self.db.execute(recent_users_query, {"limit": limit // 2})
         for row in result.fetchall():
+            # Handle datetime conversion - created_at might be string or datetime
+            timestamp = row.created_at
+            if isinstance(timestamp, str):
+                # If it's a string, use it directly (assuming ISO format)
+                timestamp_str = timestamp
+            else:
+                # If it's a datetime object, convert to ISO format
+                timestamp_str = timestamp.isoformat()
+                
             activities.append({
                 "type": row.type,
                 "id": str(row.id),
-                "timestamp": row.created_at.isoformat(),
+                "timestamp": timestamp_str,
                 "description": f"New user registered: {row.name}"
             })
         

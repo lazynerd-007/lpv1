@@ -1,5 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { adminService } from '@/services/adminService'
+import type { 
+  AdminDashboard, 
+  SystemMetrics as APISystemMetrics, 
+  UserAnalytics as APIUserAnalytics, 
+  ContentAnalytics as APIContentAnalytics,
+  UserListItem,
+  ReviewModerationItem,
+  ReportItem
+} from '@/services/adminService'
 
 // Types for admin functionality
 export interface AdminUser {
@@ -99,10 +109,10 @@ export const useAdminStore = defineStore('admin', () => {
     serverStatus: 'online'
   })
   
-  const users = ref<any[]>([])
+  const users = ref<UserListItem[]>([])
   const adminUsers = ref<AdminUser[]>([])
   const moderationLogs = ref<ModerationLog[]>([])
-  const userReports = ref<UserReport[]>([])
+  const userReports = ref<ReportItem[]>([])
   const contentChanges = ref<ContentChange[]>([])
   const userAnalytics = ref<UserAnalytics>({
     newUsersToday: 0,
@@ -122,6 +132,7 @@ export const useAdminStore = defineStore('admin', () => {
     mostReviewedMovies: [],
     topRatedMovies: []
   })
+  const recentActions = ref<any[]>([])
 
   // Computed
   const pendingReports = computed(() => 
@@ -131,171 +142,73 @@ export const useAdminStore = defineStore('admin', () => {
   const flaggedReviews = computed(() => 
     moderationLogs.value.filter(log => log.action === 'flag')
   )
-
-  const recentActions = computed(() => 
-    moderationLogs.value
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 10)
-  )
-
-  // Mock data for development
-  const initializeMockData = () => {
-    // Mock system metrics
-    systemMetrics.value = {
-      totalUsers: 1247,
-      totalReviews: 3892,
-      totalMovies: 456,
-      activeUsers: 89,
-      flaggedContent: 12,
-      pendingReports: 5,
-      systemHealth: 'healthy',
-      serverStatus: 'online'
-    }
-
-    // Mock user analytics
-    userAnalytics.value = {
-      newUsersToday: 23,
-      newUsersThisWeek: 156,
-      newUsersThisMonth: 678,
-      activeUsersToday: 89,
-      activeUsersThisWeek: 445,
-      activeUsersThisMonth: 1247,
-      userRetentionRate: 78.5,
-      averageSessionDuration: 24.5
-    }
-
-    // Mock content analytics
-    contentAnalytics.value = {
-      reviewsToday: 45,
-      reviewsThisWeek: 289,
-      reviewsThisMonth: 1234,
-      averageRating: 4.2,
-      mostReviewedMovies: [
-        { id: '1', title: 'The Wedding Party', reviewCount: 234 },
-        { id: '2', title: 'King of Boys', reviewCount: 189 },
-        { id: '3', title: 'Lionheart', reviewCount: 156 }
-      ],
-      topRatedMovies: [
-        { id: '4', title: 'October 1', rating: 4.8 },
-        { id: '5', title: 'Half of a Yellow Sun', rating: 4.7 },
-        { id: '6', title: 'The Figurine', rating: 4.6 }
-      ]
-    }
-
-    // Mock user reports
-    userReports.value = [
-      {
-        id: '1',
-        reporter_id: 'user1',
-        reported_content_id: 'review1',
-        report_type: 'review',
-        reason: 'Inappropriate content',
-        description: 'Contains offensive language',
-        status: 'pending',
-        created_at: new Date().toISOString()
-      },
-      {
-        id: '2',
-        reporter_id: 'user2',
-        reported_user_id: 'user3',
-        report_type: 'user',
-        reason: 'Spam',
-        description: 'User is posting spam reviews',
-        status: 'investigating',
-        created_at: new Date(Date.now() - 86400000).toISOString()
-      }
-    ]
-
-    // Mock moderation logs
-    moderationLogs.value = [
-      {
-        id: '1',
-        moderator_id: 'admin1',
-        review_id: 'review1',
-        action: 'flag',
-        reason: 'Inappropriate content',
-        notes: 'Flagged for review',
-        created_at: new Date().toISOString()
-      }
-    ]
-  }
-
   // Actions
   const fetchSystemMetrics = async () => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      initializeMockData()
-    } catch (err) {
-      error.value = 'Failed to fetch system metrics'
+      const dashboardData = await adminService.getDashboard()
+      
+      // Update system metrics
+      systemMetrics.value = {
+        totalUsers: dashboardData.system_metrics.total_users,
+        totalReviews: dashboardData.system_metrics.total_reviews,
+        totalMovies: dashboardData.system_metrics.total_movies,
+        activeUsers: dashboardData.system_metrics.active_users_today,
+        flaggedContent: dashboardData.system_metrics.flagged_reviews,
+        pendingReports: dashboardData.system_metrics.pending_reports,
+        systemHealth: 'healthy', // Default since API doesn't provide this
+        serverStatus: 'online' // Default since API doesn't provide this
+      }
+      
+      // Update analytics
+      userAnalytics.value = {
+        newUsersToday: dashboardData.system_metrics.new_users_today,
+        newUsersThisWeek: dashboardData.system_metrics.new_users_week,
+        newUsersThisMonth: dashboardData.system_metrics.new_users_month,
+        activeUsersToday: dashboardData.system_metrics.active_users_today,
+        activeUsersThisWeek: dashboardData.system_metrics.active_users_week,
+        activeUsersThisMonth: dashboardData.system_metrics.active_users_month,
+        userRetentionRate: dashboardData.user_analytics.user_retention?.weekly_retention || 0,
+        averageSessionDuration: 0 // Not provided by API
+      }
+      
+      contentAnalytics.value = {
+        reviewsToday: dashboardData.system_metrics.reviews_today,
+        reviewsThisWeek: dashboardData.system_metrics.reviews_week,
+        reviewsThisMonth: dashboardData.system_metrics.reviews_month,
+        averageRating: 0, // Not provided by API
+        mostReviewedMovies: dashboardData.content_analytics.popular_movies?.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          reviewCount: movie.review_count
+        })) || [],
+        topRatedMovies: dashboardData.content_analytics.popular_movies?.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          rating: movie.avg_rating
+        })) || []
+      }
+      
+      // Update recent activity
+      recentActions.value = dashboardData.recent_activity
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch system metrics'
+      console.error('Failed to fetch system metrics:', err)
     } finally {
       isLoading.value = false
     }
   }
 
-  const fetchUsers = async (filters?: { search?: string; role?: string; status?: string }) => {
+  const fetchUsers = async (page = 1, limit = 10, search = '', role = '') => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Mock users data
-      const mockUsers = [
-        {
-          id: '1',
-          name: 'Adebayo Johnson',
-          email: 'adebayo@example.com',
-          role: 'user',
-          status: 'active',
-          joinDate: '2023-01-15',
-          lastLogin: '2024-01-15',
-          reviewCount: 23,
-          avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square'
-        },
-        {
-          id: '2',
-          name: 'Funmi Adebayo',
-          email: 'funmi@example.com',
-          role: 'critic',
-          status: 'active',
-          joinDate: '2023-02-20',
-          lastLogin: '2024-01-14',
-          reviewCount: 67,
-          avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20woman%20profile%20picture%20professional%20headshot&image_size=square'
-        },
-        {
-          id: '3',
-          name: 'Chidi Okafor',
-          email: 'chidi@example.com',
-          role: 'moderator',
-          status: 'active',
-          joinDate: '2023-03-10',
-          lastLogin: '2024-01-13',
-          reviewCount: 12,
-          avatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=Nigerian%20man%20profile%20picture%20professional%20headshot&image_size=square'
-        }
-      ]
-
-      // Apply filters if provided
-      let filteredUsers = mockUsers
-      if (filters?.search) {
-        const searchTerm = filters.search.toLowerCase()
-        filteredUsers = filteredUsers.filter(user => 
-          user.name.toLowerCase().includes(searchTerm) || 
-          user.email.toLowerCase().includes(searchTerm)
-        )
-      }
-      if (filters?.role) {
-        filteredUsers = filteredUsers.filter(user => user.role === filters.role)
-      }
-      if (filters?.status) {
-        filteredUsers = filteredUsers.filter(user => user.status === filters.status)
-      }
-
-      users.value = filteredUsers
-    } catch (err) {
-      error.value = 'Failed to fetch users'
+      const response = await adminService.getUsersList(page, limit, search, role)
+      users.value = response.users
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch users'
+      console.error('Failed to fetch users:', err)
     } finally {
       isLoading.value = false
     }
@@ -303,57 +216,82 @@ export const useAdminStore = defineStore('admin', () => {
 
   const updateUserRole = async (userId: string, newRole: string) => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await adminService.updateUserRole(userId, newRole)
       
+      // Update user role in local state
       const userIndex = users.value.findIndex(user => user.id === userId)
       if (userIndex !== -1) {
         users.value[userIndex].role = newRole
       }
-    } catch (err) {
-      error.value = 'Failed to update user role'
+    } catch (err: any) {
+      error.value = err.message || 'Failed to update user role'
+      console.error('Failed to update user role:', err)
     } finally {
       isLoading.value = false
     }
   }
 
-  const suspendUser = async (userId: string, reason: string) => {
+  const suspendUser = async (userId: string) => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await adminService.suspendUser(userId)
       
+      // Update user status in local state
       const userIndex = users.value.findIndex(user => user.id === userId)
       if (userIndex !== -1) {
         users.value[userIndex].status = 'suspended'
       }
-    } catch (err) {
-      error.value = 'Failed to suspend user'
+    } catch (err: any) {
+      error.value = err.message || 'Failed to suspend user'
+      console.error('Failed to suspend user:', err)
     } finally {
       isLoading.value = false
     }
   }
 
-  const moderateContent = async (reviewId: string, action: string, reason?: string, notes?: string) => {
+  const activateUser = async (userId: string) => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await adminService.activateUser(userId)
       
+      // Update user status in local state
+      const userIndex = users.value.findIndex(user => user.id === userId)
+      if (userIndex !== -1) {
+        users.value[userIndex].status = 'active'
+      }
+    } catch (err: any) {
+      error.value = err.message || 'Failed to activate user'
+      console.error('Failed to activate user:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const moderateContent = async (reviewId: string, action: 'approve' | 'reject', reason?: string) => {
+    isLoading.value = true
+    error.value = null
+    try {
+      await adminService.moderateReview(reviewId, action, reason)
+      
+      // Add moderation log
       const newLog: ModerationLog = {
         id: Date.now().toString(),
-        moderator_id: 'current-admin',
+        moderator_id: 'current_admin',
         review_id: reviewId,
-        action: action as any,
-        reason,
-        notes,
+        action,
+        reason: reason || '',
+        notes: '',
         created_at: new Date().toISOString()
       }
       
       moderationLogs.value.unshift(newLog)
-    } catch (err) {
-      error.value = 'Failed to moderate content'
+    } catch (err: any) {
+      error.value = err.message || 'Failed to moderate content'
+      console.error('Failed to moderate content:', err)
     } finally {
       isLoading.value = false
     }
@@ -361,24 +299,38 @@ export const useAdminStore = defineStore('admin', () => {
 
   const resolveReport = async (reportId: string, resolution: string) => {
     isLoading.value = true
+    error.value = null
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await adminService.resolveReport(reportId, resolution)
       
+      // Update report status
       const reportIndex = userReports.value.findIndex(report => report.id === reportId)
       if (reportIndex !== -1) {
         userReports.value[reportIndex].status = 'resolved'
-        userReports.value[reportIndex].resolved_at = new Date().toISOString()
       }
-    } catch (err) {
-      error.value = 'Failed to resolve report'
+    } catch (err: any) {
+      error.value = err.message || 'Failed to resolve report'
+      console.error('Failed to resolve report:', err)
     } finally {
       isLoading.value = false
     }
   }
 
-  // Initialize mock data on store creation
-  initializeMockData()
+  const fetchReports = async (page = 1, limit = 10, status = '') => {
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await adminService.getReportsList(page, limit, status)
+      userReports.value = response.reports
+    } catch (err: any) {
+      error.value = err.message || 'Failed to fetch reports'
+      console.error('Failed to fetch reports:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+
 
   return {
     // State
@@ -403,7 +355,9 @@ export const useAdminStore = defineStore('admin', () => {
     fetchUsers,
     updateUserRole,
     suspendUser,
+    activateUser,
     moderateContent,
-    resolveReport
+    resolveReport,
+    fetchReports
   }
 })

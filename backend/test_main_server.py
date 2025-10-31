@@ -18,17 +18,20 @@ from app.api.v1.reviews import router as reviews_router
 # Import database initialization
 from app.db.database import init_db, close_db, create_tables
 
+# Import Redis initialization (use mock for testing)
+from app.cache.mock_redis import init_mock_redis, close_mock_redis
+
 # Import settings
 from app.core.config import settings
 
 
 @asynccontextmanager
 async def test_lifespan(app: FastAPI):
-    """Test application lifespan events without Redis"""
+    """Test application lifespan events with Redis and database"""
     # Startup
     print("Starting test server...")
     
-    # Initialize database only
+    # Initialize database
     try:
         await init_db()
         print("Database initialized")
@@ -40,10 +43,25 @@ async def test_lifespan(app: FastAPI):
         print(f"Database initialization failed: {e}")
         print("Continuing without database...")
     
+    # Initialize Mock Redis
+    try:
+        await init_mock_redis()
+        print("Mock Redis initialized")
+    except Exception as e:
+        print(f"Mock Redis initialization failed: {e}")
+        print("Continuing without Redis...")
+    
     yield
     
     # Shutdown
     print("Shutting down test server...")
+    
+    # Close Mock Redis connections
+    try:
+        await close_mock_redis()
+        print("Mock Redis connections closed")
+    except Exception as e:
+        print(f"Mock Redis close failed: {e}")
     
     # Close database connections
     try:
@@ -139,8 +157,8 @@ def create_test_app() -> FastAPI:
     
     # Include routers
     app.include_router(auth_router, prefix="/api/v1")
-    app.include_router(movies_router, prefix="/api/v1")
-    app.include_router(reviews_router, prefix="/api/v1")
+    app.include_router(movies_router, prefix="/api/v1/movies")
+    app.include_router(reviews_router, prefix="/api/v1/reviews")
     
     # Test endpoint
     @app.get("/")

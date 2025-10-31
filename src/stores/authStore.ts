@@ -12,9 +12,13 @@ export interface User {
 }
 
 interface LoginResponse {
-  access_token: string
-  token_type: string
   user: User
+  tokens: {
+    access_token: string
+    refresh_token: string
+    token_type: string
+    expires_in: number
+  }
 }
 
 const API_BASE_URL = 'http://localhost:8000/api/v1'
@@ -39,7 +43,7 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,12 +59,12 @@ export const useAuthStore = defineStore('auth', () => {
       const data: LoginResponse = await response.json()
       
       user.value = data.user
-      accessToken.value = data.access_token
-      refreshToken.value = null // Backend doesn't provide refresh token
+      accessToken.value = data.tokens.access_token
+      refreshToken.value = data.tokens.refresh_token
       
       // Store tokens in localStorage
       localStorage.setItem('auth-user', JSON.stringify(data.user))
-      localStorage.setItem('access-token', data.access_token)
+      localStorage.setItem('access-token', data.tokens.access_token)
       if (refreshToken.value) {
         localStorage.setItem('refresh-token', refreshToken.value)
       }
@@ -75,7 +79,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async () => {
     try {
       if (accessToken.value) {
-        await fetch(`${API_BASE_URL}/auth/logout`, {
+        await fetch(`${API_BASE_URL}/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${accessToken.value}`,
@@ -101,7 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -117,12 +121,12 @@ export const useAuthStore = defineStore('auth', () => {
       const data: LoginResponse = await response.json()
       
       user.value = data.user
-      accessToken.value = data.access_token
-      refreshToken.value = null // Backend doesn't provide refresh token
+      accessToken.value = data.tokens.access_token
+      refreshToken.value = data.tokens.refresh_token
       
       // Store tokens in localStorage
       localStorage.setItem('auth-user', JSON.stringify(data.user))
-      localStorage.setItem('access-token', data.access_token)
+      localStorage.setItem('access-token', data.tokens.access_token)
       if (refreshToken.value) {
         localStorage.setItem('refresh-token', refreshToken.value)
       }
@@ -139,7 +143,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!accessToken.value) return null
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      const response = await fetch(`${API_BASE_URL}/me`, {
         headers: {
           'Authorization': `Bearer ${accessToken.value}`,
         },

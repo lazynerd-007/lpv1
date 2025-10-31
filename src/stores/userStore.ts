@@ -1,8 +1,31 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { mockReviews, getMovieById, type Review } from '@/data/mockMovies'
 import { useSeriesStore } from '@/stores/seriesStore'
 import { useAuthStore } from '@/stores/authStore'
+
+interface Review {
+  id: string
+  userId: string
+  movieId: string
+  userName: string
+  userAvatar: string
+  lemonPieRating: number
+  reviewText: string
+  reviewLanguage: string
+  spoilerWarning: boolean
+  culturalAuthenticityRating: number
+  productionQualityRating: number
+  storyRating: number
+  actingRating: number
+  cinematographyRating: number
+  nollywoodTags: string[]
+  helpfulnessScore: number
+  helpfulVotes: number
+  unhelpfulVotes: number
+  userVotes: { [userId: string]: 'helpful' | 'unhelpful' }
+  createdAt: string
+  isVerifiedCritic: boolean
+}
 
 const API_BASE_URL = 'http://localhost:8000/api/v1'
 
@@ -262,12 +285,45 @@ export const useUserStore = defineStore('user', () => {
     return isAuthenticated.value
   }
 
+  const loadUserWatchlist = async () => {
+    if (!isAuthenticated.value) return
+
+    try {
+      const authStore = useAuthStore()
+      const token = authStore.accessToken
+      
+      if (!token) {
+        console.error('No authentication token available')
+        return
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/watchlist`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Extract movie IDs from the response
+        watchlist.value = data.movies?.map((movie: any) => movie.id.toString()) || []
+      }
+    } catch (error) {
+      console.error('Error loading user watchlist:', error)
+    }
+  }
+
   const loadUserData = async () => {
     // Load user data from authStore
     const authStore = useAuthStore()
     if (authStore.user) {
       currentUser.value = authStore.user
       isAuthenticated.value = true
+      
+      // Load user's watchlist from backend
+      await loadUserWatchlist()
+      
       return true
     }
     return false
@@ -318,24 +374,84 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  const addToWatchlist = (movieId: string) => {
-    if (!watchlist.value.includes(movieId)) {
-      watchlist.value.push(movieId)
+  const addToWatchlist = async (movieId: string) => {
+    if (!isAuthenticated.value) {
+      throw new Error('User must be authenticated to add to watchlist')
+    }
+
+    try {
+      const authStore = useAuthStore()
+      const token = authStore.accessToken
+      
+      if (!token) {
+        throw new Error('No authentication token available')
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/watchlist/${movieId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to add to watchlist')
+      }
+
+      // Update local state only after successful API call
+      if (!watchlist.value.includes(movieId)) {
+        watchlist.value.push(movieId)
+      }
+    } catch (error) {
+      console.error('Error adding to watchlist:', error)
+      throw error
     }
   }
 
-  const removeFromWatchlist = (movieId: string) => {
-    const index = watchlist.value.indexOf(movieId)
-    if (index > -1) {
-      watchlist.value.splice(index, 1)
+  const removeFromWatchlist = async (movieId: string) => {
+    if (!isAuthenticated.value) {
+      throw new Error('User must be authenticated to remove from watchlist')
+    }
+
+    try {
+      const authStore = useAuthStore()
+      const token = authStore.accessToken
+      
+      if (!token) {
+        throw new Error('No authentication token available')
+      }
+
+      const response = await fetch(`${API_BASE_URL}/users/watchlist/${movieId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.detail || 'Failed to remove from watchlist')
+      }
+
+      // Update local state only after successful API call
+      const index = watchlist.value.indexOf(movieId)
+      if (index > -1) {
+        watchlist.value.splice(index, 1)
+      }
+    } catch (error) {
+      console.error('Error removing from watchlist:', error)
+      throw error
     }
   }
 
-  const toggleWatchlist = (movieId: string) => {
+  const toggleWatchlist = async (movieId: string) => {
     if (isInWatchlist.value(movieId)) {
-      removeFromWatchlist(movieId)
+      await removeFromWatchlist(movieId)
     } else {
-      addToWatchlist(movieId)
+      await addToWatchlist(movieId)
     }
   }
 
@@ -485,8 +601,8 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Enhanced watchlist and favorites with activity tracking
-  const addToWatchlistWithActivity = (movieId: string) => {
-    addToWatchlist(movieId)
+  const addToWatchlistWithActivity = async (movieId: string) => {
+    await addToWatchlist(movieId)
     addActivity({
       type: 'watchlist_add',
       targetId: movieId,
@@ -516,8 +632,8 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  // Initialize with mock authentication for demo (deprecated - use initializeAuth instead)
-  const initializeMockAuth = () => {
+  // Initialize authentication
+  const initializeAuthState = () => {
     initializeAuth()
   }
 
@@ -596,9 +712,10 @@ export const useUserStore = defineStore('user', () => {
     addUserReview,
     updateUserReview,
     deleteUserReview,
-    initializeMockAuth,
+    initializeAuthState,
     checkAuthStatus,
     loadUserData,
+    loadUserWatchlist,
     
     // Following system
     followUser,

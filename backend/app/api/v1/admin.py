@@ -4,12 +4,12 @@ Admin API endpoints for LemonNPie Backend API
 from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
 
 from app.db.database import get_db
-from app.auth.dependencies import get_current_user, require_role
+from app.auth.dependencies import get_current_user, require_role, require_roles
 from app.models.user import User
 from app.models.enums import UserRole, ModerationStatus
 from app.services.admin_service import AdminService
@@ -32,8 +32,8 @@ router = APIRouter(tags=["admin"])
 @router.get("/dashboard", response_model=AdminDashboard)
 @limiter.limit("10/minute")
 async def get_admin_dashboard(
-    request,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    request: Request,
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -66,7 +66,7 @@ async def get_admin_dashboard(
 @limiter.limit("20/minute")
 async def get_system_metrics(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -100,7 +100,7 @@ async def get_user_analytics(
     request,
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -150,7 +150,7 @@ async def get_content_analytics(
     request,
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -205,7 +205,7 @@ async def get_users_list(
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -250,7 +250,7 @@ async def update_user_role(
     request,
     user_id: UUID,
     role_update: UserRoleUpdate,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -304,7 +304,7 @@ async def suspend_user(
     request,
     user_id: UUID,
     suspension: UserSuspension,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -360,7 +360,7 @@ async def activate_user(
     request,
     user_id: UUID,
     activation: UserActivation,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -411,7 +411,7 @@ async def get_reviews_for_moderation(
     is_flagged: Optional[bool] = Query(None, description="Filter by flagged status"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -455,7 +455,7 @@ async def moderate_review(
     request,
     review_id: UUID,
     moderation: ModerationAction,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -502,7 +502,7 @@ async def moderate_review(
 async def bulk_moderate_reviews(
     request,
     bulk_moderation: BulkModerationAction,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -551,7 +551,7 @@ async def get_reports_list(
     status: Optional[ModerationStatus] = Query(None, description="Filter by report status"),
     sort_by: str = Query("created_at", description="Sort field"),
     sort_order: str = Query("desc", pattern="^(asc|desc)$", description="Sort order"),
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -594,7 +594,7 @@ async def resolve_report(
     request,
     report_id: UUID,
     resolution: ReportResolution,
-    current_user: User = Depends(require_role([UserRole.ADMIN, UserRole.MODERATOR])),
+    current_user: User = Depends(require_roles(UserRole.ADMIN, UserRole.MODERATOR)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -643,7 +643,7 @@ async def resolve_report(
 @limiter.limit("10/minute")
 async def get_performance_metrics(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -673,7 +673,7 @@ async def get_performance_metrics(
 @limiter.limit("2/hour")
 async def optimize_database(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -707,7 +707,7 @@ async def optimize_database(
 @limiter.limit("20/minute")
 async def get_cache_statistics(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -738,7 +738,7 @@ async def get_cache_statistics(
 async def clear_cache_pattern(
     request,
     pattern: str,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -778,7 +778,7 @@ async def clear_cache_pattern(
 @limiter.limit("5/hour")
 async def warm_cache(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -812,7 +812,7 @@ async def warm_cache(
 @limiter.limit("10/minute")
 async def get_slow_endpoints(
     request,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -846,7 +846,7 @@ async def get_slow_endpoints(
 async def analyze_query_performance(
     request,
     query: str,
-    current_user: User = Depends(require_role([UserRole.ADMIN])),
+    current_user: User = Depends(require_role(UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     """

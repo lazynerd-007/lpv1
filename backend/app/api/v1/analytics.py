@@ -4,12 +4,12 @@ Analytics API endpoints for LemonNPie Backend
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, desc
 
 from app.db.database import get_db
-from app.auth.dependencies import get_current_user, get_current_admin_user
+from app.auth.dependencies import get_current_user, get_current_admin_user, get_middleware_admin_user
 from app.models.user import User
 from app.models.analytics import AnalyticsReport, UserActivity, ContentMetrics, SystemMetrics
 from app.services.analytics_service import AnalyticsService
@@ -249,9 +249,10 @@ async def get_system_health_report(
 
 @router.get("/dashboard", response_model=AnalyticsDashboard)
 async def get_analytics_dashboard(
+    request: Request,
     start_date: Optional[datetime] = Query(None, description="Start date for dashboard"),
     end_date: Optional[datetime] = Query(None, description="End date for dashboard"),
-    current_user: User = Depends(get_current_admin_user),
+    current_user: User = Depends(get_middleware_admin_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Get comprehensive analytics dashboard (Admin only)"""

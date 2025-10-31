@@ -17,9 +17,9 @@ app.use(router)
 const { initTheme } = useTheme()
 initTheme()
 
-// Check authentication status
+// Initialize authentication state
 const userStore = useUserStore()
-userStore.checkAuthStatus()
+userStore.initializeAuthState()
 
 // Performance optimizations
 measurePerformance()

@@ -296,7 +296,8 @@ onMounted(async () => {
   // Add scroll event listener for infinite scroll
   window.addEventListener('scroll', handleScroll)
   
-  // Movies are already loaded from mockMovies
+  // Load movies from API
+  await movieStore.loadMovies()
 })
 
 // Cleanup scroll listener

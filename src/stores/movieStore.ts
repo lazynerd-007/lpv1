@@ -1,75 +1,157 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { apiService, type Movie as ApiMovie, type MovieDetails } from '@/services/api'
 import { 
   mockMovies, 
-  mockReviews, 
-  getMovieById, 
   getReviewsForMovie,
-  getFeaturedMovie,
-  getPieMovies,
-  getLemonMovies,
-  getTrendingMovies,
-  getTrendingTVShows,
   type Movie,
   type Review
 } from '@/data/mockMovies'
 
 export const useMovieStore = defineStore('movie', () => {
   // State
-  const movies = ref<Movie[]>(mockMovies)
-  const reviews = ref<Review[]>(mockReviews)
-  const currentMovie = ref<Movie | null>(null)
+  const movies = ref<Movie[]>([])
+  const apiMovies = ref<ApiMovie[]>([])
+  const featuredMovies = ref<ApiMovie[]>([])
+  const trendingMoviesApi = ref<ApiMovie[]>([])
+  const reviews = ref<Review[]>([])
+  const currentMovie = ref<Movie | MovieDetails | null>(null)
   const currentMovieReviews = ref<Review[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
+  const hasLoadedMovies = ref(false)
+
+  // API Actions
+  const loadMovies = async () => {
+    if (hasLoadedMovies.value) return
+    
+    try {
+      isLoading.value = true
+      error.value = null
+      
+      const response = await apiService.getMovies()
+      apiMovies.value = response.data?.movies || []
+      
+      // Convert API movies to local Movie format for compatibility
+      movies.value = (response.data?.items || []).map(apiMovie => ({
+        id: apiMovie.id.toString(),
+        title: apiMovie.title,
+        localTitle: apiMovie.local_title,
+        releaseDate: apiMovie.release_date,
+        runtime: 120, // Default runtime since not provided by API
+        genre: apiMovie.genres || [],
+        language: ['English'], // Default language
+        director: apiMovie.director || 'Unknown',
+        producer: 'Unknown', // Not provided by API
+        cast: [], // Not provided in list endpoint
+        type: apiMovie.type as 'movie' | 'series',
+        plotSummary: 'Plot summary not available', // Not provided in list endpoint
+        posterUrl: apiMovie.poster_url || '',
+        trailerUrl: '', // Not provided in list endpoint
+        productionCompany: 'Unknown', // Not provided by API
+        filmingLocations: [], // Not provided by API
+        productionState: 'Unknown', // Not provided by API
+        boxOfficeNG: '', // Not provided by API
+        streamingPlatforms: [], // Not provided by API
+        awards: [], // Not provided by API
+        lemonPieRating: apiMovie.stats?.average_rating || 0,
+        userRating: 0, // Default
+        criticRating: 0, // Default
+        reviewCount: apiMovie.stats?.review_count || 0
+      }))
+      
+      hasLoadedMovies.value = true
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load movies'
+      console.error('Failed to load movies:', err)
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  const loadFeaturedMovies = async () => {
+    try {
+      const response = await apiService.getFeaturedMovies()
+      featuredMovies.value = response.data?.movies || []
+    } catch (err) {
+      console.error('Failed to load featured movies:', err)
+    }
+  }
+
+  const loadTrendingMovies = async () => {
+    try {
+      const response = await apiService.getTrendingMovies()
+      trendingMoviesApi.value = response.data?.movies || []
+    } catch (err) {
+      console.error('Failed to load trending movies:', err)
+    }
+  }
 
   // Getters
-  const featuredMovie = computed(() => getFeaturedMovie())
-  const pieMovies = computed(() => getPieMovies())
-  const lemonMovies = computed(() => getLemonMovies())
-  const trendingMovies = computed(() => getTrendingMovies())
-  const trendingTVShows = computed(() => getTrendingTVShows())
-  
-  const topRatedMovies = computed(() => {
-    return [...movies.value]
-      .sort((a, b) => b.lemonPieRating - a.lemonPieRating)
-      .slice(0, 8)
-  })
-  
+  const featuredMovie = computed(() => featuredMovies.value[0] || null)
+  const pieMovies = computed(() => movies.value.filter(movie => movie.lemonPieRating >= 7))
+  const lemonMovies = computed(() => movies.value.filter(movie => movie.lemonPieRating < 5))
+  const topRatedMovies = computed(() => movies.value.filter(movie => movie.lemonPieRating >= 8))
+  const trendingMoviesComputed = computed(() => trendingMoviesApi.value.map(apiMovie => ({
+    id: apiMovie.id.toString(),
+    title: apiMovie.title,
+    description: apiMovie.description,
+    releaseDate: apiMovie.release_date,
+    duration: apiMovie.duration || 120,
+    genres: apiMovie.genres || [],
+    director: apiMovie.director || 'Unknown',
+    cast: apiMovie.cast || [],
+    lemonPieRating: apiMovie.rating || 0,
+    posterUrl: apiMovie.poster_url || '',
+    trailerUrl: apiMovie.trailer_url || '',
+    backdropUrl: apiMovie.backdrop_url || '',
+    language: apiMovie.language || 'en',
+    country: apiMovie.country || 'Unknown',
+    budget: apiMovie.budget || 0,
+    revenue: apiMovie.revenue || 0,
+    status: apiMovie.status || 'Released',
+    tagline: apiMovie.tagline || '',
+    homepage: apiMovie.homepage || '',
+    imdbId: apiMovie.imdb_id || '',
+    tmdbId: apiMovie.tmdb_id || 0,
+    popularity: apiMovie.popularity || 0,
+    voteAverage: apiMovie.vote_average || 0,
+    voteCount: apiMovie.vote_count || 0,
+    adult: apiMovie.adult || false,
+    video: apiMovie.video || false,
+    originalTitle: apiMovie.original_title || apiMovie.title,
+    originalLanguage: apiMovie.original_language || 'en'
+  })))
   const recentlyAddedMovies = computed(() => {
-    return [...movies.value]
+    return movies.value
       .sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
-      .slice(0, 8)
+      .slice(0, 10)
   })
-  
-  const moviesByGenre = computed(() => {
-    const genres: Record<string, Movie[]> = {}
-    movies.value.forEach(movie => {
-      movie.genre.forEach(g => {
-        if (!genres[g]) genres[g] = []
-        genres[g].push(movie)
-      })
-    })
-    return genres
+  const moviesByGenre = computed(() => (genre: string) => {
+    return movies.value.filter(movie => movie.genres.includes(genre))
   })
-
-  const moviesByYear = computed(() => {
-    const years: Record<string, Movie[]> = {}
-    movies.value.forEach(movie => {
-      const year = movie.releaseDate.split('-')[0]
-      if (!years[year]) years[year] = []
-      years[year].push(movie)
-    })
-    return years
+  const moviesByYear = computed(() => (year: number) => {
+    return movies.value.filter(movie => new Date(movie.releaseDate).getFullYear() === year)
   })
 
   // Actions
   const fetchMovie = async (id: string) => {
-    isLoading.value = true
-    error.value = null
-    
     try {
-      const movie = getMovieById(id)
+      isLoading.value = true
+      error.value = null
+      
+      // Try to get from API first
+      try {
+        const response = await apiService.getMovie(id)
+        currentMovie.value = response.data
+        currentMovieReviews.value = getReviewsForMovie(id)
+        return
+      } catch (apiError) {
+        console.warn('Failed to fetch from API, falling back to local data:', apiError)
+      }
+      
+      // Fallback to local data
+      const movie = movies.value.find(m => m.id === id)
       if (movie) {
         currentMovie.value = movie
         currentMovieReviews.value = getReviewsForMovie(id)
@@ -77,24 +159,63 @@ export const useMovieStore = defineStore('movie', () => {
         error.value = 'Movie not found'
       }
     } catch (err) {
-      error.value = 'Failed to fetch movie'
-      console.error(err)
+      error.value = err instanceof Error ? err.message : 'Failed to fetch movie'
     } finally {
       isLoading.value = false
     }
   }
 
-  const searchMovies = (query: string): Movie[] => {
+  const getMovieById = (id: string): Movie | undefined => {
+    return movies.value.find(movie => movie.id === id)
+  }
+
+  const searchMovies = async (query: string): Promise<Movie[]> => {
     if (!query.trim()) return []
     
-    const searchTerm = query.toLowerCase()
-    return movies.value.filter(movie => 
-      movie.title.toLowerCase().includes(searchTerm) ||
-      movie.localTitle?.toLowerCase().includes(searchTerm) ||
-      movie.director.toLowerCase().includes(searchTerm) ||
-      movie.cast.some(actor => actor.toLowerCase().includes(searchTerm)) ||
-      movie.genre.some(genre => genre.toLowerCase().includes(searchTerm))
-    )
+    try {
+      // Try API search first
+      const response = await apiService.searchMovies({ query })
+      // Backend returns array directly, not wrapped in data property
+      const movies = response.data || response
+      return movies.map(apiMovie => ({
+        id: apiMovie.id.toString(),
+        title: apiMovie.title,
+        localTitle: apiMovie.local_title,
+        releaseDate: apiMovie.release_date,
+        runtime: 120, // Default runtime since not provided by API
+        genre: apiMovie.genres || [],
+        language: ['English'], // Default language
+        director: apiMovie.director || 'Unknown',
+        producer: 'Unknown', // Not provided by API
+        cast: [], // Not provided in search endpoint
+        type: apiMovie.type as 'movie' | 'series',
+        plotSummary: 'Plot summary not available', // Not provided in search endpoint
+        posterUrl: apiMovie.poster_url || '',
+        trailerUrl: '', // Not provided in search endpoint
+        productionCompany: 'Unknown', // Not provided by API
+        filmingLocations: [], // Not provided by API
+        productionState: 'Unknown', // Not provided by API
+        boxOfficeNG: '', // Not provided by API
+        streamingPlatforms: [], // Not provided by API
+        awards: [], // Not provided by API
+        lemonPieRating: apiMovie.stats?.average_rating || 0,
+        userRating: 0, // Default
+        criticRating: 0, // Default
+        reviewCount: apiMovie.stats?.review_count || 0
+      }))
+    } catch (err) {
+      console.warn('API search failed, falling back to local search:', err)
+      
+      // Fallback to local search
+      const searchTerm = query.toLowerCase()
+      return movies.value.filter(movie => 
+        movie.title.toLowerCase().includes(searchTerm) ||
+        movie.localTitle?.toLowerCase().includes(searchTerm) ||
+        movie.director.toLowerCase().includes(searchTerm) ||
+        movie.cast.some(actor => actor.toLowerCase().includes(searchTerm)) ||
+        movie.genre.some(genre => genre.toLowerCase().includes(searchTerm))
+      )
+    }
   }
 
   const filterMovies = (filters: {
@@ -295,22 +416,29 @@ export const useMovieStore = defineStore('movie', () => {
   return {
     // State
     movies,
+    apiMovies,
+    featuredMovies,
     reviews,
     currentMovie,
     currentMovieReviews,
     isLoading,
     error,
+    hasLoadedMovies,
     
     // Getters
     featuredMovie,
     pieMovies,
     lemonMovies,
-    trendingMovies,
-    trendingTVShows,
     topRatedMovies,
+    trendingMovies: trendingMoviesComputed,
     recentlyAddedMovies,
     moviesByGenre,
     moviesByYear,
+    
+    // API Actions
+    loadMovies,
+    loadFeaturedMovies,
+    loadTrendingMovies,
     
     // Actions
     fetchMovie,

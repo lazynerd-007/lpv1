@@ -508,11 +508,17 @@ const load2FAStatus = async () => {
 
 // Methods
 const saveProfile = async () => {
+  console.log('saveProfile method called')
+  console.log('profileData:', profileData)
+  
   try {
+    console.log('About to call userStore.updateProfile')
     // Update user store with new profile data
     const result = await userStore.updateProfile(profileData)
+    console.log('userStore.updateProfile result:', result)
     
     if (result.success) {
+      console.log('Profile update successful')
       notificationStore.addNotification({
         type: 'success',
         title: 'Profile Updated',
@@ -520,6 +526,7 @@ const saveProfile = async () => {
         isRead: false
       })
     } else {
+      console.log('Profile update failed:', result.error)
       notificationStore.addNotification({
         type: 'error',
         title: 'Update Failed',
@@ -528,6 +535,7 @@ const saveProfile = async () => {
       })
     }
   } catch (error) {
+    console.error('Error in saveProfile:', error)
     notificationStore.addNotification({
       type: 'error',
       title: 'Update Failed',

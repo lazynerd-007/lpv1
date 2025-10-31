@@ -7,11 +7,12 @@ import sys
 import os
 from datetime import date
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import text
 
 # Add the backend directory to the Python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.db.database import get_db_session
+from app.db.database import get_db, init_db
 from app.models.movie import Movie
 from app.models.relationships import MovieGenre, MovieLanguage, MovieCast
 from app.models.enums import ContentType, CastRole
@@ -193,72 +194,83 @@ async def populate_movies():
     print("Starting movie population...")
     
     try:
+        # Initialize database
+        await init_db()
+        
         # Get database session
-        async with get_db_session() as db:
-            # Check if movies already exist
-            existing_movies = await db.execute("SELECT COUNT(*) FROM movies")
-            count = existing_movies.scalar()
-            
-            if count > 0:
-                print(f"Database already contains {count} movies. Clearing existing movies...")
-                # Clear existing data
-                await db.execute("DELETE FROM movie_cast")
-                await db.execute("DELETE FROM movie_languages")
-                await db.execute("DELETE FROM movie_genres")
-                await db.execute("DELETE FROM movies")
-                await db.commit()
-                print("Existing movies cleared.")
-            
-            # Add new movies
-            for movie_data in SAMPLE_MOVIES:
-                print(f"Adding movie: {movie_data['title']}")
+        async for db in get_db():
+            try:
+                # Check if movies already exist
+                existing_movies = await db.execute(text("SELECT COUNT(*) FROM movies"))
+                count = existing_movies.scalar()
                 
-                # Create movie
-                movie = Movie(
-                    title=movie_data["title"],
-                    local_title=movie_data["local_title"],
-                    release_date=movie_data["release_date"],
-                    runtime=movie_data["runtime"],
-                    plot_summary=movie_data["plot_summary"],
-                    director=movie_data["director"],
-                    producer=movie_data["producer"],
-                    production_company=movie_data["production_company"],
-                    production_state=movie_data["production_state"],
-                    box_office_ng=movie_data["box_office_ng"],
-                    poster_url=movie_data["poster_url"],
-                    trailer_url=movie_data["trailer_url"],
-                    type=ContentType.MOVIE
-                )
+                if count > 0:
+                    print(f"Database already contains {count} movies. Clearing existing movies...")
+                    # Clear existing data
+                    await db.execute(text("DELETE FROM movie_cast"))
+                    await db.execute(text("DELETE FROM movie_languages"))
+                    await db.execute(text("DELETE FROM movie_genres"))
+                    await db.execute(text("DELETE FROM movies"))
+                    await db.commit()
+                    print("Existing movies cleared.")
                 
-                db.add(movie)
-                await db.flush()  # Get the movie ID
-                
-                # Add genres
-                for genre in movie_data["genres"]:
-                    movie_genre = MovieGenre(movie_id=movie.id, genre=genre)
-                    db.add(movie_genre)
-                
-                # Add languages
-                for language in movie_data["languages"]:
-                    movie_language = MovieLanguage(movie_id=movie.id, language=language)
-                    db.add(movie_language)
-                
-                # Add cast
-                for cast_member in movie_data["cast"]:
-                    movie_cast = MovieCast(
-                        movie_id=movie.id,
-                        actor_name=cast_member["actor_name"],
-                        character_name=cast_member["character_name"],
-                        role_type=CastRole.ACTOR
+                # Add new movies
+                for movie_data in SAMPLE_MOVIES:
+                    print(f"Adding movie: {movie_data['title']}")
+                    
+                    # Create movie
+                    movie = Movie(
+                        title=movie_data["title"],
+                        local_title=movie_data["local_title"],
+                        release_date=movie_data["release_date"],
+                        runtime=movie_data["runtime"],
+                        plot_summary=movie_data["plot_summary"],
+                        director=movie_data["director"],
+                        producer=movie_data["producer"],
+                        production_company=movie_data["production_company"],
+                        production_state=movie_data["production_state"],
+                        box_office_ng=movie_data["box_office_ng"],
+                        poster_url=movie_data["poster_url"],
+                        trailer_url=movie_data["trailer_url"],
+                        type=ContentType.MOVIE
                     )
-                    db.add(movie_cast)
-            
-            # Commit all changes
-            await db.commit()
-            print(f"Successfully added {len(SAMPLE_MOVIES)} movies to the database!")
+                    
+                    db.add(movie)
+                    await db.flush()  # Get the movie ID
+                    
+                    # Add genres
+                    for genre in movie_data["genres"]:
+                        movie_genre = MovieGenre(movie_id=movie.id, genre=genre)
+                        db.add(movie_genre)
+                    
+                    # Add languages
+                    for language in movie_data["languages"]:
+                        movie_language = MovieLanguage(movie_id=movie.id, language=language)
+                        db.add(movie_language)
+                    
+                    # Add cast
+                    for cast_member in movie_data["cast"]:
+                        movie_cast = MovieCast(
+                            movie_id=movie.id,
+                            actor_name=cast_member["actor_name"],
+                            character_name=cast_member["character_name"],
+                            role_type=CastRole.ACTOR
+                        )
+                        db.add(movie_cast)
+                
+                # Commit all changes
+                await db.commit()
+                print(f"Successfully added {len(SAMPLE_MOVIES)} movies to the database!")
+                
+            except Exception as e:
+                print(f"Error populating movies: {e}")
+                await db.rollback()
+                raise
+            finally:
+                break
             
     except Exception as e:
-        print(f"Error populating movies: {e}")
+        print(f"Error initializing database: {e}")
         raise
 
 if __name__ == "__main__":

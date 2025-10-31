@@ -99,19 +99,19 @@ def create_app() -> FastAPI:
     # Custom OpenAPI schema - TEMPORARILY DISABLED due to route registration issue
     # app.openapi = lambda: get_custom_openapi(app)
     
-    # Add security middleware (order matters)
-    app.add_middleware(SecurityMiddleware)
-    app.add_middleware(InputValidationMiddleware)
-    app.add_middleware(AuthMiddleware)
+    # Add version middleware first (order matters - should be before auth)
+    app.add_middleware(APIVersionMiddleware, enable_version_validation=True)
+    app.add_middleware(ResponseTransformMiddleware)
+    
+    # Add security middleware (order matters - middleware executes in reverse order)
+    app.add_middleware(LoggingMiddleware)
     app.add_middleware(
         RoleBasedAccessMiddleware, 
         route_permissions=create_role_permissions_map()
     )
-    app.add_middleware(LoggingMiddleware)
-    
-    # Add version middleware
-    app.add_middleware(APIVersionMiddleware, enable_version_validation=True)
-    app.add_middleware(ResponseTransformMiddleware)
+    app.add_middleware(AuthMiddleware)
+    app.add_middleware(InputValidationMiddleware)
+    app.add_middleware(SecurityMiddleware)
     
     # Setup CORS
     setup_cors(app)
@@ -134,11 +134,11 @@ def create_app() -> FastAPI:
     
     # Include API routes
     app.include_router(auth_router, prefix="/api/v1")
-    app.include_router(movies_router, prefix="/api/v1")
-    app.include_router(reviews_router, prefix="/api/v1")
-    app.include_router(users_router, prefix="/api/v1")
+    app.include_router(movies_router, prefix="/api/v1/movies")
+    app.include_router(reviews_router, prefix="/api/v1/reviews")
+    app.include_router(users_router, prefix="/api/v1/users")
     app.include_router(uploads_router, prefix="/api/v1")
-    app.include_router(admin_router, prefix="/api/v1")
+    app.include_router(admin_router, prefix="/api/v1/admin")
     app.include_router(notifications_router, prefix="/api/v1")
     app.include_router(analytics_router, prefix="/api/v1")
     

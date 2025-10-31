@@ -86,6 +86,24 @@ async def update_current_user_profile(
     )
 
 
+@router.get("/watchlist", response_model=MovieListResponse)
+async def get_user_watchlist(
+    page: int = Query(1, ge=1, description="Page number"),
+    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get the current user's watchlist
+    
+    - **page**: Page number (default: 1)
+    - **per_page**: Items per page (default: 20, max: 100)
+    
+    Returns paginated list of movies in the user's watchlist with movie details.
+    """
+    return await user_service.get_user_watchlist(current_user.id, page, per_page, db)
+
+
 @router.get("/{user_id}", response_model=UserPublicProfile)
 async def get_user_profile(
     user_id: UUID,
@@ -289,23 +307,6 @@ async def remove_from_watchlist(
     await user_service.remove_from_watchlist(current_user.id, movie_id, db)
     return {"message": "Movie removed from watchlist successfully"}
 
-
-@router.get("/watchlist", response_model=MovieListResponse)
-async def get_user_watchlist(
-    page: int = Query(1, ge=1, description="Page number"),
-    per_page: int = Query(20, ge=1, le=100, description="Items per page"),
-    current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Get the current user's watchlist
-    
-    - **page**: Page number (default: 1)
-    - **per_page**: Items per page (default: 20, max: 100)
-    
-    Returns paginated list of movies in the user's watchlist with movie details.
-    """
-    return await user_service.get_user_watchlist(current_user.id, page, per_page, db)
 
 
 @router.post("/favorites/{movie_id}")

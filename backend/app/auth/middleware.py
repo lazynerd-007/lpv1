@@ -34,14 +34,17 @@ class AuthMiddleware(BaseHTTPMiddleware):
         request.state.user_role = None
         
         if scheme.lower() == "bearer" and token:
+            print(f"AUTH: Found bearer token: {token[:20]}...")
             try:
                 # Verify token and extract user info
                 payload = jwt_service.verify_token(token)
                 request.state.user_id = payload.get("sub")
                 request.state.user_role = payload.get("role")
                 request.state.token_payload = payload
-            except HTTPException:
-                # Invalid token - continue without user context
+                print(f"AUTH: Token verified. User ID: {request.state.user_id}, Role: {request.state.user_role}")
+            except Exception as e:
+                # Token verification failed, but continue without authentication
+                print(f"AUTH: Token verification failed: {e}")
                 pass
         
         response = await call_next(request)
@@ -59,29 +62,28 @@ class RoleBasedAccessMiddleware(BaseHTTPMiddleware):
         self.route_permissions = route_permissions or {}
     
     async def dispatch(self, request: Request, call_next):
-        """
-        Check if user has required role for the requested route
-        """
+        """Check if user has required role for the requested route"""
+        print(f"MIDDLEWARE: Processing {request.method} {request.url.path}")
         path = request.url.path
         method = request.method.lower()
         
-        # Check if this route requires specific roles
-        route_key = f"{method}:{path}"
-        required_roles = self.route_permissions.get(route_key)
+        # Check if route requires specific roles
+        route_key = f"{request.method.lower()}:{request.url.path}"
+        required_roles = self.route_permissions.get(route_key, [])
+        
+        import logging
+        print(f"ROLE DEBUG: Route key: {route_key}")
+        print(f"ROLE DEBUG: Required roles: {required_roles}")
         
         if required_roles:
             user_role = getattr(request.state, 'user_role', None)
-            
-            if not user_role:
+            print(f"ROLE DEBUG: User role: {user_role}")
+            print(f"ROLE DEBUG: User role in required roles: {user_role in required_roles if user_role else False}")
+            if not user_role or user_role not in required_roles:
+                print(f"ROLE DEBUG: Access denied - user role '{user_role}' not in required roles {required_roles}")
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    status_code=401,
                     detail="Authentication required"
-                )
-            
-            if user_role not in required_roles:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail=f"Insufficient permissions. Required roles: {', '.join(required_roles)}"
                 )
         
         response = await call_next(request)
@@ -93,24 +95,26 @@ def create_role_permissions_map() -> dict:
     Create a mapping of routes to required roles
     """
     return {
+        # Admin and Moderator routes (using uppercase to match JWT token format)
+        "get:/api/v1/dashboard": ["MODERATOR", "ADMIN"],
+        
         # Admin-only routes
-        "get:/api/v1/admin/dashboard": [UserRole.ADMIN.value],
-        "get:/api/v1/admin/users": [UserRole.ADMIN.value],
-        "put:/api/v1/admin/users/{user_id}/role": [UserRole.ADMIN.value],
-        "post:/api/v1/admin/users/{user_id}/suspend": [UserRole.ADMIN.value],
-        "get:/api/v1/admin/analytics": [UserRole.ADMIN.value],
+        "get:/api/v1/admin/users": ["ADMIN"],
+        "put:/api/v1/admin/users/{user_id}/role": ["ADMIN"],
+        "post:/api/v1/admin/users/{user_id}/suspend": ["ADMIN"],
+        "get:/api/v1/admin/analytics": ["ADMIN"],
         
         # Moderator and Admin routes
-        "get:/api/v1/admin/reports": [UserRole.MODERATOR.value, UserRole.ADMIN.value],
-        "put:/api/v1/admin/reports/{report_id}/resolve": [UserRole.MODERATOR.value, UserRole.ADMIN.value],
-        "get:/api/v1/admin/moderation": [UserRole.MODERATOR.value, UserRole.ADMIN.value],
-        "post:/api/v1/admin/moderation/{content_id}": [UserRole.MODERATOR.value, UserRole.ADMIN.value],
+        "get:/api/v1/admin/reports": ["MODERATOR", "ADMIN"],
+        "put:/api/v1/admin/reports/{report_id}/resolve": ["MODERATOR", "ADMIN"],
+        "get:/api/v1/admin/moderation": ["MODERATOR", "ADMIN"],
+        "post:/api/v1/admin/moderation/{content_id}": ["MODERATOR", "ADMIN"],
         
         # Critic, Moderator, and Admin routes (enhanced review features)
-        "post:/api/v1/reviews/featured": [UserRole.CRITIC.value, UserRole.MODERATOR.value, UserRole.ADMIN.value],
+        "post:/api/v1/reviews/featured": ["CRITIC", "MODERATOR", "ADMIN"],
         
         # All authenticated users (examples)
-        "post:/api/v1/reviews": ["user", "critic", "moderator", "admin"],
-        "put:/api/v1/reviews/{review_id}": ["user", "critic", "moderator", "admin"],
-        "delete:/api/v1/reviews/{review_id}": ["user", "critic", "moderator", "admin"],
+        "post:/api/v1/reviews": ["USER", "CRITIC", "MODERATOR", "ADMIN"],
+        "put:/api/v1/reviews/{review_id}": ["USER", "CRITIC", "MODERATOR", "ADMIN"],
+        "delete:/api/v1/reviews/{review_id}": ["USER", "CRITIC", "MODERATOR", "ADMIN"],
     }

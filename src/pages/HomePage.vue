@@ -33,7 +33,10 @@ onMounted(async () => {
   // Set page title
   uiStore.setPageTitle('Home - Nollywood Movies')
   
-  // Movies are already loaded from mockMovies
+  // Load movies from API
+  await movieStore.loadMovies()
+  await movieStore.loadFeaturedMovies()
+  await movieStore.loadTrendingMovies()
 })
 </script>
 

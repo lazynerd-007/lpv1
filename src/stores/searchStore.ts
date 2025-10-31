@@ -109,11 +109,8 @@ export const useSearchStore = defineStore('search', () => {
     currentPage.value = 1
 
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 300))
-
       const movieStore = useMovieStore()
-      searchState.value.results = movieStore.searchMovies(query)
+      searchState.value.results = await movieStore.searchMovies(query)
       searchState.value.hasSearched = true
     } catch (error) {
       console.error('Search failed:', error)
