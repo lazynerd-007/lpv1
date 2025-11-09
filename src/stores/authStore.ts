@@ -53,7 +53,17 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Login failed')
+        
+        // Handle validation errors (422)
+        if (response.status === 422 && errorData.detail) {
+          const validationErrors = Array.isArray(errorData.detail)
+            ? errorData.detail.map((err: any) => err.msg).join(', ')
+            : errorData.detail
+          throw new Error(validationErrors)
+        }
+        
+        // Handle other errors
+        throw new Error(errorData.message || errorData.error || 'Login failed')
       }
 
       const data: LoginResponse = await response.json()
@@ -115,7 +125,17 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.detail || 'Registration failed')
+        
+        // Handle validation errors (422)
+        if (response.status === 422 && errorData.detail) {
+          const validationErrors = Array.isArray(errorData.detail)
+            ? errorData.detail.map((err: any) => err.msg).join(', ')
+            : errorData.detail
+          throw new Error(validationErrors)
+        }
+        
+        // Handle other errors
+        throw new Error(errorData.message || errorData.error || 'Registration failed')
       }
 
       const data: LoginResponse = await response.json()

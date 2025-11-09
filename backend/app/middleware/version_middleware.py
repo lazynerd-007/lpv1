@@ -52,7 +52,7 @@ class APIVersionMiddleware(BaseHTTPMiddleware):
             logger.info(
                 f"API request",
                 extra={
-                    "api_version": api_version.value,
+                    "api_version": api_version.value if hasattr(api_version, 'value') else str(api_version),
                     "endpoint": request.url.path,
                     "method": request.method,
                     "user_agent": request.headers.get("user-agent", ""),
@@ -69,16 +69,9 @@ class APIVersionMiddleware(BaseHTTPMiddleware):
             return response
             
         except Exception as e:
-            logger.error(f"Error in version middleware: {str(e)}")
-            return JSONResponse(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                content={
-                    "error": "version_middleware_error",
-                    "message": "An error occurred while processing API version",
-                    "timestamp": datetime.utcnow().isoformat() + "Z",
-                    "path": request.url.path
-                }
-            )
+            logger.error(f"Error in version middleware: {str(e)}", exc_info=True)
+            # Continue processing without version handling on error
+            return await call_next(request)
     
     def _create_version_error_response(self, request: Request, api_version) -> JSONResponse:
         """Create error response for unsupported version"""
@@ -107,8 +100,8 @@ class APIVersionMiddleware(BaseHTTPMiddleware):
     def _add_version_headers(self, response: Response, api_version, version_info: dict):
         """Add version-related headers to response"""
         # Basic version headers
-        response.headers["X-API-Version"] = api_version.value
-        response.headers["X-API-Version-Status"] = version_info["status"].value
+        response.headers["X-API-Version"] = api_version.value if hasattr(api_version, 'value') else str(api_version)
+        response.headers["X-API-Version-Status"] = version_info["status"].value if hasattr(version_info["status"], 'value') else str(version_info["status"])
         
         # Add deprecation headers if applicable
         if version_info["status"].value == "deprecated":

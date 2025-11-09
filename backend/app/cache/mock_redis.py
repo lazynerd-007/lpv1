@@ -54,6 +54,12 @@ class MockRedis:
             return False
         return key in self._data
     
+    async def setex(self, key: str, seconds: int, value: Any) -> bool:
+        """Mock setex (set with expiry)"""
+        self._data[key] = value
+        self._expiry[key] = datetime.now() + timedelta(seconds=seconds)
+        return True
+    
     async def expire(self, key: str, seconds: int) -> bool:
         """Mock expire"""
         if key in self._data:

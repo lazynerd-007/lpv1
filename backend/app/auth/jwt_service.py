@@ -18,7 +18,12 @@ class JWTService:
     """Service for handling JWT token operations"""
     
     def __init__(self):
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+        # Use argon2 instead of bcrypt to avoid 72-byte password limit issues
+        # Argon2 is more modern and doesn't have the same limitations
+        self.pwd_context = CryptContext(
+            schemes=["argon2"], 
+            deprecated="auto"
+        )
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
         self.access_token_expire_minutes = settings.ACCESS_TOKEN_EXPIRE_MINUTES

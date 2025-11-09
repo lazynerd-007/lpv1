@@ -99,7 +99,11 @@ def create_app() -> FastAPI:
     # Custom OpenAPI schema - TEMPORARILY DISABLED due to route registration issue
     # app.openapi = lambda: get_custom_openapi(app)
     
-    # Add version middleware first (order matters - should be before auth)
+    # Setup CORS FIRST - must be added last so it executes first (reverse order)
+    # This ensures CORS headers are added to all responses including errors
+    setup_cors(app)
+    
+    # Add version middleware (order matters - should be before auth)
     app.add_middleware(APIVersionMiddleware, enable_version_validation=True)
     app.add_middleware(ResponseTransformMiddleware)
     
@@ -112,9 +116,6 @@ def create_app() -> FastAPI:
     app.add_middleware(AuthMiddleware)
     app.add_middleware(InputValidationMiddleware)
     app.add_middleware(SecurityMiddleware)
-    
-    # Setup CORS
-    setup_cors(app)
     
     # Trusted host middleware (security)
     if not settings.DEBUG:

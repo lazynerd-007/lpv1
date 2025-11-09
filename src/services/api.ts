@@ -85,11 +85,24 @@ class ApiService {
         ...options,
       })
 
+      // Parse response body
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        // Handle validation errors (422)
+        if (response.status === 422 && data.detail) {
+          const validationErrors = Array.isArray(data.detail) 
+            ? data.detail.map((err: any) => err.msg).join(', ')
+            : data.detail
+          return { error: validationErrors }
+        }
+        
+        // Handle other error responses
+        return { 
+          error: data.message || data.error || `HTTP error! status: ${response.status}` 
+        }
       }
 
-      const data = await response.json()
       return { data }
     } catch (error) {
       console.error('API request failed:', error)
